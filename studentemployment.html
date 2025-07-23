@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Blue Cluster Student Payroll Calculator</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+	<style>
+		:root {
+			--ucd-blue: #002855;
+			--ucd-gold: #FFBF00;
+			--ucd-light-gray: #f2f2f2;
+		}
+		body {
+			font-family: 'Public Sans', sans-serif; //  I'm going with "Knockoffxima Nova"
+			background-color: var(--ucd-light-gray);
+		}
+		.ucd-header {
+			background-color: var(--ucd-blue);
+			color: white;
+			padding: 1rem 2rem;
+			display: flex;
+			align-items: center;
+		}
+		.ucd-logo-text {
+			font-weight: 700;
+			font-size: 1.5rem;
+			letter-spacing: 0.5px;
+		}
+		.card {
+			background-color: white;
+			border-radius: 0;
+			border: 1px solid #ddd;
+			padding: 1.5rem;
+		}
+		.btn {
+			background-color: var(--ucd-blue);
+			color: white;
+			padding: 0.5rem 1rem;
+			border-radius: 0.25rem;
+			font-weight: 500;
+			transition: background-color 0.2s;
+		}
+		.btn:hover {
+			background-color: #001e3e;
+		}
+		.btn-delete {
+			background-color: #d9534f;
+		}
+		.btn-delete:hover {
+			background-color: #c9302c;
+		}
+		.appointment-row {
+			border-bottom: 1px solid #eee;
+			padding-bottom: 1rem;
+			margin-bottom: 1rem;
+		}
+		#toggle-costs-btn svg {
+			transition: transform 0.3s ease-in-out;
+		}
+		#toggle-costs-btn.is-open svg {
+			transform: rotate(90deg);
+		}
+	</style>
+</head>
+
+<!-- Todo: Work-Study. Proportional tuition/fee split for same-quarter appointments. A "show your work" section. Checking non-res for one quarter checks non-res for all that quarter's selected employment and splits cost proportionally. Reader/Tutor tuition and fees after x hours. -->
+
+<body>
+	<header class="ucd-header shadow-md">
+		<h1 class="ucd-logo-text">Blue Cluster Testing</h1>
+	</header>
+
+	<main class="w-full max-w-6xl mx-auto p-4 md:p-8">
+		<div class="space-y-6">
+			<h2 class="text-3xl font-bold text-center text-[#002855]">2025-26 Student Payroll Calculator</h2>
+			
+			<div class="card">
+				<h3 class="text-xl font-bold text-gray-800 mb-4">Add Appointment</h3>
+				<div class="flex flex-wrap gap-2" id="add-buttons">
+					<button class="btn" data-type="gsr">GSR</button>
+					<button class="btn" data-type="ta">TA</button>
+					<button class="btn" data-type="reader">Reader/Tutor</button>
+					<button class="btn" data-type="student-assistant">Student Assistant</button>
+				</div>
+			</div>
+
+			<div class="card">
+				<h3 class="text-xl font-bold text-gray-800 mb-4">Appointments</h3>
+				<div id="appointments-container">
+					<p class="text-gray-500">No appointments added yet. Click a button above to begin.</p>
+				</div>
+			</div>
+
+			<div class="card bg-[#fafafa]">
+				<h3 class="text-xl font-bold text-gray-800 mb-4">Cost Summary by Quarter</h3>
+				<div class="overflow-x-auto">
+					<table class="min-w-full text-sm text-left">
+						<thead class="bg-gray-200">
+							<tr>
+								<th class="p-2">Quarter</th>
+								<th class="p-2 text-right">Total Salary</th>
+								<th class="p-2 text-right">Total Benefits & Fees</th>
+								<th class="p-2 text-right">Total Cost</th>
+							</tr>
+						</thead>
+						<tbody id="summary-table-body">
+						</tbody>
+						<tfoot class="border-t-2 border-gray-800">
+							<tr class="font-bold">
+								<td class="p-2">Grand Total</td>
+								<td class="p-2 text-right" id="summary-total-salary">$0.00</td>
+								<td class="p-2 text-right" id="summary-total-benefits-fees">$0.00</td>
+								<td class="p-2 text-right text-lg text-[#002855]" id="summary-grand-total">$0.00</td>
+							</tr>
+						</tfoot>
+					</table>
+				</div>
+			</div>
+
+			<div class="card">
+				<button id="toggle-costs-btn" class="w-full text-left font-bold text-lg text-gray-800 flex items-center gap-2">
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+					<span>Base Costs & Rates</span>
+				</button>
+				<div id="base-costs-container" class="hidden mt-4 space-y-4">
+					<!-- Base cost inputs get injected here -->
+				</div>
+			</div>
+		</div>
+	</main>
+
+	<script>
+	document.addEventListener('DOMContentLoaded', function () {
+		// --- basic data store ---
+		const COST_DATA = {
+			BENEFIT_RATES: {
+				cbr: 0.017,
+				gael: 0.0084,
+				addOn: 0.0022,
+				ucrp: 0.0,
+			},
+			// UAW_ADMIN_FEE_RATE: 0.0184, 
+			// turning off the UAW fee since I think it's paid by the student out of their salary. But it's nice to have just in case.
+			GSR_SCALE: { 1: 71895, 2: 77467, 3: 83471, 4: 89941, 5: 96912, 6: 104423 },
+			TA_SCALE: { 1: 70720, 2: 72842, 3: 75027 },
+			TUITION_FEES: {
+				quarterly_tuition: 5196.53,
+				quarterly_ship: 2664.00,
+				quarterly_non_resident: 5034.00,
+			},
+			READER_TUTOR_RATE: 22.14
+		};
+
+		let appointments = [];
+		let appointmentCounter = 0;
+
+		// --- DOM elements ---
+		const addButtonsContainer = document.getElementById('add-buttons');
+		const appointmentsContainer = document.getElementById('appointments-container');
+		const baseCostsContainer = document.getElementById('base-costs-container');
+		const toggleCostsBtn = document.getElementById('toggle-costs-btn');
+		
+		// --- event listeners ---
+		addButtonsContainer.addEventListener('click', e => {
+			if (e.target.classList.contains('btn')) addAppointment(e.target.dataset.type);
+		});
+		appointmentsContainer.addEventListener('click', e => {
+			if (e.target.classList.contains('btn-delete')) {
+				const id = parseInt(e.target.dataset.id, 10);
+				appointments = appointments.filter(appt => appt.id !== id);
+				render();
+			}
+		});
+		appointmentsContainer.addEventListener('input', e => {
+			const target = e.target;
+			const row = target.closest('.appointment-row');
+			if (!row) return;
+			const id = parseInt(row.dataset.id, 10);
+			const appt = appointments.find(a => a.id === id);
+			if (!appt) return;
+
+			const key = target.dataset.calc;
+			if (target.type === 'checkbox') {
+				appt.values[key] = target.checked;
+			} else {
+				appt.values[key] = target.value;
+			}
+			render();
+		});
+		toggleCostsBtn.addEventListener('click', () => {
+			baseCostsContainer.classList.toggle('hidden');
+			toggleCostsBtn.classList.toggle('is-open');
+		});
+		baseCostsContainer.addEventListener('input', e => {
+			const keys = e.target.dataset.key.split('.');
+			let obj = COST_DATA;
+			for(let i = 0; i < keys.length - 1; i++) {
+				obj = obj[keys[i]];
+			}
+			const value = parseFloat(e.target.value);
+			obj[keys[keys.length - 1]] = (e.target.dataset.isPercent ? value / 100 : value) || 0;
+			render();
+		});
+
+
+		// --- functions ---
+		function populateBaseCosts() {
+			baseCostsContainer.innerHTML = `
+				<div>
+					<h4 class="font-bold">GSR Annual Salary Scale (2025-26)</h4>
+					<div class="grid grid-cols-2 md:grid-cols-6 gap-2 mt-1">${Object.entries(COST_DATA.GSR_SCALE).map(([step, val]) => `<div><label class="text-xs">Step ${step}</label><input type="number" class="w-full p-1 border rounded" data-key="GSR_SCALE.${step}" value="${val}"></div>`).join('')}</div>
+				</div>
+				<div>
+					<h4 class="font-bold">TA Annual Salary Scale (2025-26, 9-month)</h4>
+					<div class="grid grid-cols-2 md:grid-cols-3 gap-2 mt-1">${Object.entries(COST_DATA.TA_SCALE).map(([step, val]) => `<div><label class="text-xs">Step ${step}</label><input type="number" class="w-full p-1 border rounded" data-key="TA_SCALE.${step}" value="${val}"></div>`).join('')}</div>
+				</div>
+				<div>
+					<h4 class="font-bold">Reader/Tutor Hourly Rate</h4>
+					<div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-1">
+						<div><label class="text-xs">Rate ($/hr)</label><input type="number" class="w-full p-1 border rounded" data-key="READER_TUTOR_RATE" value="${COST_DATA.READER_TUTOR_RATE}"></div>
+					</div>
+				</div>
+				 <div>
+					<h4 class="font-bold">Student Benefit Rates (%)</h4>
+					<div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-1">
+						<div><label class="text-xs">CBR</label><input type="number" step="0.01" class="w-full p-1 border rounded" data-key="BENEFIT_RATES.cbr" data-is-percent="true" value="${(COST_DATA.BENEFIT_RATES.cbr * 100).toFixed(2)}"></div>
+						<div><label class="text-xs">GAEL</label><input type="number" step="0.01" class="w-full p-1 border rounded" data-key="BENEFIT_RATES.gael" data-is-percent="true" value="${(COST_DATA.BENEFIT_RATES.gael * 100).toFixed(2)}"></div>
+						<div><label class="text-xs">Add-On Benefit</label><input type="number" step="0.01" class="w-full p-1 border rounded" data-key="BENEFIT_RATES.addOn" data-is-percent="true" value="${(COST_DATA.BENEFIT_RATES.addOn * 100).toFixed(2)}"></div>
+						<div><label class="text-xs">UCRP Assessment</label><input type="number" step="0.01" class="w-full p-1 border rounded" data-key="BENEFIT_RATES.ucrp" data-is-percent="true" value="${(COST_DATA.BENEFIT_RATES.ucrp * 100).toFixed(2)}"></div>
+					</div>
+				</div>
+				<div>
+					<h4 class="font-bold">Other Fees & Rates</h4>
+					<div class="grid grid-cols-2 md:grid-cols-3 gap-2 mt-1">
+						<div><label class="text-xs">Quarterly Tuition/Fees</label><input type="number" step="0.01" class="w-full p-1 border rounded" data-key="TUITION_FEES.quarterly_tuition" value="${COST_DATA.TUITION_FEES.quarterly_tuition}"></div>
+						<div><label class="text-xs">Quarterly SHIP</label><input type="number" step="0.01" class="w-full p-1 border rounded" data-key="TUITION_FEES.quarterly_ship" value="${COST_DATA.TUITION_FEES.quarterly_ship}"></div>
+						<div><label class="text-xs">Quarterly Non-Res Fee</label><input type="number" step="0.01" class="w-full p-1 border rounded" data-key="TUITION_FEES.quarterly_non_resident" value="${COST_DATA.TUITION_FEES.quarterly_non_resident}"></div>
+					</div>
+				</div>
+			`;
+		}
+		
+		function addAppointment(type) {
+			appointmentCounter++;
+			const newAppt = {
+				id: appointmentCounter,
+				type: type,
+				values: {
+					quarter: 'Fall',
+					step: '1',
+					percentTime: '50',
+					hours: '100',
+					hourlyRate: COST_DATA.READER_TUTOR_RATE,
+					nonResident: false,
+				}
+			};
+			appointments.push(newAppt);
+			render();
+		}
+
+		function render() {
+			calculateAllCosts();
+			
+			appointmentsContainer.innerHTML = '';
+			if (appointments.length === 0) {
+				appointmentsContainer.innerHTML = '<p class="text-gray-500">No appointments added yet. Click a button above to begin.</p>';
+			} else {
+				appointments.forEach(appt => {
+					const div = document.createElement('div');
+					div.className = 'appointment-row';
+					div.id = `appointment-${appt.id}`;
+					div.dataset.id = appt.id;
+					div.dataset.type = appt.type;
+
+					let inputsHtml = '';
+					const quarterOptions = ['Fall', 'Winter', 'Spring'].map(q => `<option ${q === appt.values.quarter ? 'selected' : ''}>${q}</option>`).join('');
+					let gridClass = 'grid-cols-2 md:grid-cols-4';
+					
+					switch (appt.type) {
+						case 'gsr':
+							inputsHtml = `<div class="grid ${gridClass} gap-4 mt-2">
+									<div><label class="block text-xs">Quarter</label><select data-calc="quarter" class="w-full p-1 border rounded">${quarterOptions}</select></div>
+									<div><label class="block text-xs">Step</label><select data-calc="step" class="w-full p-1 border rounded">${Object.keys(COST_DATA.GSR_SCALE).map(step => `<option value="${step}" ${step === appt.values.step ? 'selected' : ''}>${step}</option>`).join('')}</select></div>
+									<div><label class="block text-xs">% Time</label><input type="number" data-calc="percentTime" class="w-full p-1 border rounded" value="${appt.values.percentTime}"></div>
+									<div class="text-center"><label class="block text-xs">Non-Res?</label><input type="checkbox" data-calc="nonResident" class="h-6 w-6 mt-1" ${appt.values.nonResident ? 'checked' : ''}></div>
+								</div>`;
+							break;
+						case 'ta':
+							 inputsHtml = `<div class="grid ${gridClass} gap-4 mt-2">
+									<div><label class="block text-xs">Quarter</label><select data-calc="quarter" class="w-full p-1 border rounded">${quarterOptions}</select></div>
+									<div><label class="block text-xs">Step</label><select data-calc="step" class="w-full p-1 border rounded">${Object.keys(COST_DATA.TA_SCALE).map(step => `<option value="${step}" ${step === appt.values.step ? 'selected' : ''}>${step}</option>`).join('')}</select></div>
+									<div><label class="block text-xs">% Time</label><select data-calc="percentTime" class="w-full p-1 border rounded"><option value="25" ${appt.values.percentTime === '25' ? 'selected' : ''}>25%</option><option value="50" ${appt.values.percentTime === '50' ? 'selected' : ''}>50%</option></select></div>
+									<div class="text-center"><label class="block text-xs">Non-Res?</label><input type="checkbox" data-calc="nonResident" class="h-6 w-6 mt-1" ${appt.values.nonResident ? 'checked' : ''}></div>
+								</div>`;
+							break;
+						case 'reader':
+						case 'student-assistant':
+							inputsHtml = `<div class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
+									<div><label class="block text-xs">Quarter</label><select data-calc="quarter" class="w-full p-1 border rounded">${quarterOptions}</select></div>
+									<div><label class="block text-xs">Total Hours</label><input type="number" data-calc="hours" class="w-full p-1 border rounded" value="${appt.values.hours}"></div>
+									<div><label class="block text-xs">Hourly Rate</label><input type="number" data-calc="hourlyRate" class="w-full p-1 border rounded" value="${appt.values.hourlyRate}"></div>
+								</div>`;
+							break;
+					}
+					
+					const typeName = appt.type === 'student-assistant' ? 'Student Assistant' : appt.type.toUpperCase();
+					div.innerHTML = `
+						<div class="flex justify-between items-start">
+							<div><h4 class="font-bold text-lg">${typeName}</h4>${inputsHtml}</div>
+							<button class="btn btn-delete mt-2" data-id="${appt.id}">X</button>
+						</div>
+						<div class="grid grid-cols-2 md:grid-cols-6 gap-4 mt-4 bg-gray-50 p-2 text-center rounded">
+							<div><p class="text-xs">Salary</p><p class="font-bold" data-output="salary">${formatCurrency(appt.costs.salary)}</p></div>
+							<div><p class="text-xs">Benefits</p><p class="font-bold" data-output="benefits">${formatCurrency(appt.costs.benefits)}</p></div>
+							<div><p class="text-xs">Tuition/Fees</p><p class="font-bold" data-output="tuition">${formatCurrency(appt.costs.tuition)}</p></div>
+							<div><p class="text-xs">Health Ins.</p><p class="font-bold" data-output="health_ins">${formatCurrency(appt.costs.health_ins)}</p></div>
+							<div><p class="text-xs">Total Cost</p><p class="font-bold text-lg text-[#002855]" data-output="total">${formatCurrency(appt.costs.total)}</p></div>
+						</div>`;
+					appointmentsContainer.appendChild(div);
+				});
+			}
+			updateSummaryTable();
+		}
+
+		function calculateAllCosts() {
+			const totalBenefitRate = Object.values(COST_DATA.BENEFIT_RATES).reduce((a, b) => a + b, 0);
+
+			appointments.forEach(appt => {
+				let salary = 0, benefits = 0, tuition = 0, health_ins = 0, total = 0;
+				let isEligible = false;
+
+				if (appt.type === 'gsr') {
+					const step = appt.values.step;
+					const percentTime = parseFloat(appt.values.percentTime) || 0;
+					const annualRate = COST_DATA.GSR_SCALE[step] || 0;
+					salary = (annualRate / 12) * 3 * (percentTime / 100); // Always use 3 months for cost basis
+					if (percentTime >= 25) isEligible = true;
+				} else if (appt.type === 'ta') {
+					const step = appt.values.step;
+					const percentTime = parseInt(appt.values.percentTime) || 0;
+					const annualRate = COST_DATA.TA_SCALE[step] || 0;
+					salary = (annualRate / 3) * (percentTime / 100);
+					if (percentTime >= 25) isEligible = true;
+				} else {
+					const hours = parseFloat(appt.values.hours) || 0;
+					const hourlyRate = parseFloat(appt.values.hourlyRate) || 0;
+					salary = hours * hourlyRate;
+				}
+
+				benefits = salary * totalBenefitRate;
+
+				if(isEligible) {
+					tuition = COST_DATA.TUITION_FEES.quarterly_tuition + (appt.values.nonResident ? COST_DATA.TUITION_FEES.quarterly_non_resident : 0);
+					health_ins = COST_DATA.TUITION_FEES.quarterly_ship;
+				}
+
+				total = salary + benefits + tuition + health_ins;
+				
+				appt.costs = { salary, benefits, tuition, health_ins, total };
+			});
+		}
+
+		function updateSummaryTable() {
+			const summary = { Fall: { salary: 0, benefitsAndFees: 0, total: 0 }, Winter: { salary: 0, benefitsAndFees: 0, total: 0 }, Spring: { salary: 0, benefitsAndFees: 0, total: 0 }};
+			
+			appointments.forEach(appt => {
+				const quarter = appt.values.quarter;
+				if (summary[quarter]) {
+					summary[quarter].salary += appt.costs.salary;
+					summary[quarter].benefitsAndFees += (appt.costs.benefits + appt.costs.tuition + appt.costs.health_ins);
+					summary[quarter].total += appt.costs.total;
+				}
+			});
+
+			const tableBody = document.getElementById('summary-table-body');
+			tableBody.innerHTML = '';
+			let grandTotal = { salary: 0, benefitsAndFees: 0, total: 0 };
+			['Fall', 'Winter', 'Spring'].forEach(q => {
+				const quarterData = summary[q];
+				grandTotal.salary += quarterData.salary;
+				grandTotal.benefitsAndFees += quarterData.benefitsAndFees;
+				grandTotal.total += quarterData.total;
+				tableBody.innerHTML += `<tr><td class="p-2">${q}</td><td class="p-2 text-right">${formatCurrency(quarterData.salary)}</td><td class="p-2 text-right">${formatCurrency(quarterData.benefitsAndFees)}</td><td class="p-2 text-right">${formatCurrency(quarterData.total)}</td></tr>`;
+			});
+			document.getElementById('summary-total-salary').textContent = formatCurrency(grandTotal.salary);
+			document.getElementById('summary-total-benefits-fees').textContent = formatCurrency(grandTotal.benefitsAndFees);
+			document.getElementById('summary-grand-total').textContent = formatCurrency(grandTotal.total);
+		}
+
+		function formatCurrency(value) {
+			return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+		}
+		
+		populateBaseCosts();
+		updateSummaryTable();
+	});
+	</script>
+</body>
+</html>

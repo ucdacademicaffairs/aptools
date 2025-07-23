@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Sabbatical Leave Calculator</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+	<style>
+		:root {
+			--ucd-blue: #002855;
+			--ucd-gold: #FFBF00;
+			--ucd-light-gray: #f2f2f2;
+		}
+		body {
+			font-family: 'Public Sans', sans-serif; // sorry, Proxima Nova.
+			background-color: var(--ucd-light-gray);
+		}
+		.card {
+			background-color: white;
+			border-radius: 0;
+			border: 1px solid #ddd;
+			padding: 1.5rem;
+		}
+		.summary-card {
+			background-color: #fafafa;
+		}
+		input[type=range]::-webkit-slider-thumb {
+			-webkit-appearance: none; appearance: none;
+			width: 20px; height: 20px;
+			background: var(--ucd-blue);
+			cursor: pointer; border-radius: 50%;
+		}
+		input[type=range]::-moz-range-thumb {
+			width: 20px; height: 20px;
+			background: var(--ucd-blue);
+			cursor: pointer; border-radius: 50%;
+		}
+		.toggle-label {
+			transition: background-color .2s ease-in-out;
+		}
+		.toggle-checkbox {
+			transition: left .2s ease-in-out;
+			left: 0.25rem;
+			top: 50%;
+			transform: translateY(-50%);
+		}
+		.toggle-checkbox:checked {
+			left: 1.25rem;
+		}
+		.toggle-checkbox:checked + .toggle-label {
+			background-color: var(--ucd-blue);
+		}
+	</style>
+</head>
+<body>
+	<main class="w-full max-w-5xl mx-auto p-4 md:p-8">
+		<div class="space-y-6">
+			<div class="card">
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<div>
+						<label for="totalCredits" class="block text-sm font-medium text-gray-700">Total Available Sabbatical Credits</label>
+						<input type="number" id="totalCredits" value="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#002855] focus:ring-[#002855] sm:text-sm p-2">
+					</div>
+					<div>
+						<label for="annualSalary" class="block text-sm font-medium text-gray-700">Annual Salary</label>
+						<input type="number" id="annualSalary" value="123456" step="100" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#002855] focus:ring-[#002855] sm:text-sm p-2">
+						<p class="text-sm text-gray-500 mt-1" id="quarterlySalaryDisplay">($46,800 per quarter)</p>
+					</div>
+				</div>
+				<p class="text-xs text-gray-600 mt-4">
+					Please check with your department analyst to confirm your salary and sabbatical credit total.
+				</p>
+			</div>
+
+			<div class="grid grid-cols-1 lg:grid-cols-3 gap-6" id="quartersContainer"></div>
+
+			<div class="card summary-card">
+				<h2 class="text-xl font-bold text-gray-800 mb-4">Yearly Summary</h2>
+				<div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+					<div>
+						<p class="text-sm text-gray-600">Total Credits Used</p>
+						<p class="text-2xl font-bold text-[#002855]" id="summaryCreditsUsed">0</p>
+					</div>
+					<div>
+						<p class="text-sm text-gray-600">Remaining Credits</p>
+						<p class="text-2xl font-bold text-gray-800" id="summaryCreditsRemaining">30</p>
+					</div>
+					<div>
+						<p class="text-sm text-gray-600">Total Sabbatical Pay</p>
+						<p class="text-2xl font-bold text-gray-800" id="summarySabbaticalPay">$0</p>
+					</div>
+					<div>
+						<p class="text-sm text-gray-600">Total Annual Income</p>
+						<p class="text-2xl font-bold text-gray-800" id="summaryTotalIncome">$140,400</p>
+					</div>
+				</div>
+				<div id="summaryWarning" class="mt-4 p-3 bg-[#FFBF00]/20 border border-[#FFBF00] text-[#002855] rounded-md text-center font-medium hidden">
+					Warning: You have used more credits than you have available.
+				</div>
+			</div>
+		</div>
+	</main>
+
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			let ANNUAL_SALARY = 123456;
+			let QUARTERLY_SALARY = ANNUAL_SALARY / 3;
+			const FULL_SABBATICAL_CREDIT_COST = 9;
+			const QUARTERS = ['Fall', 'Winter', 'Spring']; // semester system when?
+
+			const totalCreditsInput = document.getElementById('totalCredits');
+			const annualSalaryInput = document.getElementById('annualSalary');
+			const quarterlySalaryDisplay = document.getElementById('quarterlySalaryDisplay');
+			const quartersContainer = document.getElementById('quartersContainer');
+			const summaryCreditsUsed = document.getElementById('summaryCreditsUsed');
+			const summaryCreditsRemaining = document.getElementById('summaryCreditsRemaining');
+			const summarySabbaticalPay = document.getElementById('summarySabbaticalPay');
+			const summaryTotalIncome = document.getElementById('summaryTotalIncome');
+			const summaryWarning = document.getElementById('summaryWarning');
+
+			function createQuarterCards() {
+				quartersContainer.innerHTML = '';
+				QUARTERS.forEach(quarterName => {
+					const quarterId = quarterName.toLowerCase();
+					const card = document.createElement('div');
+					card.className = 'card space-y-4';
+					card.innerHTML = `
+						<h3 class="text-lg font-bold text-gray-800">${quarterName} Quarter</h3>
+						<div class="flex items-center justify-between">
+							<span class="text-sm font-medium text-gray-700">On Sabbatical</span>
+							<div class="relative inline-block w-10 h-6 mr-2 align-middle select-none">
+								<input type="checkbox" name="${quarterId}Toggle" id="${quarterId}Toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-2 appearance-none cursor-pointer"/>
+								<label for="${quarterId}Toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+							</div>
+						</div>
+						<div id="${quarterId}SabbaticalControls" class="hidden space-y-4 pt-2">
+							<div>
+								<div class="flex justify-between items-center">
+									<label for="${quarterId}CreditSlider" class="text-sm font-medium text-gray-700">Salary Level</label>
+									<span id="${quarterId}PercentLabel" class="text-sm font-bold text-[#002855]">100% Pay</span>
+								</div>
+								<input type="range" id="${quarterId}CreditSlider" min="0" max="${FULL_SABBATICAL_CREDIT_COST}" value="${FULL_SABBATICAL_CREDIT_COST}" step="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mt-2">
+							</div>
+							<div class="flex items-center">
+								<input type="checkbox" id="${quarterId}InResidence" name="${quarterId}InResidence" class="h-4 w-4 rounded border-gray-300 text-[#002855] focus:ring-[#002855]">
+								<label for="${quarterId}InResidence" class="ml-2 block text-sm text-gray-900">In Residence?</label>
+							</div>
+						</div>
+						<div class="border-t border-gray-200 pt-4 space-y-2">
+							<div class="flex justify-between text-sm">
+								<span class="text-gray-600">Status:</span>
+								<span class="font-medium text-gray-900 text-right" id="${quarterId}Status">Working</span>
+							</div>
+							<div class="flex justify-between text-sm">
+								<span class="text-gray-600">Credits Used:</span>
+								<span class="font-medium text-gray-900" id="${quarterId}Credits">0</span>
+							</div>
+							<div class="flex justify-between text-sm">
+								<span class="text-gray-600">Salary for Quarter:</span>
+								<span class="font-medium text-gray-900" id="${quarterId}Salary">$${QUARTERLY_SALARY.toLocaleString()}</span>
+							</div>
+						</div>
+					`;
+					quartersContainer.appendChild(card);
+				});
+			}
+
+			function addEventListeners() {
+				totalCreditsInput.addEventListener('input', updateCalculations);
+				annualSalaryInput.addEventListener('input', updateCalculations);
+				QUARTERS.forEach(quarterName => {
+					const quarterId = quarterName.toLowerCase();
+					document.getElementById(`${quarterId}Toggle`).addEventListener('change', handleToggleChange);
+					document.getElementById(`${quarterId}CreditSlider`).addEventListener('input', updateCalculations);
+					document.getElementById(`${quarterId}InResidence`).addEventListener('change', updateCalculations);
+				});
+			}
+			
+			function handleToggleChange(event) {
+				const quarterId = event.target.name.replace('Toggle', '');
+				document.getElementById(`${quarterId}SabbaticalControls`).classList.toggle('hidden');
+				updateCalculations();
+			}
+
+			function updateCalculations() {
+				ANNUAL_SALARY = parseFloat(annualSalaryInput.value) || 0;
+				QUARTERLY_SALARY = ANNUAL_SALARY / 3;
+				quarterlySalaryDisplay.textContent = `($${QUARTERLY_SALARY.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} per quarter)`;
+
+				let totalCreditsUsed = 0;
+				let totalSabbaticalPay = 0;
+				let totalAnnualIncome = 0;
+
+				QUARTERS.forEach(quarterName => {
+					const quarterId = quarterName.toLowerCase();
+					const isOnSabbatical = document.getElementById(`${quarterId}Toggle`).checked;
+					
+					const statusEl = document.getElementById(`${quarterId}Status`);
+					const creditsEl = document.getElementById(`${quarterId}Credits`);
+					const salaryEl = document.getElementById(`${quarterId}Salary`);
+
+					let creditsUsed = 0;
+					let quarterSalary = 0;
+					
+					if (isOnSabbatical) {
+						const creditSlider = document.getElementById(`${quarterId}CreditSlider`);
+						const isInResidence = document.getElementById(`${quarterId}InResidence`).checked;
+						
+						const baseCredits = parseInt(creditSlider.value, 10);
+						const sabbaticalPayPercent = (baseCredits / FULL_SABBATICAL_CREDIT_COST) * 100;
+						quarterSalary = QUARTERLY_SALARY * (sabbaticalPayPercent / 100);
+						
+						creditsUsed = isInResidence ? baseCredits * (2/3) : baseCredits;
+						
+						document.getElementById(`${quarterId}PercentLabel`).textContent = `${sabbaticalPayPercent.toFixed(0)}% Pay`;
+						
+						totalSabbaticalPay += quarterSalary;
+						statusEl.textContent = `On Sabbatical ${isInResidence ? '(In Residence)' : ''}`;
+						statusEl.classList.add('text-[#002855]');
+					} else {
+						quarterSalary = QUARTERLY_SALARY;
+						statusEl.textContent = 'Working';
+						statusEl.classList.remove('text-[#002855]');
+					}
+
+					totalCreditsUsed += creditsUsed;
+					totalAnnualIncome += quarterSalary;
+
+					creditsEl.textContent = creditsUsed.toFixed(2).replace(/\.00$/, '').replace(/.67/, '.67');
+					salaryEl.textContent = `$${quarterSalary.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+				});
+
+				const totalAvailableCredits = parseFloat(totalCreditsInput.value) || 0;
+				const remainingCredits = totalAvailableCredits - totalCreditsUsed;
+
+				summaryCreditsUsed.textContent = totalCreditsUsed.toFixed(2).replace(/\.00$/, '').replace(/.67/, '.67');
+				summaryCreditsRemaining.textContent = remainingCredits.toFixed(2).replace(/\.00$/, '').replace(/.67/, '.67');
+				summarySabbaticalPay.textContent = `$${totalSabbaticalPay.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+				summaryTotalIncome.textContent = `$${totalAnnualIncome.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+				
+				const remainingCreditsEl = document.getElementById('summaryCreditsRemaining');
+				if (remainingCredits < 0) {
+					summaryWarning.classList.remove('hidden');
+					remainingCreditsEl.classList.add('text-[#FFBF00]');
+				} else {
+					summaryWarning.classList.add('hidden');
+					remainingCreditsEl.classList.remove('text-[#FFBF00]');
+				}
+			}
+
+			function initialize() {
+				createQuarterCards();
+				addEventListeners();
+				updateCalculations();
+			}
+			
+			initialize();
+		});
+	</script>
+</body>
+</html>

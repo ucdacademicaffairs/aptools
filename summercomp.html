@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Summer Compensation Calculator</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+	<style>
+		:root {
+			--ucd-blue: #002855;
+			--ucd-gold: #FFBF00;
+			--ucd-light-gray: #f2f2f2;
+		}
+		body {
+			font-family: 'Public Sans', sans-serif;
+			background-color: var(--ucd-light-gray);
+		}
+		.card {
+			background-color: white;
+			border-radius: 0;
+			border: 1px solid #ddd;
+		}
+		.summary-card {
+			background-color: #fafafa;
+			padding: 1.5rem;
+		}
+		input[type=range]::-webkit-slider-thumb {
+			-webkit-appearance: none; appearance: none;
+			width: 20px; height: 20px;
+			background: var(--ucd-blue);
+			cursor: pointer; border-radius: 50%;
+		}
+		input[type=range]::-moz-range-thumb {
+			width: 20px; height: 20px;
+			background: var(--ucd-blue);
+			cursor: pointer; border-radius: 50%;
+		}
+		.toggle-label {
+			transition: background-color .2s ease-in-out;
+		}
+		.toggle-checkbox {
+			transition: left .2s ease-in-out;
+			left: 0.25rem;
+			top: 50%;
+			transform: translateY(-50%);
+		}
+		.toggle-checkbox:checked {
+			left: 1.25rem;
+		}
+		.toggle-checkbox:checked + .toggle-label {
+			background-color: var(--ucd-blue);
+		}
+	</style>
+</head>
+<body>
+	<div class="space-y-6 py-4 md:py-8">
+		<section class="w-full max-w-5xl mx-auto px-4 md:px-0">
+			<div class="card p-6">
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<div>
+						<label for="annualSalary" class="block text-sm font-medium text-gray-700">Enter your Annual Salary:</label>
+						<input type="number" id="annualSalary" value="123456" step="100" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#002855] focus:ring-[#002855] sm:text-sm p-2">
+					</div>
+					<div class="text-left md:text-right">
+						<label class="block text-sm font-medium text-gray-700">Max Summer Comp (3/9ths)</label>
+						<p class="text-2xl font-bold text-gray-800" id="threeNinthsLimit">$41,152.00</p>
+						<p class="text-sm text-gray-500 mt-1" id="oneNinthRate">1/9th = $13,717.33</p>
+					</div>
+				</div>
+				<p class="text-xs text-gray-600 mt-4">
+					This limit includes Summer Sessions teaching, Summer Abroad, and research compensation.
+				</p>
+			</div>
+		</section>
+
+		<section class="w-full max-w-7xl mx-auto px-4 md:px-0">
+			<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 items-start" id="monthsContainer"></div>
+		</section>
+
+		<section class="w-full max-w-5xl mx-auto px-4 md:px-0">
+			<div class="card summary-card">
+				<h2 class="text-xl font-bold text-gray-800 mb-4">Summer Summary</h2>
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-center">
+					<div>
+						<p class="text-sm text-gray-600">Total Summer Compensation</p>
+						<p class="text-2xl font-bold text-[#002855]" id="summaryTotalComp">$0.00</p>
+					</div>
+					<div>
+						<p class="text-sm text-gray-600">Remaining Available</p>
+						<p class="text-2xl font-bold text-gray-800" id="summaryRemaining">$41,152.00</p>
+					</div>
+				</div>
+				<div id="summaryWarning" class="mt-4 p-3 bg-[#FFBF00]/20 border border-[#FFBF00] text-[#002855] rounded-md text-center font-medium hidden">
+					Warning: Total compensation exceeds the 3/9ths limit.
+				</div>
+			</div>
+		</section>
+	</div>
+
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			const MONTHS = [
+				{ name: 'June', id: 'june', multiplier: 0.5, payMultiplier: 0.9546, label: 'Half Month', color: '#a4d9e8' },
+				{ name: 'July', id: 'july', multiplier: 1.0, payMultiplier: 1.0, label: 'Full Month', color: '#9acbb5' },
+				{ name: 'August', id: 'august', multiplier: 1.0, payMultiplier: 1.0, label: 'Full Month', color: '#ffecc4' },
+				{ name: 'September', id: 'september', multiplier: 0.5, payMultiplier: 1.0, label: 'Half Month', color: '#ffb2b6' }
+			];
+
+			const annualSalaryInput = document.getElementById('annualSalary');
+			const threeNinthsLimitDisplay = document.getElementById('threeNinthsLimit');
+			const oneNinthRateDisplay = document.getElementById('oneNinthRate');
+			const monthsContainer = document.getElementById('monthsContainer');
+			const summaryTotalComp = document.getElementById('summaryTotalComp');
+			const summaryRemaining = document.getElementById('summaryRemaining');
+			const summaryWarning = document.getElementById('summaryWarning');
+			
+			let oneNinthRate = 0;
+
+			function createMonthCards() {
+				monthsContainer.innerHTML = '';
+				MONTHS.forEach(month => {
+					const card = document.createElement('div');
+					card.className = 'card overflow-hidden p-0';
+					
+					let juneNote = '';
+					if (month.id === 'june') {
+						juneNote = `<p class="text-xs text-gray-600 mt-2">Note: A 95.46% FTE is used to issue a full half-month of compensation for June.</p>`; // why do we do this to ourselves.
+					}
+
+					card.innerHTML = `
+						<div class="p-4 flex justify-between items-center" style="background-color: ${month.color};">
+							<h3 class="text-lg font-bold text-gray-800">${month.name} <span class="font-normal">(${month.label})</span></h3>
+							<div class="relative inline-block w-10 h-6 mr-2 align-middle select-none">
+								<input type="checkbox" name="${month.id}Toggle" id="${month.id}Toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-2 appearance-none cursor-pointer"/>
+								<label for="${month.id}Toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+							</div>
+						</div>
+						<div id="${month.id}Controls" class="hidden p-4 space-y-4">
+							<div>
+								<div class="flex justify-between items-center">
+									<label for="${month.id}Slider" class="text-sm font-medium text-gray-700">Compensation Level</label>
+									<span id="${month.id}PercentLabel" class="text-sm font-bold text-[#002855]">95.46%</span>
+								</div>
+								<input type="range" id="${month.id}Slider" min="0" max="100" value="100" step="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mt-1">
+							</div>
+							<div>
+								<label for="${month.id}Input" class="text-sm font-medium text-gray-700">Compensation Amount ($)</label>
+								<input type="number" id="${month.id}Input" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#002855] focus:ring-[#002855] sm:text-sm p-2">
+							</div>
+							${juneNote}
+						</div>
+					`;
+					monthsContainer.appendChild(card);
+				});
+			}
+
+			function addEventListeners() {
+				annualSalaryInput.addEventListener('input', updateCalculations);
+				MONTHS.forEach(month => {
+					document.getElementById(`${month.id}Toggle`).addEventListener('change', handleToggle);
+					document.getElementById(`${month.id}Slider`).addEventListener('input', handleSlider);
+					document.getElementById(`${month.id}Input`).addEventListener('input', handleInput);
+				});
+			}
+
+			function handleToggle(e) {
+				const monthId = e.target.id.replace('Toggle', '');
+				const controls = document.getElementById(`${monthId}Controls`);
+				if (e.target.checked) {
+					controls.classList.remove('hidden');
+					handleSlider({ target: document.getElementById(`${monthId}Slider`) });
+				} else {
+					controls.classList.add('hidden');
+				}
+				updateSummary();
+			}
+
+			function handleSlider(e) {
+				const monthId = e.target.id.replace('Slider', '');
+				const monthConfig = MONTHS.find(m => m.id === monthId);
+				
+				const sliderPercentage = parseFloat(e.target.value);
+				const ftePercentage = sliderPercentage * monthConfig.payMultiplier;
+				const amount = (ftePercentage / 100) * (oneNinthRate * monthConfig.multiplier);
+
+				document.getElementById(`${monthId}Input`).value = amount.toFixed(2);
+				document.getElementById(`${monthId}PercentLabel`).textContent = `${ftePercentage.toFixed(2)}%`;
+				updateSummary();
+			}
+
+			function handleInput(e) {
+				const monthId = e.target.id.replace('Input', '');
+				const monthConfig = MONTHS.find(m => m.id === monthId);
+				
+				const amount = parseFloat(e.target.value) || 0;
+				const monthBasePay = oneNinthRate * monthConfig.multiplier;
+				
+				let ftePercentage = 0;
+				if (monthBasePay > 0) {
+					ftePercentage = (amount / monthBasePay) * 100;
+				}
+				
+				let sliderPercentage = ftePercentage / monthConfig.payMultiplier;
+
+				document.getElementById(`${monthId}Slider`).value = Math.min(Math.max(sliderPercentage, 0), 100);
+				document.getElementById(`${monthId}PercentLabel`).textContent = `${ftePercentage.toFixed(2)}%`;
+				updateSummary();
+			}
+			
+			function updateSummary() {
+				let totalSummerComp = 0;
+				const threeNinthsLimit = (parseFloat(annualSalaryInput.value) || 0) / 9 * 3;
+
+				MONTHS.forEach(month => {
+					if (document.getElementById(`${month.id}Toggle`).checked) {
+						const amount = parseFloat(document.getElementById(`${month.id}Input`).value) || 0;
+						totalSummerComp += amount;
+					}
+				});
+
+				const remaining = threeNinthsLimit - totalSummerComp;
+
+				summaryTotalComp.textContent = `$${totalSummerComp.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+				summaryRemaining.textContent = `$${remaining.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+				const remainingEl = document.getElementById('summaryRemaining');
+				if (remaining < 0) {
+					summaryWarning.classList.remove('hidden');
+					remainingEl.classList.add('text-[#FFBF00]');
+				} else {
+					summaryWarning.classList.add('hidden');
+					remainingEl.classList.remove('text-[#FFBF00]');
+				}
+			}
+
+			function updateCalculations() {
+				const annualSalary = parseFloat(annualSalaryInput.value) || 0;
+				oneNinthRate = annualSalary / 9;
+				const threeNinthsLimit = oneNinthRate * 3;
+
+				threeNinthsLimitDisplay.textContent = `$${threeNinthsLimit.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+				oneNinthRateDisplay.textContent = `1/9th = $${oneNinthRate.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+				MONTHS.forEach(month => {
+					if (document.getElementById(`${month.id}Toggle`).checked) {
+						handleSlider({ target: document.getElementById(`${month.id}Slider`) });
+					}
+				});
+				
+				updateSummary();
+			}
+
+			createMonthCards();
+			addEventListeners();
+			updateCalculations();
+		});
+	</script>
+</body>
+</html>
