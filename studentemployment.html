@@ -15,7 +15,7 @@
 			--ucd-light-gray: #f2f2f2;
 		}
 		body {
-			font-family: 'Public Sans', sans-serif; //  I'm going with "Knockoffxima Nova"
+			font-family: 'Public Sans', sans-serif; // "Approxima Nova"
 			background-color: var(--ucd-light-gray);
 		}
 		.ucd-header {
@@ -64,10 +64,12 @@
 		#toggle-costs-btn.is-open svg {
 			transform: rotate(90deg);
 		}
+		input[readonly] {
+			background-color: #f0f0f0;
+			cursor: not-allowed;
+		}
 	</style>
 </head>
-
-<!-- Todo: Work-Study. Proportional tuition/fee split for same-quarter appointments. A "show your work" section. Checking non-res for one quarter checks non-res for all that quarter's selected employment and splits cost proportionally. Reader/Tutor tuition and fees after x hours. -->
 
 <body>
 	<header class="ucd-header shadow-md">
@@ -114,7 +116,7 @@
 								<td class="p-2">Grand Total</td>
 								<td class="p-2 text-right" id="summary-total-salary">$0.00</td>
 								<td class="p-2 text-right" id="summary-total-benefits-fees">$0.00</td>
-								<td class="p-2 text-right text-lg text-[#002855]" id="summary-grand-total">$0.00</td>
+								<td class="p-2 text-right" id="summary-grand-total">$0.00</td>
 							</tr>
 						</tfoot>
 					</table>
@@ -135,7 +137,7 @@
 
 	<script>
 	document.addEventListener('DOMContentLoaded', function () {
-		// --- basic data store ---
+		// basic data store
 		const COST_DATA = {
 			BENEFIT_RATES: {
 				cbr: 0.017,
@@ -143,8 +145,6 @@
 				addOn: 0.0022,
 				ucrp: 0.0,
 			},
-			// UAW_ADMIN_FEE_RATE: 0.0184, 
-			// turning off the UAW fee since I think it's paid by the student out of their salary. But it's nice to have just in case.
 			GSR_SCALE: { 1: 71895, 2: 77467, 3: 83471, 4: 89941, 5: 96912, 6: 104423 },
 			TA_SCALE: { 1: 70720, 2: 72842, 3: 75027 },
 			TUITION_FEES: {
@@ -158,23 +158,25 @@
 		let appointments = [];
 		let appointmentCounter = 0;
 
-		// --- DOM elements ---
+		// DOM elements
 		const addButtonsContainer = document.getElementById('add-buttons');
 		const appointmentsContainer = document.getElementById('appointments-container');
 		const baseCostsContainer = document.getElementById('base-costs-container');
 		const toggleCostsBtn = document.getElementById('toggle-costs-btn');
 		
-		// --- event listeners ---
+		// event listeners
 		addButtonsContainer.addEventListener('click', e => {
 			if (e.target.classList.contains('btn')) addAppointment(e.target.dataset.type);
 		});
+
 		appointmentsContainer.addEventListener('click', e => {
 			if (e.target.classList.contains('btn-delete')) {
 				const id = parseInt(e.target.dataset.id, 10);
 				appointments = appointments.filter(appt => appt.id !== id);
-				render();
+				fullRender();
 			}
 		});
+
 		appointmentsContainer.addEventListener('input', e => {
 			const target = e.target;
 			const row = target.closest('.appointment-row');
@@ -189,12 +191,20 @@
 			} else {
 				appt.values[key] = target.value;
 			}
-			render();
+			
+			if (key === 'percentTime') {
+				appt.values.hours = (parseFloat(appt.values.percentTime) || 0) * 4.4;
+			}
+
+			calculateAllCosts();
+			updateDOMValues();
 		});
+
 		toggleCostsBtn.addEventListener('click', () => {
 			baseCostsContainer.classList.toggle('hidden');
 			toggleCostsBtn.classList.toggle('is-open');
 		});
+
 		baseCostsContainer.addEventListener('input', e => {
 			const keys = e.target.dataset.key.split('.');
 			let obj = COST_DATA;
@@ -203,11 +213,11 @@
 			}
 			const value = parseFloat(e.target.value);
 			obj[keys[keys.length - 1]] = (e.target.dataset.isPercent ? value / 100 : value) || 0;
-			render();
+			fullRender();
 		});
 
 
-		// --- functions ---
+		// functions
 		function populateBaseCosts() {
 			baseCostsContainer.innerHTML = `
 				<div>
@@ -252,17 +262,21 @@
 				values: {
 					quarter: 'Fall',
 					step: '1',
-					percentTime: '50',
-					hours: '100',
-					hourlyRate: COST_DATA.READER_TUTOR_RATE,
+					percentTime: '25',
+					hours: type === 'student-assistant' ? '100' : 110, // 25% * 4.4
+					hourlyRate: (type === 'student-assistant') ? COST_DATA.READER_TUTOR_RATE : 0,
 					nonResident: false,
-				}
+				},
+				costs: {} // Initialize costs object
 			};
+			if (type === 'student-assistant') {
+				delete newAppt.values.nonResident;
+			}
 			appointments.push(newAppt);
-			render();
+			fullRender();
 		}
 
-		function render() {
+		function fullRender() {
 			calculateAllCosts();
 			
 			appointmentsContainer.innerHTML = '';
@@ -278,47 +292,63 @@
 
 					let inputsHtml = '';
 					const quarterOptions = ['Fall', 'Winter', 'Spring'].map(q => `<option ${q === appt.values.quarter ? 'selected' : ''}>${q}</option>`).join('');
-					let gridClass = 'grid-cols-2 md:grid-cols-4';
-					
+					const displayHours = (parseFloat(appt.values.percentTime) || 0) * 4.4;
+					const percentTimeDropdown = `
+						<div>
+							<label class="block text-xs">% Time</label>
+							<select id="input-${appt.id}-percentTime" data-calc="percentTime" class="w-full p-1 border rounded">
+								${Array.from({length: 100}, (_, i) => i + 1).map(num => `<option value="${num}" ${num == appt.values.percentTime ? 'selected' : ''}>${num}%</option>`).join('')}
+							</select>
+						</div>`;
+
 					switch (appt.type) {
 						case 'gsr':
-							inputsHtml = `<div class="grid ${gridClass} gap-4 mt-2">
-									<div><label class="block text-xs">Quarter</label><select data-calc="quarter" class="w-full p-1 border rounded">${quarterOptions}</select></div>
-									<div><label class="block text-xs">Step</label><select data-calc="step" class="w-full p-1 border rounded">${Object.keys(COST_DATA.GSR_SCALE).map(step => `<option value="${step}" ${step === appt.values.step ? 'selected' : ''}>${step}</option>`).join('')}</select></div>
-									<div><label class="block text-xs">% Time</label><input type="number" data-calc="percentTime" class="w-full p-1 border rounded" value="${appt.values.percentTime}"></div>
-									<div class="text-center"><label class="block text-xs">Non-Res?</label><input type="checkbox" data-calc="nonResident" class="h-6 w-6 mt-1" ${appt.values.nonResident ? 'checked' : ''}></div>
-								</div>`;
-							break;
 						case 'ta':
-							 inputsHtml = `<div class="grid ${gridClass} gap-4 mt-2">
-									<div><label class="block text-xs">Quarter</label><select data-calc="quarter" class="w-full p-1 border rounded">${quarterOptions}</select></div>
-									<div><label class="block text-xs">Step</label><select data-calc="step" class="w-full p-1 border rounded">${Object.keys(COST_DATA.TA_SCALE).map(step => `<option value="${step}" ${step === appt.values.step ? 'selected' : ''}>${step}</option>`).join('')}</select></div>
-									<div><label class="block text-xs">% Time</label><select data-calc="percentTime" class="w-full p-1 border rounded"><option value="25" ${appt.values.percentTime === '25' ? 'selected' : ''}>25%</option><option value="50" ${appt.values.percentTime === '50' ? 'selected' : ''}>50%</option></select></div>
-									<div class="text-center"><label class="block text-xs">Non-Res?</label><input type="checkbox" data-calc="nonResident" class="h-6 w-6 mt-1" ${appt.values.nonResident ? 'checked' : ''}></div>
+							inputsHtml = `<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mt-2">
+									<div><label class="block text-xs">Quarter</label><select id="input-${appt.id}-quarter" data-calc="quarter" class="w-full p-1 border rounded">${quarterOptions}</select></div>
+									<div><label class="block text-xs">Step</label><select id="input-${appt.id}-step" data-calc="step" class="w-full p-1 border rounded">${Object.keys(appt.type === 'gsr' ? COST_DATA.GSR_SCALE : COST_DATA.TA_SCALE).map(step => `<option value="${step}" ${step === appt.values.step ? 'selected' : ''}>${step}</option>`).join('')}</select></div>
+									${percentTimeDropdown}
+									<div><label class="block text-xs">Total Hours</label><input type="number" class="w-full p-1 border rounded" value="${displayHours.toFixed(0)}" readonly></div>
+									<div class="text-center"><label class="block text-xs">Non-Res?</label><input type="checkbox" id="input-${appt.id}-nonResident" data-calc="nonResident" class="h-6 w-6 mt-1" ${appt.values.nonResident ? 'checked' : ''}></div>
 								</div>`;
 							break;
 						case 'reader':
+							inputsHtml = `<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
+									<div><label class="block text-xs">Quarter</label><select id="input-${appt.id}-quarter" data-calc="quarter" class="w-full p-1 border rounded">${quarterOptions}</select></div>
+									${percentTimeDropdown}
+									<div><label class="block text-xs">Total Hours</label><input type="number" class="w-full p-1 border rounded" value="${displayHours.toFixed(0)}" readonly></div>
+									<div class="text-center"><label class="block text-xs">Non-Res?</label><input type="checkbox" id="input-${appt.id}-nonResident" data-calc="nonResident" class="h-6 w-6 mt-1" ${appt.values.nonResident ? 'checked' : ''}></div>
+								</div>`;
+							break;
 						case 'student-assistant':
 							inputsHtml = `<div class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
-									<div><label class="block text-xs">Quarter</label><select data-calc="quarter" class="w-full p-1 border rounded">${quarterOptions}</select></div>
-									<div><label class="block text-xs">Total Hours</label><input type="number" data-calc="hours" class="w-full p-1 border rounded" value="${appt.values.hours}"></div>
-									<div><label class="block text-xs">Hourly Rate</label><input type="number" data-calc="hourlyRate" class="w-full p-1 border rounded" value="${appt.values.hourlyRate}"></div>
+									<div><label class="block text-xs">Quarter</label><select id="input-${appt.id}-quarter" data-calc="quarter" class="w-full p-1 border rounded">${quarterOptions}</select></div>
+									<div><label class="block text-xs">Total Hours</label><input type="number" id="input-${appt.id}-hours" data-calc="hours" class="w-full p-1 border rounded" value="${appt.values.hours}"></div>
+									<div><label class="block text-xs">Hourly Rate</label><input type="number" id="input-${appt.id}-hourlyRate" step="0.01" data-calc="hourlyRate" class="w-full p-1 border rounded" value="${appt.values.hourlyRate}"></div>
 								</div>`;
 							break;
 					}
 					
-					const typeName = appt.type === 'student-assistant' ? 'Student Assistant' : appt.type.toUpperCase();
+					let typeName = '';
+					if (appt.type === 'student-assistant') {
+						typeName = 'Student Assistant';
+					} else if (appt.type === 'reader') {
+						typeName = 'Reader/Tutor';
+					} else {
+						typeName = appt.type.toUpperCase();
+					}
+
 					div.innerHTML = `
 						<div class="flex justify-between items-start">
 							<div><h4 class="font-bold text-lg">${typeName}</h4>${inputsHtml}</div>
 							<button class="btn btn-delete mt-2" data-id="${appt.id}">X</button>
 						</div>
-						<div class="grid grid-cols-2 md:grid-cols-6 gap-4 mt-4 bg-gray-50 p-2 text-center rounded">
-							<div><p class="text-xs">Salary</p><p class="font-bold" data-output="salary">${formatCurrency(appt.costs.salary)}</p></div>
-							<div><p class="text-xs">Benefits</p><p class="font-bold" data-output="benefits">${formatCurrency(appt.costs.benefits)}</p></div>
-							<div><p class="text-xs">Tuition/Fees</p><p class="font-bold" data-output="tuition">${formatCurrency(appt.costs.tuition)}</p></div>
-							<div><p class="text-xs">Health Ins.</p><p class="font-bold" data-output="health_ins">${formatCurrency(appt.costs.health_ins)}</p></div>
-							<div><p class="text-xs">Total Cost</p><p class="font-bold text-lg text-[#002855]" data-output="total">${formatCurrency(appt.costs.total)}</p></div>
+						<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mt-4 bg-gray-50 p-2 text-center rounded">
+							<div><p class="text-xs">Salary</p><p class="font-bold" data-output="salary">${formatCurrency(appt.costs.salary || 0)}</p></div>
+							<div><p class="text-xs">Benefits</p><p class="font-bold" data-output="benefits">${formatCurrency(appt.costs.benefits || 0)}</p></div>
+							<div><p class="text-xs">Tuition/Fees</p><p class="font-bold" data-output="tuition">${formatCurrency(appt.costs.tuition || 0)}</p></div>
+							<div><p class="text-xs">Health Ins.</p><p class="font-bold" data-output="health_ins">${formatCurrency(appt.costs.health_ins || 0)}</p></div>
+							<div><p class="text-xs">Total Cost</p><p class="font-bold text-lg text-[#002855]" data-output="total">${formatCurrency(appt.costs.total || 0)}</p></div>
 						</div>`;
 					appointmentsContainer.appendChild(div);
 				});
@@ -326,41 +356,145 @@
 			updateSummaryTable();
 		}
 
+		function updateDOMValues() {
+			appointments.forEach(appt => {
+				const row = document.getElementById(`appointment-${appt.id}`);
+				if (!row) return;
+
+				if (appt.type !== 'student-assistant') {
+					const hoursInput = row.querySelector('input[readonly]');
+					if (hoursInput) {
+						const displayHours = (parseFloat(appt.values.percentTime) || 0) * 4.4;
+						hoursInput.value = displayHours.toFixed(0);
+					}
+				}
+
+				row.querySelector('[data-output="salary"]').textContent = formatCurrency(appt.costs.salary || 0);
+				row.querySelector('[data-output="benefits"]').textContent = formatCurrency(appt.costs.benefits || 0);
+				row.querySelector('[data-output="tuition"]').textContent = formatCurrency(appt.costs.tuition || 0);
+				row.querySelector('[data-output="health_ins"]').textContent = formatCurrency(appt.costs.health_ins || 0);
+				row.querySelector('[data-output="total"]').textContent = formatCurrency(appt.costs.total || 0);
+			});
+			updateSummaryTable();
+		}
+
 		function calculateAllCosts() {
 			const totalBenefitRate = Object.values(COST_DATA.BENEFIT_RATES).reduce((a, b) => a + b, 0);
 
+			// First, reset all costs to zero before recalculating
 			appointments.forEach(appt => {
-				let salary = 0, benefits = 0, tuition = 0, health_ins = 0, total = 0;
-				let isEligible = false;
+				appt.costs = { salary: 0, benefits: 0, tuition: 0, health_ins: 0, total: 0 };
+			});
 
+			// Calculate initial salary for every appointment individually
+			appointments.forEach(appt => {
+				let salary = 0;
 				if (appt.type === 'gsr') {
-					const step = appt.values.step;
-					const percentTime = parseFloat(appt.values.percentTime) || 0;
-					const annualRate = COST_DATA.GSR_SCALE[step] || 0;
-					salary = (annualRate / 12) * 3 * (percentTime / 100); // Always use 3 months for cost basis
-					if (percentTime >= 25) isEligible = true;
+					const annualRate = COST_DATA.GSR_SCALE[appt.values.step] || 0;
+					salary = (annualRate / 12) * 3 * ((parseFloat(appt.values.percentTime) || 0) / 100);
 				} else if (appt.type === 'ta') {
-					const step = appt.values.step;
-					const percentTime = parseInt(appt.values.percentTime) || 0;
-					const annualRate = COST_DATA.TA_SCALE[step] || 0;
-					salary = (annualRate / 3) * (percentTime / 100);
-					if (percentTime >= 25) isEligible = true;
-				} else {
-					const hours = parseFloat(appt.values.hours) || 0;
-					const hourlyRate = parseFloat(appt.values.hourlyRate) || 0;
-					salary = hours * hourlyRate;
+					const annualRate = COST_DATA.TA_SCALE[appt.values.step] || 0;
+					salary = (annualRate / 3) * ((parseFloat(appt.values.percentTime) || 0) / 100);
+				} else if (appt.type === 'reader') {
+					salary = (parseFloat(appt.values.hours) || 0) * COST_DATA.READER_TUTOR_RATE;
+				} else if (appt.type === 'student-assistant') {
+					salary = (parseFloat(appt.values.hours) || 0) * (parseFloat(appt.values.hourlyRate) || 0);
 				}
+				appt.costs.salary = salary;
+				appt.costs.benefits = salary * totalBenefitRate;
+			});
 
-				benefits = salary * totalBenefitRate;
+			// Process each quarter to handle proration
+			['Fall', 'Winter', 'Spring'].forEach(quarter => {
+				const quarterAppts = appointments.filter(a => a.values.quarter === quarter);
+				if (quarterAppts.length === 0) return;
 
-				if(isEligible) {
-					tuition = COST_DATA.TUITION_FEES.quarterly_tuition + (appt.values.nonResident ? COST_DATA.TUITION_FEES.quarterly_non_resident : 0);
-					health_ins = COST_DATA.TUITION_FEES.quarterly_ship;
-				}
+				// 1. Aggregate data for the quarter
+				const titleTotals = {
+					gsr: { percentTime: 0, salary: 0, eligible: false },
+					ta: { percentTime: 0, salary: 0, eligible: false },
+					reader: { hours: 0, salary: 0, eligible: false }
+				};
 
-				total = salary + benefits + tuition + health_ins;
+				quarterAppts.forEach(appt => {
+					if (titleTotals[appt.type]) {
+						if(appt.type === 'reader') {
+							titleTotals[appt.type].hours += parseFloat(appt.values.hours) || 0;
+						} else if (appt.type === 'gsr' || appt.type === 'ta') {
+							titleTotals[appt.type].percentTime += parseFloat(appt.values.percentTime) || 0;
+						}
+						titleTotals[appt.type].salary += appt.costs.salary;
+					}
+				});
+
+				// 2. Determine eligibility based on thresholds
+				let eligibleTitles = [];
+				Object.keys(titleTotals).forEach(type => {
+					let isEligible = false;
+					if (type === 'reader') {
+						isEligible = titleTotals[type].hours >= 110;
+					} else { // gsr or ta
+						isEligible = titleTotals[type].percentTime >= 25;
+					}
+					
+					if (isEligible) {
+						titleTotals[type].eligible = true;
+						eligibleTitles.push(type);
+					}
+				});
 				
-				appt.costs = { salary, benefits, tuition, health_ins, total };
+				if (eligibleTitles.length === 0) {
+					// No titles are eligible for remission, so just calculate total cost from salary and benefits
+					quarterAppts.forEach(appt => {
+						appt.costs.total = appt.costs.salary + appt.costs.benefits;
+					});
+					return; // Move to next quarter
+				}
+
+				// 3. Calculate total costs for the quarter
+				const totalTuition = COST_DATA.TUITION_FEES.quarterly_tuition;
+				const totalShip = COST_DATA.TUITION_FEES.quarterly_ship;
+				const isNonResidentQuarter = quarterAppts.some(a => a.values.nonResident && titleTotals[a.type]?.eligible);
+				const totalNonRes = isNonResidentQuarter ? COST_DATA.TUITION_FEES.quarterly_non_resident : 0;
+
+				// 4. Calculate total salary of only eligible appointments
+				let totalEligibleSalary = 0;
+				quarterAppts.forEach(appt => {
+					if (titleTotals[appt.type]?.eligible) {
+						totalEligibleSalary += appt.costs.salary;
+					}
+				});
+
+				// 5. Distribute costs
+				const hasEligibleGSR = quarterAppts.some(a => a.type === 'gsr' && titleTotals.gsr.eligible);
+
+				quarterAppts.forEach(appt => {
+					// Only apply tuition/SHIP to eligible appointments
+					if (titleTotals[appt.type]?.eligible) {
+						const prorationFactor = totalEligibleSalary > 0 ? (appt.costs.salary / totalEligibleSalary) : 0;
+
+						// Prorate standard tuition and SHIP
+						appt.costs.tuition = totalTuition * prorationFactor;
+						appt.costs.health_ins = totalShip * prorationFactor;
+
+						// Handle non-resident tuition rule
+						if (totalNonRes > 0) {
+							if (hasEligibleGSR) {
+								// If an eligible GSR exists, they bear all NRST cost
+								if (appt.type === 'gsr') {
+									const gsrSalaryTotal = titleTotals.gsr.salary;
+									const gsrProrationFactor = gsrSalaryTotal > 0 ? (appt.costs.salary / gsrSalaryTotal) : 0;
+									appt.costs.tuition += totalNonRes * gsrProrationFactor;
+								}
+							} else {
+								// No eligible GSR, so prorate NRST among other eligible appointments (TA/Reader)
+								appt.costs.tuition += totalNonRes * prorationFactor;
+							}
+						}
+					}
+					// Final total for the appointment
+					appt.costs.total = appt.costs.salary + appt.costs.benefits + appt.costs.tuition + appt.costs.health_ins;
+				});
 			});
 		}
 
@@ -392,11 +526,12 @@
 		}
 
 		function formatCurrency(value) {
-			return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+			return (value || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 		}
 		
+		// Initial Load
 		populateBaseCosts();
-		updateSummaryTable();
+		fullRender();
 	});
 	</script>
 </body>
