@@ -1,5 +1,3 @@
-# ls-bluecluster-apgrad-tools
-
 The intention of these little tools is to (a) provide administrative staff working in the academic personnel spaces with easily-referenced calculators to aid in faculty and student advising, while (b) also making the same tools those staff use accessible to faculty in a "non-actionable" form, so that they are able to play with live scenarios and to some extent self-advise. 
 # summercomp.html
 This little calculator allows users to enter an annual salary from which point it derives a maximum available summer compensation. Users can then play with different summer-research compensation scenarios by activating the different months and playing with the FTE within. It is optimized for inclusion in SiteFarm pages via iFrame. 
