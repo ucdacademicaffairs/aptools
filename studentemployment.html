@@ -1,8 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-	
-	<!-- Hi friends! If you're looking at the source of this page, I'm doubly-curious to get your thoughts. My ambition in this area exceeds my skill so you may have some better ways of doing some or all of this; you can find it in the UCD github under ls-bluecluster-apgrad-tools. Please feel free to replace literally all of my code and email me to tell me I'm dumb -- it'll mean that we all get better tools as a result :D  -->
-	
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,7 +15,7 @@
 			--ucd-light-gray: #f2f2f2;
 		}
 		body {
-			font-family: 'Public Sans', sans-serif;
+			font-family: 'Public Sans', sans-serif; // approxima nova
 			background-color: var(--ucd-light-gray);
 		}
 		.ucd-header {
@@ -105,6 +102,10 @@
 				</div>
 			</div>
 
+			<div id="nrst-warning-card" class="card bg-red-100 border-red-400 text-red-700 hidden">
+				<!-- Warning text will go here -->
+			</div>
+
 			<div class="card bg-[#fafafa]">
 				<h3 class="text-xl font-bold text-gray-800 mb-4">Cost Summary by Quarter</h3>
 				<div class="overflow-x-auto">
@@ -184,6 +185,7 @@
 		const toggleCostsBtn = document.getElementById('toggle-costs-btn');
 		const showWorkContainer = document.getElementById('show-work-container');
 		const toggleWorkBtn = document.getElementById('toggle-work-btn');
+		const nrstWarningCard = document.getElementById('nrst-warning-card');
 		
 		// --- event listeners ---
 		addButtonsContainer.addEventListener('click', e => {
@@ -243,7 +245,7 @@
 		});
 
 
-		// --- functions ---
+		// --- Functions ---
 		function populateBaseCosts() {
 			baseCostsContainer.innerHTML = `
 				<div>
@@ -335,7 +337,7 @@
 									<div><label class="block text-xs">Step</label><select id="input-${appt.id}-step" data-calc="step" class="w-full p-1 border rounded">${Object.keys(appt.type === 'gsr' ? COST_DATA.GSR_SCALE : COST_DATA.TA_SCALE).map(step => `<option value="${step}" ${step === appt.values.step ? 'selected' : ''}>${step}</option>`).join('')}</select></div>
 									${percentTimeDropdown}
 									<div><label class="block text-xs">Total Hours</label><input type="number" class="w-full p-1 border rounded" value="${displayHours.toFixed(0)}" readonly></div>
-									<div class="text-center"><label class="block text-xs">Non-Res?</label><input type="checkbox" id="input-${appt.id}-nonResident" data-calc="nonResident" class="h-6 w-6 mt-1" ${appt.values.nonResident ? 'checked' : ''}></div>
+									<div class="text-center"><label class="block text-xs">Include NRST?</label><input type="checkbox" id="input-${appt.id}-nonResident" data-calc="nonResident" class="h-6 w-6 mt-1" ${appt.values.nonResident ? 'checked' : ''}></div>
 								</div>`;
 							break;
 						case 'reader':
@@ -343,7 +345,7 @@
 									<div><label class="block text-xs">Quarter</label><select id="input-${appt.id}-quarter" data-calc="quarter" class="w-full p-1 border rounded">${quarterOptions}</select></div>
 									${percentTimeDropdown}
 									<div><label class="block text-xs">Total Hours</label><input type="number" class="w-full p-1 border rounded" value="${displayHours.toFixed(0)}" readonly></div>
-									<div class="text-center"><label class="block text-xs">Non-Res?</label><input type="checkbox" id="input-${appt.id}-nonResident" data-calc="nonResident" class="h-6 w-6 mt-1" ${appt.values.nonResident ? 'checked' : ''}></div>
+									<div class="text-center"><label class="block text-xs">Include NRST?</label><input type="checkbox" id="input-${appt.id}-nonResident" data-calc="nonResident" class="h-6 w-6 mt-1" ${appt.values.nonResident ? 'checked' : ''}></div>
 								</div>`;
 							break;
 						case 'student-assistant':
@@ -381,6 +383,7 @@
 			}
 			updateSummaryTable();
 			renderCalculationBreakdown();
+			updateWarningVisibility();
 		}
 
 		function updateDOMValues() {
@@ -404,12 +407,13 @@
 			});
 			updateSummaryTable();
 			renderCalculationBreakdown();
+			updateWarningVisibility();
 		}
 
 		function calculateAllCosts() {
 			calculationDetails = {};
 			const totalBenefitRate = Object.values(COST_DATA.BENEFIT_RATES).reduce((a, b) => a + b, 0);
-
+			
 			// First, reset all costs to zero before recalculating
 			appointments.forEach(appt => {
 				appt.costs = { salary: 0, benefits: 0, tuition: 0, health_ins: 0, total: 0, salaryFormula: '' };
@@ -495,7 +499,7 @@
 						titleTotals[type].eligible = true;
 						eligibleTitles.push(type);
 					}
-				});
+				}); //This is a little crufty because I'd originally not built it with Readers / Tutors in mind, admittedly!
 				
 				// No titles are eligible for remission, so just calculate total cost from salary and benefits
 				if (eligibleTitles.length === 0) {
@@ -540,7 +544,7 @@
 						// Handle non-resident tuition rule
 						if (totalNonRes > 0) {
 							// If an eligible GSR exists, they bear all NRST cost
-							if (hasEligibleGSR) { 
+							if (hasEligibleGSR) {
 								if (appt.type === 'gsr') {
 									const gsrSalaryTotal = titleTotals.gsr.salary;
 									const gsrProrationFactor = gsrSalaryTotal > 0 ? (appt.costs.salary / gsrSalaryTotal) : 0;
@@ -574,6 +578,16 @@
 				quarterDiv.innerHTML = calculationDetails[quarter].log.join('');
 				showWorkContainer.appendChild(quarterDiv);
 			});
+		}
+
+		function updateWarningVisibility() {
+			const isAnyNonResident = appointments.some(appt => appt.values.nonResident);
+			if (isAnyNonResident) {
+				nrstWarningCard.innerHTML = `<p class="font-bold">Caution:</p><p>Non-Residential Supplementary Tuition administration can be complex and case-dependent. Before including NRST remission in any cost forecasting, please review the latest guidelines on the applicability of doing so to the appointment type you have selected.</p>`;
+				nrstWarningCard.classList.remove('hidden');
+			} else {
+				nrstWarningCard.classList.add('hidden');
+			}
 		}
 
 		function updateSummaryTable() {
