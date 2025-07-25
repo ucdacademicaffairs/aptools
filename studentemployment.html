@@ -15,7 +15,7 @@
 			--ucd-light-gray: #f2f2f2;
 		}
 		body {
-			font-family: 'Proxima Nova', 'Public Sans', sans-serif; // I don't know why I didn't just start with Proxima, but I'm still proud of myself for "Approxima Nova" so now you have to see my dumb joke. 
+			font-family: 'Proxima Nova', 'Public Sans', sans-serif;
 			background-color: var(--ucd-light-gray);
 		}
 		.ucd-header {
@@ -109,9 +109,12 @@
 				</div>
 
 			<div class="card bg-[#fafafa]">
-				<h3 class="text-xl font-bold text-gray-800 mb-4">Cost Summary by Quarter</h3>
+				<div class="flex justify-between items-center mb-4">
+					<h3 class="text-xl font-bold text-gray-800">Cost Summary by Quarter</h3>
+					<button id="copy-summary-btn" class="btn text-sm">Copy to Clipboard</button>
+				</div>
 				<div class="overflow-x-auto">
-					<table class="min-w-full text-sm text-left">
+					<table class="min-w-full text-sm text-left" id="summary-table">
 						<thead class="bg-gray-200">
 							<tr>
 								<th class="p-2">Quarter</th>
@@ -164,7 +167,8 @@
 			GSR_SCALE: { 1: 71895, 2: 77467, 3: 83471, 4: 89941, 5: 96912, 6: 104423 },
 			TA_SCALE: { 1: 70720, 2: 72842, 3: 75027 },
 			TUITION_FEES: { quarterly_tuition: 5196.53, quarterly_ship: 2664.00, quarterly_non_resident: 5034.00 },
-			READER_TUTOR_RATE: 22.14
+			READER_TUTOR_RATE: 22.14,
+			HOURS_PER_FTE_PERCENT: 4.4 // Or in other words, a 100% FTE times this number = hours per quarter. 50% TA * 4.4 = 220 hours per quarter. 
 		};
 
 		// The main array for the calculator, holding all appointment objects.
@@ -183,6 +187,7 @@
 		const toggleWorkBtn = document.getElementById('toggle-work-btn');
 		const nrstWarningCard = document.getElementById('nrst-warning-card');
 		const clearAllBtn = document.getElementById('clear-all-btn');
+		const copySummaryBtn = document.getElementById('copy-summary-btn');
 		
 		// --- Event listeners ---
 
@@ -195,6 +200,31 @@
 		clearAllBtn.addEventListener('click', () => {
 			appointments = [];
 			fullRender();
+		});
+		
+		// Handles the new "Copy to Clipboard"
+		copySummaryBtn.addEventListener('click', () => {
+			const table = document.getElementById('summary-table');
+			let text = '';
+			// Loop through rows and cells to build a tab-separated string.
+			for (const row of table.rows) {
+				const rowData = Array.from(row.cells).map(cell => cell.innerText.replace(/\$/g, '').replace(/,/g, ''));
+				text += rowData.join('\t') + '\n';
+			}
+			
+			// Use a temporary text area to copy the text to the clipboard
+			const textArea = document.createElement('textarea');
+			textArea.value = text;
+			document.body.appendChild(textArea);
+			textArea.select();
+			try {
+				document.execCommand('copy');
+				copySummaryBtn.textContent = 'Copied!';
+				setTimeout(() => { copySummaryBtn.textContent = 'Copy to Clipboard'; }, 2000);
+			} catch (err) {
+				console.error('Failed to copy text: ', err);
+			}
+			document.body.removeChild(textArea);
 		});
 
 		// Handles clicks within the appointment container, to delete them.
@@ -214,7 +244,7 @@
 			const id = parseInt(row.dataset.id, 10);
 			const appt = appointments.find(a => a.id === id);
 			if (!appt) return;
-
+		
 			const key = target.dataset.calc;
 			if (target.type === 'checkbox') {
 				appt.values[key] = target.checked;
@@ -224,9 +254,9 @@
 			
 			// If percent time is changed, automatically recalculate the corresponding hours.
 			if (key === 'percentTime') {
-				appt.values.hours = (parseFloat(appt.values.percentTime) || 0) * 4.4;
+				appt.values.hours = (parseFloat(appt.values.percentTime) || 0) * COST_DATA.HOURS_PER_FTE_PERCENT;
 			}
-
+		
 			// Recalculate everything and update the DOM.
 			calculateAllCosts();
 			updateDOMValues();
@@ -306,7 +336,7 @@
 					quarter: 'Fall',
 					step: '1',
 					percentTime: '25',
-					hours: type === 'student-assistant' ? '100' : 110, // 25% * 4.4
+					hours: type === 'student-assistant' ? '100' : 25 * COST_DATA.HOURS_PER_FTE_PERCENT, // Updated to use the new central magic number.
 					hourlyRate: (type === 'student-assistant') ? COST_DATA.READER_TUTOR_RATE : 0,
 					nonResident: false,
 				},
@@ -333,10 +363,10 @@
 					div.id = `appointment-${appt.id}`;
 					div.dataset.id = appt.id;
 					div.dataset.type = appt.type;
-
+		
 					let inputsHtml = '';
 					const quarterOptions = ['Fall', 'Winter', 'Spring'].map(q => `<option ${q === appt.values.quarter ? 'selected' : ''}>${q}</option>`).join('');
-					const displayHours = (parseFloat(appt.values.percentTime) || 0) * 4.4;
+					const displayHours = (parseFloat(appt.values.percentTime) || 0) * COST_DATA.HOURS_PER_FTE_PERCENT;
 					const percentTimeDropdown = `
 						<div>
 							<label class="block text-xs">% Time</label>
@@ -344,7 +374,7 @@
 								${Array.from({length: 100}, (_, i) => i + 1).map(num => `<option value="${num}" ${num == appt.values.percentTime ? 'selected' : ''}>${num}%</option>`).join('')}
 							</select>
 						</div>`;
-
+		
 					switch (appt.type) {
 						case 'gsr':
 						case 'ta':
@@ -381,7 +411,7 @@
 					} else {
 						typeName = appt.type.toUpperCase();
 					}
-
+		
 					div.innerHTML = `
 						<div class="flex justify-between items-start">
 							<div><h4 class="font-bold text-lg">${typeName}</h4>${inputsHtml}</div>
@@ -407,15 +437,15 @@
 			appointments.forEach(appt => {
 				const row = document.getElementById(`appointment-${appt.id}`);
 				if (!row) return;
-
+		
 				if (appt.type !== 'student-assistant') {
 					const hoursInput = row.querySelector('input[readonly]');
 					if (hoursInput) {
-						const displayHours = (parseFloat(appt.values.percentTime) || 0) * 4.4;
+						const displayHours = (parseFloat(appt.values.percentTime) || 0) * COST_DATA.HOURS_PER_FTE_PERCENT;
 						hoursInput.value = displayHours.toFixed(0);
 					}
 				}
-
+		
 				row.querySelector('[data-output="salary"]').textContent = formatCurrency(appt.costs.salary || 0);
 				row.querySelector('[data-output="benefits"]').textContent = formatCurrency(appt.costs.benefits || 0);
 				row.querySelector('[data-output="tuition"]').textContent = formatCurrency(appt.costs.tuition || 0);
@@ -466,20 +496,20 @@
 			calculationDetails[quarter] = { log: [`<h4 class="font-bold text-lg">${quarter} Quarter</h4>`] };
 			const log = calculationDetails[quarter].log;
 			const totalBenefitRate = Object.values(COST_DATA.BENEFIT_RATES).reduce((a, b) => a + b, 0);
-
+		
 			log.push(`<p class="font-semibold mt-2">1. Salary & Benefits Calculation:</p>`);
 			quarterAppts.forEach(appt => {
 				const typeName = appt.type.toUpperCase().replace('-', ' ');
 				log.push(`<p>&nbsp;&nbsp;- ${typeName} #${appt.id} Salary: ${appt.costs.salaryFormula}</p>`);
 				log.push(`<p>&nbsp;&nbsp;- ${typeName} #${appt.id} Benefits: ${formatCurrency(appt.costs.salary)} * ${totalBenefitRate.toFixed(4)} = ${formatCurrency(appt.costs.benefits)}</p>`);
 			});
-
+		
 			const titleTotals = {
 				gsr: { percentTime: 0, salary: 0, eligible: false },
 				ta: { percentTime: 0, salary: 0, eligible: false },
 				reader: { hours: 0, salary: 0, eligible: false }
 			};
-
+		
 			quarterAppts.forEach(appt => {
 				if (titleTotals[appt.type]) {
 					if(appt.type === 'reader') {
@@ -490,7 +520,7 @@
 					titleTotals[appt.type].salary += appt.costs.salary;
 				}
 			});
-
+		
 			log.push(`<p class="font-semibold mt-2">2. Fee Remission Eligibility Check:</p>`);
 			let eligibleTitles = [];
 			Object.keys(titleTotals).forEach(type => {
@@ -519,7 +549,7 @@
 				});
 				return; 
 			}
-
+		
 			const totalTuition = COST_DATA.TUITION_FEES.quarterly_tuition;
 			const totalShip = COST_DATA.TUITION_FEES.quarterly_ship;
 			const isNonResidentQuarter = quarterAppts.some(a => a.values.nonResident && titleTotals[a.type]?.eligible);
@@ -529,7 +559,7 @@
 			log.push(`<p>&nbsp;&nbsp;- Tuition/Fees: ${formatCurrency(totalTuition)}</p>`);
 			log.push(`<p>&nbsp;&nbsp;- Health Insurance (SHIP): ${formatCurrency(totalShip)}</p>`);
 			log.push(`<p>&nbsp;&nbsp;- Non-Resident Fee: ${formatCurrency(totalNonRes)}</p>`);
-
+		
 			let totalEligibleSalary = 0;
 			quarterAppts.forEach(appt => {
 				if (titleTotals[appt.type]?.eligible) {
@@ -537,17 +567,17 @@
 				}
 			});
 			log.push(`<p class="font-semibold mt-2">4. Proration Calculation (based on total eligible salary of ${formatCurrency(totalEligibleSalary)}):</p>`);
-
+		
 			const hasEligibleGSR = quarterAppts.some(a => a.type === 'gsr' && titleTotals.gsr.eligible);
-
+		
 			quarterAppts.forEach(appt => {
 				if (titleTotals[appt.type]?.eligible) {
 					const prorationFactor = totalEligibleSalary > 0 ? (appt.costs.salary / totalEligibleSalary) : 0;
 					log.push(`<p>&nbsp;&nbsp;- ${appt.type.toUpperCase().replace('-', ' ')} #${appt.id} Proration: ${formatCurrency(appt.costs.salary)} / ${formatCurrency(totalEligibleSalary)} = ${(prorationFactor * 100).toFixed(2)}%</p>`);
-
+		
 					appt.costs.tuition = totalTuition * prorationFactor;
 					appt.costs.health_ins = totalShip * prorationFactor;
-
+		
 					if (totalNonRes > 0) {
 						if (hasEligibleGSR) {
 							if (appt.type === 'gsr') {
@@ -572,14 +602,14 @@
 		function calculateAllCosts() {
 			calculationDetails = {};
 			const totalBenefitRate = Object.values(COST_DATA.BENEFIT_RATES).reduce((a, b) => a + b, 0);
-
+		
 			// Reset costs for all appointments before recalculating
 			appointments.forEach(appt => {
 				appt.costs = { salary: 0, benefits: 0, tuition: 0, health_ins: 0, total: 0 };
 			});
-
+		
 			calculateInitialSalaries(totalBenefitRate);
-
+		
 			// Process each quarter to calculate prorated fees
 			['Fall', 'Winter', 'Spring'].forEach(quarter => {
 				const quarterAppts = appointments.filter(a => a.values.quarter === quarter);
@@ -602,7 +632,7 @@
 					showWorkContainer.appendChild(quarterDiv);
 				}
 			});
-
+		
 			if (!hasCalculations) {
 				showWorkContainer.innerHTML = '<p>Add an appointment to see calculation details.</p>';
 			}
@@ -632,7 +662,7 @@
 					summary[quarter].total += appt.costs.total;
 				}
 			});
-
+		
 			const tableBody = document.getElementById('summary-table-body');
 			tableBody.innerHTML = '';
 			let grandTotal = { salary: 0, benefitsAndFees: 0, total: 0 };
