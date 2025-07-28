@@ -169,7 +169,7 @@
 	document.addEventListener('DOMContentLoaded', function () {
 		// --- State and Data Management ---
 		
-		// We'll start off with default rates and salary scales. Can be edited by the user in the UI. This information changes annually, so notionally this should be updated by "me" on 7/1.
+		// We'll start off with default rates and salary scales. Can be edited by the user in the UI. This information changes annually, so notionally this should be updated by "me" on 7/1.\
 		const COST_DATA = {
 			BENEFIT_RATES: { cbr: 0.017, gael: 0.0084, addOn: 0.0022, ucrp: 0.0 },
 			GSR_SCALE: { 1: 71895, 2: 77467, 3: 83471, 4: 89941, 5: 96912, 6: 104423 },
@@ -178,7 +178,7 @@
 			READER_TUTOR_RATE: 22.14,
 			HOURS_PER_FTE_PERCENT: 4.4, // Or in other words, a 100% FTE times this number = hours per quarter. 50% TA * 4.4 = 220 hours per quarter.
 			WORK_STUDY: {
-				UNIT_SALARY_EQUIVALENT: 5016,
+				UNIT_SALARY_EQUIVALENT: 5016, // The "cap salary" for work-study.
 				SAVINGS_RATE: 0.75
 			}
 		};
@@ -188,6 +188,7 @@
 		let appointmentCounter = 0;
 		// I'd also like to store the step-by-step calculation details for the "Show Your Work" section.
 		let calculationDetails = {};
+
 
 		// --- DOM element caching ---
 		const addButtonsContainer = document.getElementById('add-buttons');
@@ -548,6 +549,9 @@
 					log.push(`<p>&nbsp;&nbsp;- ${appt.type.toUpperCase().replace('-', ' ')} #${appt.id} Proration: ${formatCurrency(appt.costs.salary)} / ${formatCurrency(totalEligibleSalary)} = ${(prorationFactor * 100).toFixed(2)}%</p>`);
 					appt.costs.tuition = totalTuition * prorationFactor;
 					appt.costs.health_ins = totalShip * prorationFactor;
+					
+					const standardFeesForAppt = appt.costs.tuition + appt.costs.health_ins;
+
 					if (totalNonRes > 0) {
 						if (hasEligibleGSR) {
 							if (appt.type === 'gsr') {
@@ -563,21 +567,24 @@
 							log.push(`<p>&nbsp;&nbsp;&nbsp;&nbsp;...No GSR. Prorated NRST: ${(prorationFactor * 100).toFixed(2)}% of ${formatCurrency(totalNonRes)} = ${formatCurrency(totalNonRes * prorationFactor)}</p>`);
 						}
 					}
-				}
-				if (appt.values.workStudy) {
-					const salaryCap = COST_DATA.WORK_STUDY.UNIT_SALARY_EQUIVALENT * appt.values.workStudyUnits;
-					const salaryToConsider = Math.min(appt.costs.salary, salaryCap);
-					appt.costs.workStudySalarySavings = salaryToConsider * COST_DATA.WORK_STUDY.SAVINGS_RATE;
-					const salaryCoveragePercentage = appt.costs.salary > 0 ? appt.costs.workStudySalarySavings / appt.costs.salary : 0;
-					const gsrProratedFeesAndHealth = appt.costs.tuition + appt.costs.health_ins; 
-					appt.costs.workStudyFeeSavings = gsrProratedFeesAndHealth * salaryCoveragePercentage;
-					appt.costs.totalWorkStudySavings = appt.costs.workStudySalarySavings + appt.costs.workStudyFeeSavings;
-					log.push(`<p class="font-semibold mt-2">5. Work Study Savings for GSR #${appt.id}:</p>`);
-					log.push(`<p>&nbsp;&nbsp;- Salary Eligible for WS Savings (min of salary and cap): ${formatCurrency(salaryToConsider)}</p>`);
-					log.push(`<p>&nbsp;&nbsp;- Applied Salary Savings: ${formatCurrency(salaryToConsider)} * ${COST_DATA.WORK_STUDY.SAVINGS_RATE * 100}% = ${formatCurrency(appt.costs.workStudySalarySavings)}</p>`);
-					log.push(`<p>&nbsp;&nbsp;- Salary Coverage %: (${formatCurrency(appt.costs.workStudySalarySavings)} / ${formatCurrency(appt.costs.salary)}) = ${(salaryCoveragePercentage * 100).toFixed(2)}%</p>`);
-					log.push(`<p>&nbsp;&nbsp;- Applied Fee Savings: ${formatCurrency(gsrProratedFeesAndHealth)} (Prorated Fees) * ${(salaryCoveragePercentage * 100).toFixed(2)}% = ${formatCurrency(appt.costs.workStudyFeeSavings)}</p>`);
-					log.push(`<p>&nbsp;&nbsp;- Total WS Savings for this appointment: ${formatCurrency(appt.costs.totalWorkStudySavings)}</p>`);
+					
+					// work-study is infuriating.
+					if (appt.values.workStudy) {
+						const salaryCap = COST_DATA.WORK_STUDY.UNIT_SALARY_EQUIVALENT * appt.values.workStudyUnits;
+						const salarySavings = Math.min(appt.costs.salary, salaryCap) * COST_DATA.WORK_STUDY.SAVINGS_RATE;
+						appt.costs.workStudySalarySavings = salarySavings;
+
+						const salaryCoveragePercentage = appt.costs.salary > 0 ? appt.costs.workStudySalarySavings / appt.costs.salary : 0;
+						appt.costs.workStudyFeeSavings = standardFeesForAppt * salaryCoveragePercentage;
+						appt.costs.totalWorkStudySavings = appt.costs.workStudySalarySavings + appt.costs.workStudyFeeSavings;
+						
+						log.push(`<p class="font-semibold mt-2">5. Work Study Savings for GSR #${appt.id}:</p>`);
+						log.push(`<p>&nbsp;&nbsp;- Salary Eligible for WS Savings (min of salary and cap): ${formatCurrency(Math.min(appt.costs.salary, salaryCap))}</p>`);
+						log.push(`<p>&nbsp;&nbsp;- Applied Salary Savings: ${formatCurrency(Math.min(appt.costs.salary, salaryCap))} * ${COST_DATA.WORK_STUDY.SAVINGS_RATE * 100}% = ${formatCurrency(appt.costs.workStudySalarySavings)}</p>`);
+						log.push(`<p>&nbsp;&nbsp;- Salary Coverage %: (${formatCurrency(appt.costs.workStudySalarySavings)} / ${formatCurrency(appt.costs.salary)}) = ${(salaryCoveragePercentage * 100).toFixed(2)}%</p>`);
+						log.push(`<p>&nbsp;&nbsp;- Applied Fee Savings: ${formatCurrency(standardFeesForAppt)} (Prorated Fees) * ${(salaryCoveragePercentage * 100).toFixed(2)}% = ${formatCurrency(appt.costs.workStudyFeeSavings)}</p>`);
+						log.push(`<p>&nbsp;&nbsp;- Total WS Savings for this appointment: ${formatCurrency(appt.costs.totalWorkStudySavings)}</p>`);
+					}
 				}
 				appt.costs.total = appt.costs.salary + appt.costs.benefits + appt.costs.tuition + appt.costs.health_ins - appt.costs.totalWorkStudySavings;
 			});
