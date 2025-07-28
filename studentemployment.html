@@ -73,6 +73,10 @@
 			font-family: monospace;
 			font-size: 0.875rem;
 		}
+		/* Styles for hiding the WS Savings column */
+		.ws-hidden .ws-savings-col {
+			display: none;
+		}
 	</style>
 </head>
 
@@ -80,7 +84,7 @@
 	<header class="ucd-header shadow-md">
 		<h1 class="ucd-logo-text">Blue Cluster Testing</h1>
 	</header>
-	
+
 	<main class="w-full max-w-6xl mx-auto p-4 md:p-8">
 		<div class="space-y-6">
 			<h2 class="text-3xl font-bold text-center text-[#002855]">Student Employment Cost Calculator</h2>
@@ -97,17 +101,19 @@
 					<button class="btn" data-type="student-assistant">Student Assistant</button>
 				</div>
 			</div>
-	
+
 			<div class="card">
 				<h3 class="text-xl font-bold text-gray-800 mb-4">Appointments</h3>
 				<div id="appointments-container">
 					<p class="text-gray-500">No appointments added yet. Click a button above to begin.</p>
 				</div>
 			</div>
-	
+
 			<div id="fte-warning-card" class="card bg-yellow-100 border-yellow-400 text-yellow-800 hidden"></div>
 			<div id="nrst-warning-card" class="card bg-yellow-100 border-yellow-400 text-yellow-800 hidden"></div>
-	
+
+			<div id="work-study-summary-card" class="card bg-green-100 border-green-400 text-green-800 hidden"></div>
+
 			<div class="card bg-[#fafafa]">
 				<div class="flex justify-between items-center mb-4">
 					<h3 class="text-xl font-bold text-gray-800">Cost Summary by Quarter</h3>
@@ -120,6 +126,7 @@
 								<th class="p-2">Quarter</th>
 								<th class="p-2 text-right">Total Salary</th>
 								<th class="p-2 text-right">Total Benefits & Fees</th>
+								<th class="p-2 text-right text-green-600 ws-savings-col">WS Savings</th>
 								<th class="p-2 text-right">Total Cost</th>
 							</tr>
 						</thead>
@@ -130,13 +137,14 @@
 								<td class="p-2">Grand Total</td>
 								<td class="p-2 text-right" id="summary-total-salary">$0.00</td>
 								<td class="p-2 text-right" id="summary-total-benefits-fees">$0.00</td>
+								<td class="p-2 text-right text-green-600 ws-savings-col" id="summary-total-savings">$0.00</td>
 								<td class="p-2 text-right" id="summary-grand-total">$0.00</td>
 							</tr>
 						</tfoot>
 					</table>
 				</div>
 			</div>
-	
+
 			<div class="card">
 				<button id="toggle-work-btn" class="toggle-btn w-full text-left font-bold text-lg text-gray-800 flex items-center gap-2">
 					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
@@ -145,7 +153,7 @@
 				<div id="show-work-container" class="hidden mt-4 space-y-4">
 					</div>
 			</div>
-	
+
 			<div class="card">
 				<button id="toggle-costs-btn" class="toggle-btn w-full text-left font-bold text-lg text-gray-800 flex items-center gap-2">
 					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
@@ -160,7 +168,7 @@
 	<script>
 	document.addEventListener('DOMContentLoaded', function () {
 		// --- State and Data Management ---
-
+		
 		// We'll start off with default rates and salary scales. Can be edited by the user in the UI. This information changes annually, so notionally this should be updated by "me" on 7/1.
 		const COST_DATA = {
 			BENEFIT_RATES: { cbr: 0.017, gael: 0.0084, addOn: 0.0022, ucrp: 0.0 },
@@ -168,9 +176,12 @@
 			TA_SCALE: { 1: 70720, 2: 72842, 3: 75027 },
 			TUITION_FEES: { quarterly_tuition: 5196.53, quarterly_ship: 2664.00, quarterly_non_resident: 5034.00 },
 			READER_TUTOR_RATE: 22.14,
-			HOURS_PER_FTE_PERCENT: 4.4 // Or in other words, a 100% FTE times this number = hours per quarter. 50% TA * 4.4 = 220 hours per quarter.
+			HOURS_PER_FTE_PERCENT: 4.4, // Or in other words, a 100% FTE times this number = hours per quarter. 50% TA * 4.4 = 220 hours per quarter.
+			WORK_STUDY: {
+				UNIT_SALARY_EQUIVALENT: 5016,
+				SAVINGS_RATE: 0.75
+			}
 		};
-
 		// The main array for the calculator, holding all appointment objects.
 		let appointments = [];
 		// A lil' counter to ensure each new appointment has a unique ID.
@@ -187,16 +198,18 @@
 		const toggleWorkBtn = document.getElementById('toggle-work-btn');
 		const nrstWarningCard = document.getElementById('nrst-warning-card');
 		const fteWarningCard = document.getElementById('fte-warning-card');
+		const workStudySummaryCard = document.getElementById('work-study-summary-card');
 		const clearAllBtn = document.getElementById('clear-all-btn');
 		const copySummaryBtn = document.getElementById('copy-summary-btn');
+		const summaryTable = document.getElementById('summary-table');
 		
 		// --- Event listeners ---
-
+		
 		// Handles clicks on "Add Appointment"
 		addButtonsContainer.addEventListener('click', e => {
 			if (e.target.classList.contains('btn')) addAppointment(e.target.dataset.type);
 		});
-
+		
 		// Handles the "Clear All" button to reset the calculator.
 		clearAllBtn.addEventListener('click', () => {
 			appointments = [];
@@ -205,14 +218,14 @@
 		
 		// Handles the new "Copy to Clipboard"
 		copySummaryBtn.addEventListener('click', () => {
-			const table = document.getElementById('summary-table');
 			let text = '';
 			// Loop through rows and cells to build a tab-separated string.
-			for (const row of table.rows) {
-				const rowData = Array.from(row.cells).map(cell => cell.innerText.replace(/\$/g, '').replace(/,/g, ''));
+			for (const row of summaryTable.rows) {
+				const rowData = Array.from(row.cells)
+					.filter(cell => !cell.classList.contains('ws-savings-col') || !summaryTable.classList.contains('ws-hidden'))
+					.map(cell => cell.innerText.replace(/\$/g, '').replace(/,/g, ''));
 				text += rowData.join('\t') + '\n';
 			}
-			
 			// Use a temporary text area to copy the text to the clipboard
 			const textArea = document.createElement('textarea');
 			textArea.value = text;
@@ -227,7 +240,7 @@
 			}
 			document.body.removeChild(textArea);
 		});
-
+		
 		// Handles clicks within the appointment container, to delete them.
 		appointmentsContainer.addEventListener('click', e => {
 			if (e.target.classList.contains('btn-delete')) {
@@ -236,7 +249,7 @@
 				fullRender();
 			}
 		});
-
+		
 		// The main event handler for any input change within an appointment card. Updates the application state and triggers a wee DOM update.
 		appointmentsContainer.addEventListener('input', e => {
 			const target = e.target;
@@ -254,22 +267,26 @@
 			if (key === 'percentTime') {
 				appt.values.hours = (parseFloat(appt.values.percentTime) || 0) * COST_DATA.HOURS_PER_FTE_PERCENT;
 			}
-			calculateAllCosts();
-			updateDOMValues();
+			if (key === 'workStudy') {
+				fullRender(); 
+			} else {
+				calculateAllCosts();
+				updateDOMValues();
+			}
 		});
-
+		
 		// Toggles the visibility of the "Base Costs & Rates" section.
 		toggleCostsBtn.addEventListener('click', () => {
 			baseCostsContainer.classList.toggle('hidden');
 			toggleCostsBtn.classList.toggle('is-open');
 		});
-
+		
 		// Toggles the visibility of the "Show Your Work" section.
 		toggleWorkBtn.addEventListener('click', () => {
 			showWorkContainer.classList.toggle('hidden');
 			toggleWorkBtn.classList.toggle('is-open');
 		});
-
+		
 		// Handles input changes within the "Base Costs & Rates" section to allow live editing of the fundamental bits.
 		baseCostsContainer.addEventListener('input', e => {
 			const keys = e.target.dataset.key.split('.');
@@ -282,9 +299,8 @@
 			fullRender();
 		});
 
-
 		// --- Core Function Zone ---
-
+		
 		// Populates the "Base Costs & Rates" section with editable input fields.
 		function populateBaseCosts() {
 			baseCostsContainer.innerHTML = `
@@ -313,10 +329,11 @@
 				</div>
 				<div>
 					<h4 class="font-bold">Other Fees & Rates</h4>
-					<div class="grid grid-cols-2 md:grid-cols-3 gap-2 mt-1">
+					<div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-1">
 						<div><label class="text-xs">Quarterly Tuition/Fees</label><input type="number" step="0.01" class="w-full p-1 border rounded" data-key="TUITION_FEES.quarterly_tuition" value="${COST_DATA.TUITION_FEES.quarterly_tuition}"></div>
 						<div><label class="text-xs">Quarterly SHIP</label><input type="number" step="0.01" class="w-full p-1 border rounded" data-key="TUITION_FEES.quarterly_ship" value="${COST_DATA.TUITION_FEES.quarterly_ship}"></div>
 						<div><label class="text-xs">Quarterly Non-Res Fee</label><input type="number" step="0.01" class="w-full p-1 border rounded" data-key="TUITION_FEES.quarterly_non_resident" value="${COST_DATA.TUITION_FEES.quarterly_non_resident}"></div>
+						<div><label class="text-xs">WS Unit Salary</label><input type="number" step="0.01" class="w-full p-1 border rounded" data-key="WORK_STUDY.UNIT_SALARY_EQUIVALENT" value="${COST_DATA.WORK_STUDY.UNIT_SALARY_EQUIVALENT}"></div>
 					</div>
 				</div>
 			`;
@@ -335,16 +352,22 @@
 					hours: type === 'student-assistant' ? '100' : 25 * COST_DATA.HOURS_PER_FTE_PERCENT,
 					hourlyRate: (type === 'student-assistant') ? COST_DATA.READER_TUTOR_RATE : 0,
 					nonResident: false,
+					workStudy: false,
+					workStudyUnits: 1
 				},
 				costs: {}
 			};
+			if (type !== 'gsr') {
+				delete newAppt.values.workStudy;
+				delete newAppt.values.workStudyUnits;
+			}
 			if (type === 'student-assistant') {
 				delete newAppt.values.nonResident;
 			}
 			appointments.push(newAppt);
 			fullRender();
 		}
-
+		
 		// Trigger a full, destructive re-render of the appointments list when adding, deleting, or clearing appointments.
 		function fullRender() {
 			calculateAllCosts();
@@ -355,10 +378,22 @@
 				let inputsHtml = '';
 				switch (appt.type) {
 					case 'gsr':
+						inputsHtml = `<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mt-2">
+								<div><label class="block text-xs">Quarter</label><select id="input-${appt.id}-quarter" data-calc="quarter" class="w-full p-1 border rounded">${quarterOptions}</select></div>
+								<div><label class="block text-xs">Step</label><select id="input-${appt.id}-step" data-calc="step" class="w-full p-1 border rounded">${Object.keys(COST_DATA.GSR_SCALE).map(step => `<option value="${step}" ${step === appt.values.step ? 'selected' : ''}>${step}</option>`).join('')}</select></div>
+								${percentTimeDropdown}
+								<div><label class="block text-xs">Total Hours</label><input type="number" class="w-full p-1 border rounded" value="${displayHours.toFixed(0)}" readonly></div>
+								<div class="text-center"><label class="block text-xs">Include NRST?</label><input type="checkbox" id="input-${appt.id}-nonResident" data-calc="nonResident" class="h-6 w-6 mt-1" ${appt.values.nonResident ? 'checked' : ''}></div>
+							</div>
+							<div class="flex items-center gap-4 mt-2">
+								<div class="text-center"><label class="block text-xs">Work Study?</label><input type="checkbox" id="input-${appt.id}-workStudy" data-calc="workStudy" class="h-6 w-6" ${appt.values.workStudy ? 'checked' : ''}></div>
+								${appt.values.workStudy ? `<div><label class="block text-xs">WS Units</label><select id="input-${appt.id}-workStudyUnits" data-calc="workStudyUnits" class="w-full p-1 border rounded"><option value="1" ${appt.values.workStudyUnits == 1 ? 'selected' : ''}>1</option><option value="2" ${appt.values.workStudyUnits == 2 ? 'selected' : ''}>2</option></select></div>` : ''}
+							</div>`;
+						break;
 					case 'ta':
 						inputsHtml = `<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mt-2">
 								<div><label class="block text-xs">Quarter</label><select id="input-${appt.id}-quarter" data-calc="quarter" class="w-full p-1 border rounded">${quarterOptions}</select></div>
-								<div><label class="block text-xs">Step</label><select id="input-${appt.id}-step" data-calc="step" class="w-full p-1 border rounded">${Object.keys(appt.type === 'gsr' ? COST_DATA.GSR_SCALE : COST_DATA.TA_SCALE).map(step => `<option value="${step}" ${step === appt.values.step ? 'selected' : ''}>${step}</option>`).join('')}</select></div>
+								<div><label class="block text-xs">Step</label><select id="input-${appt.id}-step" data-calc="step" class="w-full p-1 border rounded">${Object.keys(COST_DATA.TA_SCALE).map(step => `<option value="${step}" ${step === appt.values.step ? 'selected' : ''}>${step}</option>`).join('')}</select></div>
 								${percentTimeDropdown}
 								<div><label class="block text-xs">Total Hours</label><input type="number" class="w-full p-1 border rounded" value="${displayHours.toFixed(0)}" readonly></div>
 								<div class="text-center"><label class="block text-xs">Include NRST?</label><input type="checkbox" id="input-${appt.id}-nonResident" data-calc="nonResident" class="h-6 w-6 mt-1" ${appt.values.nonResident ? 'checked' : ''}></div>
@@ -381,16 +416,19 @@
 						break;
 				}
 				const typeName = appt.type === 'student-assistant' ? 'Student Assistant' : (appt.type === 'reader' ? 'Reader/Tutor' : appt.type.toUpperCase());
+				const gridColsClass = appt.type === 'gsr' ? (appt.values.workStudy ? 'md:grid-cols-6' : 'md:grid-cols-5') : 'md:grid-cols-5';
+				
 				return `<div class="appointment-row" id="appointment-${appt.id}" data-id="${appt.id}" data-type="${appt.type}">
 						<div class="flex justify-between items-start">
 							<div><h4 class="font-bold text-lg">${typeName}</h4>${inputsHtml}</div>
 							<button class="btn btn-delete mt-2" data-id="${appt.id}">X</button>
 						</div>
-						<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mt-4 bg-gray-50 p-2 text-center rounded">
+						<div class="grid grid-cols-2 ${gridColsClass} gap-4 mt-4 bg-gray-50 p-2 text-center rounded">
 							<div><p class="text-xs">Salary</p><p class="font-bold" data-output="salary">${formatCurrency(appt.costs.salary || 0)}</p></div>
 							<div><p class="text-xs">Benefits</p><p class="font-bold" data-output="benefits">${formatCurrency(appt.costs.benefits || 0)}</p></div>
 							<div><p class="text-xs">Tuition/Fees</p><p class="font-bold" data-output="tuition">${formatCurrency(appt.costs.tuition || 0)}</p></div>
 							<div><p class="text-xs">Health Ins.</p><p class="font-bold" data-output="health_ins">${formatCurrency(appt.costs.health_ins || 0)}</p></div>
+							<div data-output-container="workStudySavings" class="${(appt.values.workStudy) ? '' : 'hidden'}"><p class="text-xs text-green-600">WS Savings</p><p class="font-bold text-green-600" data-output="workStudySavings">${formatCurrency(appt.costs.totalWorkStudySavings || 0)}</p></div>
 							<div><p class="text-xs">Total Cost</p><p class="font-bold text-lg text-[#002855]" data-output="total">${formatCurrency(appt.costs.total || 0)}</p></div>
 						</div>
 					</div>`;
@@ -399,7 +437,7 @@
 			renderCalculationBreakdown();
 			updateWarningVisibility();
 		}
-
+		
 		// Performs a lightweight, non-destructive update of the DOM, updating calculated values without re-creating the input elements, preserving focus.
 		function updateDOMValues() {
 			appointments.forEach(appt => {
@@ -413,13 +451,18 @@
 				row.querySelector('[data-output="benefits"]').textContent = formatCurrency(appt.costs.benefits || 0);
 				row.querySelector('[data-output="tuition"]').textContent = formatCurrency(appt.costs.tuition || 0);
 				row.querySelector('[data-output="health_ins"]').textContent = formatCurrency(appt.costs.health_ins || 0);
+				const wsContainer = row.querySelector('[data-output-container="workStudySavings"]');
+				if (wsContainer) {
+					wsContainer.classList.toggle('hidden', !appt.values.workStudy);
+					wsContainer.querySelector('[data-output="workStudySavings"]').textContent = formatCurrency(appt.costs.totalWorkStudySavings || 0);
+				}
 				row.querySelector('[data-output="total"]').textContent = formatCurrency(appt.costs.total || 0);
 			});
 			updateSummaryTable();
 			renderCalculationBreakdown();
 			updateWarningVisibility();
 		}
-
+		
 		// Calculates initial salary and benefits for all appointments. totalBenefitRate is the combined number to which we apply the benefits.
 		function calculateInitialSalaries(totalBenefitRate) {
 			appointments.forEach(appt => {
@@ -441,10 +484,10 @@
 					salary = hours * rate;
 					salaryFormula = `${hours.toFixed(0)} hrs * ${formatCurrency(rate)}/hr = ${formatCurrency(salary)}`;
 				}
-				appt.costs = { salary, salaryFormula, benefits: salary * totalBenefitRate, tuition: 0, health_ins: 0, total: 0 };
+				appt.costs = { salary, salaryFormula, benefits: salary * totalBenefitRate, tuition: 0, health_ins: 0, total: 0, workStudySalarySavings: 0, workStudyFeeSavings: 0, totalWorkStudySavings: 0 };
 			});
 		}
-
+		
 		// Calculates and distributes prorated fees for all appointments within a specific quarter.
 		// If you're reading this you're probably smarter than me, but for me this was maddening. 
 		// quarter - The quarter to calculate (e.g., 'Fall').
@@ -521,22 +564,37 @@
 						}
 					}
 				}
-				appt.costs.total = appt.costs.salary + appt.costs.benefits + appt.costs.tuition + appt.costs.health_ins;
+				if (appt.values.workStudy) {
+					const salaryCap = COST_DATA.WORK_STUDY.UNIT_SALARY_EQUIVALENT * appt.values.workStudyUnits;
+					const salaryToConsider = Math.min(appt.costs.salary, salaryCap);
+					appt.costs.workStudySalarySavings = salaryToConsider * COST_DATA.WORK_STUDY.SAVINGS_RATE;
+					const salaryCoveragePercentage = appt.costs.salary > 0 ? appt.costs.workStudySalarySavings / appt.costs.salary : 0;
+					const gsrProratedFeesAndHealth = appt.costs.tuition + appt.costs.health_ins; 
+					appt.costs.workStudyFeeSavings = gsrProratedFeesAndHealth * salaryCoveragePercentage;
+					appt.costs.totalWorkStudySavings = appt.costs.workStudySalarySavings + appt.costs.workStudyFeeSavings;
+					log.push(`<p class="font-semibold mt-2">5. Work Study Savings for GSR #${appt.id}:</p>`);
+					log.push(`<p>&nbsp;&nbsp;- Salary Eligible for WS Savings (min of salary and cap): ${formatCurrency(salaryToConsider)}</p>`);
+					log.push(`<p>&nbsp;&nbsp;- Applied Salary Savings: ${formatCurrency(salaryToConsider)} * ${COST_DATA.WORK_STUDY.SAVINGS_RATE * 100}% = ${formatCurrency(appt.costs.workStudySalarySavings)}</p>`);
+					log.push(`<p>&nbsp;&nbsp;- Salary Coverage %: (${formatCurrency(appt.costs.workStudySalarySavings)} / ${formatCurrency(appt.costs.salary)}) = ${(salaryCoveragePercentage * 100).toFixed(2)}%</p>`);
+					log.push(`<p>&nbsp;&nbsp;- Applied Fee Savings: ${formatCurrency(gsrProratedFeesAndHealth)} (Prorated Fees) * ${(salaryCoveragePercentage * 100).toFixed(2)}% = ${formatCurrency(appt.costs.workStudyFeeSavings)}</p>`);
+					log.push(`<p>&nbsp;&nbsp;- Total WS Savings for this appointment: ${formatCurrency(appt.costs.totalWorkStudySavings)}</p>`);
+				}
+				appt.costs.total = appt.costs.salary + appt.costs.benefits + appt.costs.tuition + appt.costs.health_ins - appt.costs.totalWorkStudySavings;
 			});
 		}
-
+		
 		// Main calculationizer. Real word, look it up. Resets costs, then calculates salaries, then prorates fees.
 		function calculateAllCosts() {
 			calculationDetails = {};
 			const totalBenefitRate = Object.values(COST_DATA.BENEFIT_RATES).reduce((a, b) => a + b, 0);
-			appointments.forEach(appt => appt.costs = { salary: 0, benefits: 0, tuition: 0, health_ins: 0, total: 0 });
+			appointments.forEach(appt => appt.costs = { salary: 0, benefits: 0, tuition: 0, health_ins: 0, total: 0, workStudySalarySavings: 0, workStudyFeeSavings: 0, totalWorkStudySavings: 0 });
 			calculateInitialSalaries(totalBenefitRate);
 			['Fall', 'Winter', 'Spring'].forEach(quarter => {
 				const quarterAppts = appointments.filter(a => a.values.quarter === quarter);
 				if (quarterAppts.length > 0) calculateProratedFees(quarter, quarterAppts);
 			});
 		}
-
+		
 		// Renders the "Show Your Work" section based on the calculationDetails object.
 		function renderCalculationBreakdown() {
 			showWorkContainer.innerHTML = '';
@@ -552,7 +610,7 @@
 			});
 			if (!hasCalculations) showWorkContainer.innerHTML = '<p>Add an appointment to see calculation details.</p>';
 		}
-
+		
 		// Shows or hides the warning cards based on current selections.
 		// Basically this calculator could be used by a couple of different populations, some of whom could be sailed into the rocks by NRST being included for ASEs at all and the FTE stuff. So, we warn.
 		function updateWarningVisibility() {
@@ -563,20 +621,20 @@
 			} else {
 				nrstWarningCard.classList.add('hidden');
 			}
-		
+
 			let fteWarning = '';
 			['Fall', 'Winter', 'Spring'].forEach(quarter => {
 				const totalFTE = appointments.reduce((sum, appt) => {
 					return (appt.values.quarter === quarter && appt.type !== 'student-assistant') ? sum + (parseFloat(appt.values.percentTime) || 0) : sum;
 				}, 0);
-		
+
 				if (totalFTE > 75) {
 					fteWarning = `<p class="font-bold">Warning!</p><p>Employment may not exceed 75% during an academic quarter. For more information, please see <a href="https://grad.ucdavis.edu/student-employment" target="_blank" class="underline">this page</a>.</p>`;
 				} else if (totalFTE > 50 && !fteWarning) {
 					fteWarning = `<p class="font-bold">Caution!</p><p>Employment is typically limited to 50% during an academic quarter. For more information, please see <a href="https://grad.ucdavis.edu/student-employment" target="_blank" class="underline">this page</a>.</p>`;
 				}
 			});
-		
+
 			if (fteWarning) {
 				fteWarningCard.innerHTML = fteWarning;
 				fteWarningCard.classList.remove('hidden');
@@ -591,33 +649,54 @@
 				fteWarningCard.classList.add('hidden');
 			}
 		}
-
+		
 		// Updates the main "Cost Summary by Quarter" table at the bottom of the page.
 		function updateSummaryTable() {
-			const summary = { Fall: { salary: 0, benefitsAndFees: 0, total: 0 }, Winter: { salary: 0, benefitsAndFees: 0, total: 0 }, Spring: { salary: 0, benefitsAndFees: 0, total: 0 }};
+			const summary = { Fall: { salary: 0, benefitsAndFees: 0, total: 0, workStudySavings: 0 }, Winter: { salary: 0, benefitsAndFees: 0, total: 0, workStudySavings: 0 }, Spring: { salary: 0, benefitsAndFees: 0, total: 0, workStudySavings: 0 }};
+			let hasWorkStudy = false;
 			appointments.forEach(appt => {
 				const quarter = appt.values.quarter;
 				if (summary[quarter]) {
 					summary[quarter].salary += appt.costs.salary;
 					summary[quarter].benefitsAndFees += (appt.costs.benefits + appt.costs.tuition + appt.costs.health_ins);
 					summary[quarter].total += appt.costs.total;
+					summary[quarter].workStudySavings += appt.costs.totalWorkStudySavings;
+					if (appt.values.workStudy) hasWorkStudy = true;
 				}
 			});
+			
+			summaryTable.classList.toggle('ws-hidden', !hasWorkStudy);
+
 			const tableBody = document.getElementById('summary-table-body');
 			tableBody.innerHTML = '';
-			let grandTotal = { salary: 0, benefitsAndFees: 0, total: 0 };
+			let grandTotal = { salary: 0, benefitsAndFees: 0, total: 0, workStudySavings: 0 };
 			['Fall', 'Winter', 'Spring'].forEach(q => {
 				const quarterData = summary[q];
 				grandTotal.salary += quarterData.salary;
 				grandTotal.benefitsAndFees += quarterData.benefitsAndFees;
 				grandTotal.total += quarterData.total;
-				tableBody.innerHTML += `<tr><td class="p-2">${q}</td><td class="p-2 text-right">${formatCurrency(quarterData.salary)}</td><td class="p-2 text-right">${formatCurrency(quarterData.benefitsAndFees)}</td><td class="p-2 text-right">${formatCurrency(quarterData.total)}</td></tr>`;
+				grandTotal.workStudySavings += quarterData.workStudySavings;
+				tableBody.innerHTML += `<tr><td class="p-2">${q}</td><td class="p-2 text-right">${formatCurrency(quarterData.salary)}</td><td class="p-2 text-right">${formatCurrency(quarterData.benefitsAndFees)}</td><td class="p-2 text-right text-green-600 ws-savings-col">${formatCurrency(quarterData.workStudySavings)}</td><td class="p-2 text-right">${formatCurrency(quarterData.total)}</td></tr>`;
 			});
 			document.getElementById('summary-total-salary').textContent = formatCurrency(grandTotal.salary);
 			document.getElementById('summary-total-benefits-fees').textContent = formatCurrency(grandTotal.benefitsAndFees);
+			document.getElementById('summary-total-savings').textContent = formatCurrency(grandTotal.workStudySavings);
 			document.getElementById('summary-grand-total').textContent = formatCurrency(grandTotal.total);
-		}
 
+			if(grandTotal.workStudySavings > 0) {
+				workStudySummaryCard.innerHTML = `<p class="font-bold">Work Study Savings:</p>
+					<div class="grid grid-cols-4 text-center">
+						<p>Fall: ${formatCurrency(summary.Fall.workStudySavings)}</p>
+						<p>Winter: ${formatCurrency(summary.Winter.workStudySavings)}</p>
+						<p>Spring: ${formatCurrency(summary.Spring.workStudySavings)}</p>
+						<p class="font-bold">Total: ${formatCurrency(grandTotal.workStudySavings)}</p>
+					</div>`;
+				workStudySummaryCard.classList.remove('hidden');
+			} else {
+				workStudySummaryCard.classList.add('hidden');
+			}
+		}
+		
 		// Helper function to format a number as US currency and return the formatted currency string.
 		// value - The number to format.
 		function formatCurrency(value) {
