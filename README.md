@@ -4,6 +4,6 @@ This little calculator allows users to enter an annual salary from which point i
 ## sabbatical.html
 This calculator allows users to enter a sabbatical credit total and an annual salary, from which point they can activate sabbatical for Fall, Winter, and Spring Quarters, play with salary level and residency, and see the impact on their sabbatical credit usage and total salary. It is optimized for inclusion in SiteFarm pages via iFrame. 
 ## studentemployment.html
-This calculator allows users to create an "employment schedule" for graduate student employees and display the costs associated. It is agnostic on the utility of including NRST costs for ASEs (as opposed to GSRs), and simply warns users if they go near NRST. Proper proration of same-quarter multiple-appointment benefits is in. My next project will be figuring out a graceful way of including work-study, or failing majestically to do so.
+This calculator allows users to create an "employment schedule" for graduate student employees and display the costs associated. It is agnostic on the utility of including NRST costs for ASEs (as opposed to GSRs), and simply warns users if they go near NRST. Proper proration of same-quarter multiple-appointment benefits is in, as is work-study. 
 ## *wha?*
 *Please contact Will Arcement-Angel (woangel@ucdavis.edu) with questions.*
