@@ -3,11 +3,17 @@ The intention of these little tools is to (a) provide administrative staff worki
 ## summercomp.html
 This little calculator allows users to enter an annual salary from which point it derives a maximum available summer compensation. Users can then play with different summer-research compensation scenarios by activating the different months and playing with the FTE within. It is currently built solely for faculty on 9/12 ("academic year" appointments), and would need revision before it has any utility for those on 11/12 ("fiscal") appoinments (let alone faculty split between the two). It is optimized for inclusion in SiteFarm pages via iFrame. 
 
+Last updated: July 23rd, 2025 (Trimmed UI to better fit iFrame.)
+
 ## sabbatical.html
 This calculator allows users to enter a sabbatical credit total and an annual salary, from which point they can activate sabbatical for Fall, Winter, and Spring Quarters, play with salary level and residency, and see the impact on their sabbatical credit usage and total salary. It is optimized for inclusion in SiteFarm pages via iFrame. 
 
+Last updated: July 23rd, 2025 (Trimmed UI to better fit iFrame.)
+
 ## studentemployment.html
 This calculator allows users to create an "employment schedule" for graduate student employees and display the costs associated. It is agnostic on the utility of including NRST costs for ASEs (as opposed to GSRs), and simply warns users if they go near NRST. Proper proration of same-quarter multiple-appointment benefits is in, as is work-study, although I'm continuing to test out each. I don't think I'll be sharing this tool directly with faculty, as some of the factors involved are a bit too complex administratively... but I may fork off a simplified version so they can estimate the cost of GSR and STDT hires.  
+
+Last updated: July 29th, 2025 (Further improvements to work-study handling.)
 
 ## *wha?*
 *Please contact Will Arcement-Angel (woangel@ucdavis.edu) with questions. This subdomain hosts tools created by and for the Blue Cluster team, but if you are looking for the Blue Cluster website it can be found at bluecluster.ucdavis.edu.*
