@@ -11,9 +11,16 @@ This calculator allows users to enter a sabbatical credit total and an annual sa
 Last updated: July 23rd, 2025 (Trimmed UI to better fit iFrame.)
 
 ## [studentemployment.html](https://blueclustertools.ucdavis.edu/studentemployment.html)
-This calculator allows users to create an "employment schedule" for graduate student employees and display the costs associated. It is agnostic on the utility of including NRST costs for ASEs (as opposed to GSRs), and simply warns users if they go near NRST. Proper proration of same-quarter multiple-appointment benefits is in, as is work-study, although I'm continuing to test out each. I don't think I'll be sharing this tool directly with faculty, as some of the factors involved are a bit too complex administratively... but I may fork off a simplified version so they can estimate the cost of GSR and STDT hires.  
+This calculator allows users to create an "employment schedule" for graduate student employees and display the costs associated. It is agnostic on the utility of including NRST costs for ASEs (as opposed to GSRs), and simply warns users if they go near NRST. Proper proration of same-quarter multiple-appointment benefits is in, as is work-study, although I'm continuing to test out each.
 
 Last updated: July 29th, 2025 (Further improvements to work-study handling.)
+
+***[studentemployment-facultygsr.html](https://blueclustertools.ucdavis.edu/studentemployment-facultygsr.html)***
+***[studentemployment-facultystdt.html](https://blueclustertools.ucdavis.edu/studentemployment-facultystdt.html)***
+
+Simplified versions of the studentemployment.html calculator optimized for faculty "messing-around" use. They are very restrictive, single-quarter, and include a warning that the estimate is just that. There's one for GSRs and one for STDTs, optimized for inclusion in SiteFarm pages via iFrame. 
+
+Last updated: August 11th, 2025 (First version.)
 
 ## *wha?*
 *Please contact Will Arcement-Angel (woangel@ucdavis.edu) with questions. This subdomain hosts tools created by and for the Blue Cluster team, but if you are looking for the Blue Cluster website it can be found at [bluecluster.ucdavis.edu](https://bluecluster.ucdavis.edu).*
