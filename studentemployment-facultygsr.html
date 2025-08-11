@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>GSR Cost Estimator</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+	<style>
+		:root { --ucd-blue: #002855; --ucd-gold: #FFBF00; --ucd-light-gray: #f2f2f2; }
+		body { font-family: 'Proxima Nova', 'Public Sans', sans-serif; background-color: var(--ucd-light-gray); }
+		.card { background-color: white; border-radius: 0; border: 1px solid #ddd; padding: 1.5rem; }
+		.toggle-btn svg { transition: transform 0.3s ease-in-out; }
+		.toggle-btn.is-open svg { transform: rotate(90deg); }
+		input[readonly] { background-color: #f0f0f0; cursor: not-allowed; }
+		#show-work-container p { margin-bottom: 0.5rem; font-family: monospace; font-size: 0.875rem; }
+	</style>
+</head>
+<body>
+	<main class="w-full max-w-4xl mx-auto p-4 md:p-8">
+		<div class="space-y-6">
+			<div class="card" id="calculator-card">
+				<div id="calculator-inputs">
+					<h4 class="text-lg font-semibold text-gray-800 mb-2">Enter GSR Details</h4>
+					<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+						<div><label class="block text-xs">Step</label><select data-calc="step" class="w-full p-1 border rounded"><option value="1" selected>1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select></div>
+						<div><label class="block text-xs">% Time</label><select data-calc="percentTime" class="w-full p-1 border rounded"><option value="25" selected>25%</option><option value="50">50%</option></select></div>
+						<div><label class="block text-xs">Total Hours / Qtr</label><input type="number" class="w-full p-1 border rounded" value="110" readonly></div>
+						<div class="text-center"><label class="block text-xs">Include NRST?</label><input type="checkbox" data-calc="nonResident" class="h-6 w-6 mt-1"></div>
+					</div>
+				</div>
+				<div class="mt-6" id="calculator-results">
+					<h4 class="text-lg font-semibold text-gray-800 mb-2">Estimated Quarterly Cost</h4>
+					<div class="grid grid-cols-2 md:grid-cols-4 gap-4 bg-gray-50 p-3 text-center rounded">
+						<div><p class="text-xs">Salary</p><p class="font-bold" data-output="salary">$0.00</p></div>
+						<div><p class="text-xs">Benefits</p><p class="font-bold" data-output="benefits">$0.00</p></div>
+						<div><p class="text-xs">Tuition & Fees</p><p class="font-bold" data-output="tuition">$0.00</p></div>
+						<div><p class="text-xs">Total Cost</p><p class="font-bold text-2xl text-[#002855]" data-output="total">$0.00</p></div>
+					</div>
+					<p class="text-xs text-gray-500 italic mt-4">Remember, this cost estimate is just that. Your Program Coordinator will review the student's eligibility, look into any strategies to reduce costs which are available, and communicate a final cost for this hire to you.</p>
+				</div>
+			</div>
+			<div id="fte-warning-card" class="card bg-yellow-100 border-yellow-400 text-yellow-800 hidden"></div>
+			<div id="nrst-warning-card" class="card bg-yellow-100 border-yellow-400 text-yellow-800 hidden"></div>
+			<div id="show-work-card" class="card">
+				<button id="toggle-work-btn" class="toggle-btn w-full text-left font-bold text-lg text-gray-800 flex items-center gap-2">
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+					<span>Show Calculation Details</span>
+				</button>
+				<div id="show-work-container" class="hidden mt-4 space-y-4"></div>
+			</div>
+		</div>
+	</main>
+	<script>
+	document.addEventListener('DOMContentLoaded', function () {
+		const COST_DATA = { BENEFIT_RATES: { cbr: 0.017, gael: 0.0, addOn: 0.0022, ucrp: 0.0 }, GSR_SCALE: { 1: 71895, 2: 77467, 3: 83471, 4: 89941, 5: 96912, 6: 104423 }, TUITION_FEES: { quarterly_tuition: 5196.53, quarterly_ship: 2664.00, quarterly_non_resident: 5034.00 }, HOURS_PER_FTE_PERCENT: 4.4 };
+		let calculationDetails = {};
+		let currentAppointment = { type: 'gsr', values: { step: '1', percentTime: '25', nonResident: false }, costs: {} };
+		
+		const calculatorCard = document.getElementById('calculator-card');
+		const showWorkContainer = document.getElementById('show-work-container');
+		const toggleWorkBtn = document.getElementById('toggle-work-btn');
+		const nrstWarningCard = document.getElementById('nrst-warning-card');
+		const fteWarningCard = document.getElementById('fte-warning-card');
+
+		calculatorCard.addEventListener('input', e => {
+			if (!e.target.dataset.calc) return;
+			const key = e.target.dataset.calc;
+			currentAppointment.values[key] = (e.target.type === 'checkbox') ? e.target.checked : e.target.value;
+			calculateAllCosts();
+			updateDOMValues();
+		});
+		
+		toggleWorkBtn.addEventListener('click', () => {
+			showWorkContainer.classList.toggle('hidden');
+			toggleWorkBtn.classList.toggle('is-open');
+		});
+
+		function updateDOMValues() {
+			const hoursInput = calculatorCard.querySelector('input[readonly]');
+			if (hoursInput) hoursInput.value = ((parseFloat(currentAppointment.values.percentTime) || 0) * COST_DATA.HOURS_PER_FTE_PERCENT).toFixed(0);
+			const costs = currentAppointment.costs;
+			calculatorCard.querySelector('[data-output="salary"]').textContent = formatCurrency(costs.salary);
+			calculatorCard.querySelector('[data-output="benefits"]').textContent = formatCurrency(costs.benefits);
+			calculatorCard.querySelector('[data-output="tuition"]').textContent = formatCurrency(costs.tuition + costs.health_ins);
+			calculatorCard.querySelector('[data-output="total"]').textContent = formatCurrency(costs.total);
+			renderCalculationBreakdown();
+			updateWarningVisibility();
+		}
+
+		function calculateAllCosts() {
+			calculationDetails = { log: [`<h4 class="font-bold text-lg">Calculation Details</h4>`, `<p class="text-xs text-gray-500 italic mt-1 mb-3">Rates are for the 2025-2026 academic year. Last updated: 8/11/2025.</p>`] };
+			const log = calculationDetails.log;
+			const appt = currentAppointment;
+			const totalBenefitRate = Object.values(COST_DATA.BENEFIT_RATES).reduce((a, b) => a + b, 0);
+
+			const annualRate = COST_DATA.GSR_SCALE[appt.values.step] || 0;
+			const percentTime = parseFloat(appt.values.percentTime) || 0;
+			const salary = (annualRate / 12) * 3 * (percentTime / 100);
+			const salaryFormula = `(${formatCurrency(annualRate)} / 12 * 3) * ${percentTime}% = ${formatCurrency(salary)}`;
+			log.push(`<p class="font-semibold mt-2">1. Salary & Benefits Calculation:</p><p>&nbsp;&nbsp;- Salary: ${salaryFormula}</p>`);
+
+			const benefits = salary * totalBenefitRate;
+			log.push(`<p>&nbsp;&nbsp;- Benefits: ${formatCurrency(salary)} * ${totalBenefitRate.toFixed(4)} = ${formatCurrency(benefits)}</p>`);
+			appt.costs = { salary, benefits, tuition: 0, health_ins: 0, total: 0 };
+			
+			log.push(`<p class="font-semibold mt-2">2. Fee Remission Eligibility Check:</p>`);
+			const isEligibleForRemission = percentTime >= 25;
+			const statusText = isEligibleForRemission ? '<span style="color: #266040; font-weight: bold;">ELIGIBLE</span>' : '<span style="color: #c10330; font-weight: bold;">INELIGIBLE</span>';
+			log.push(`<p>&nbsp;&nbsp;- GSR % time ${percentTime}% >= 25%? -> ${statusText}</p>`);
+			
+			if (isEligibleForRemission) {
+				const { quarterly_tuition, quarterly_ship, quarterly_non_resident } = COST_DATA.TUITION_FEES;
+				appt.costs.tuition = quarterly_tuition;
+				appt.costs.health_ins = quarterly_ship;
+				log.push(`<p class="font-semibold mt-2">3. Remitted Fees:</p>`);
+				log.push(`<p>&nbsp;&nbsp;- Base Tuition/Fees: ${formatCurrency(quarterly_tuition)}</p><p>&nbsp;&nbsp;- Health Insurance (SHIP): ${formatCurrency(quarterly_ship)}</p>`);
+				if (appt.values.nonResident) {
+					appt.costs.tuition += quarterly_non_resident;
+					log.push(`<p>&nbsp;&nbsp;- Non-Resident Fee: ${formatCurrency(quarterly_non_resident)}</p>`);
+				}
+			}
+			appt.costs.total = appt.costs.salary + appt.costs.benefits + appt.costs.tuition + appt.costs.health_ins;
+		}
+
+		function renderCalculationBreakdown() { showWorkContainer.innerHTML = calculationDetails.log.join(''); }
+		
+		function updateWarningVisibility() {
+			const isNonResident = currentAppointment.values.nonResident;
+			nrstWarningCard.classList.toggle('hidden', !isNonResident);
+			if (isNonResident) nrstWarningCard.innerHTML = `<p class="font-bold">Caution!</p><p>Non-Residential Supplementary Tuition administration can be complex. Before including NRST remission in any cost forecasting, please confirm the student's eligibility.</p>`;
+			let fteWarning = ((parseFloat(currentAppointment.values.percentTime) || 0) > 50) ? `<p class="font-bold">Caution!</p><p>Employment is typically limited to 50% during an academic quarter. Exceeding this may require an exception.</p>` : '';
+			fteWarningCard.classList.toggle('hidden', !fteWarning);
+			if (fteWarning) fteWarningCard.innerHTML = fteWarning;
+		}
+
+		function formatCurrency(value) { return (value || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' }); }
+		
+		calculateAllCosts();
+		updateDOMValues();
+	});
+	</script>
+</body>
+</html>
