@@ -16,6 +16,7 @@ This calculator allows users to create an "employment schedule" for graduate stu
 Last updated: July 29th, 2025 (Further improvements to work-study handling.)
 
 ***[studentemployment-facultygsr.html](https://blueclustertools.ucdavis.edu/studentemployment-facultygsr.html)***
+
 ***[studentemployment-facultystdt.html](https://blueclustertools.ucdavis.edu/studentemployment-facultystdt.html)***
 
 Simplified versions of the studentemployment.html calculator optimized for faculty "messing-around" use. They are very restrictive, single-quarter, and include a warning that the estimate is just that. There's one for GSRs and one for STDTs, optimized for inclusion in SiteFarm pages via iFrame. 
