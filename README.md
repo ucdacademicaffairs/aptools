@@ -23,5 +23,9 @@ Simplified versions of the studentemployment.html calculator optimized for facul
 
 Last updated: August 11th, 2025 (First version.)
 
+## Employee Disclosure Workflow Example
+
+For folks who attended AGS Mini, [this ZIP folder](https://bombandgrapnel.com/disclosurehandler.zip) contains each piece of the Employee Disclosure workflow :) Please [email me](mailto:woangel@ucdavis.edu) to be added as a user to my "read the form" AI model, or I would be glad to Zoom with you to help you set up your own!
+
 ## *wha?*
 *Please contact Will Arcement-Angel (woangel@ucdavis.edu) with questions. This subdomain hosts tools created by and for the Blue Cluster team, but if you are looking for the Blue Cluster website it can be found at [bluecluster.ucdavis.edu](https://bluecluster.ucdavis.edu).*
