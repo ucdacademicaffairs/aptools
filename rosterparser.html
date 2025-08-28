@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Blue Cluster Roster Parser</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+	<style>
+		:root {
+			--ucd-blue: #002855;
+			--ucd-gold: #FFBF00;
+			--ucd-light-gray: #f2f2f2;
+		}
+		body {
+			font-family: 'Public Sans', sans-serif;
+			background-color: var(--ucd-light-gray);
+		}
+		.ucd-header {
+			background-color: var(--ucd-blue);
+			color: white;
+			padding: 1rem 2rem;
+			display: flex;
+			align-items: center;
+		}
+		.ucd-logo-text {
+			font-weight: 700;
+			font-size: 1.5rem;
+			letter-spacing: 0.5px;
+		}
+		.card {
+			background-color: white;
+			border-radius: 0;
+			border: 1px solid #ddd;
+			padding: 2rem;
+		}
+		.btn {
+			background-color: var(--ucd-blue);
+			color: white;
+			padding: 0.5rem 1rem;
+			border-radius: 0.25rem;
+			font-weight: 500;
+			transition: background-color 0.2s;
+			border: none;
+		}
+		.btn:hover:not(:disabled) {
+			background-color: #001e3e;
+		}
+		.btn-gray {
+			background-color: #6b7280;
+		}
+		.btn-gray:hover {
+			background-color: #4b5563;
+		}
+	</style>
+</head>
+<body>
+
+	<header class="ucd-header shadow-md">
+		<h1 class="ucd-logo-text">Blue Cluster Heavy Industries</h1>
+	</header>
+
+	<main class="w-full max-w-4xl mx-auto p-4 md:p-8">
+		
+		<!-- Title with decorative boxes -->
+		<div class="relative text-center mb-8">
+			<div class="absolute inset-0 flex items-center justify-center -z-10 opacity-20">
+				<div class="w-16 h-16 bg-[#FFBF00] -rotate-12"></div>
+				<div class="w-20 h-20 bg-[#002855] rotate-6 -ml-8"></div>
+			</div>
+			<h2 class="text-4xl font-bold text-[#002855]">Roster Parser</h2>
+		</div>
+
+		<div class="card">
+			<!-- Instructions -->
+			<div class="mb-6 p-4 bg-blue-50 border border-blue-200">
+				<h2 class="text-lg font-semibold text-ucd-blue mb-2">How to Use</h2>
+				<ol class="list-decimal list-inside text-gray-700 space-y-1">
+					<li>Click 'Choose File' and select your CSV, XLSX, or XLS report file.</li>
+					<li>The tool will automatically process the file in your browser.</li>
+					<li>A preview of the extracted course list will appear below.</li>
+					<li>Click 'Export as CSV' to download the results.</li>
+				</ol>
+			</div>
+
+			<!-- File Input -->
+			<div class="mb-6">
+				<label for="file-upload-label" class="block text-sm font-medium text-gray-700 mb-2">Upload your roster file:</label>
+				<input id="file-upload" name="file-upload" type="file" accept=".csv, .xlsx, .xls" class="hidden">
+				<label for="file-upload" id="file-upload-label" class="cursor-pointer inline-block text-white font-bold py-2 px-4 rounded-md bg-[#6bca98] hover:bg-[#266040] transition-colors duration-200">
+					Choose File
+				</label>
+				<p id="file-name" class="mt-2 text-sm text-gray-500"></p>
+			</div>
+
+			<!-- Results Output -->
+			<div class="w-full">
+				<label for="results" class="block text-sm font-medium text-gray-700 mb-2">Parsed Results Preview:</label>
+				<textarea id="results" rows="15" class="w-full p-3 border border-gray-300 shadow-sm focus:ring-[#002855] focus:border-[#002855]" placeholder="Results preview will appear here..." readonly></textarea>
+			</div>
+
+			<!-- Action Buttons -->
+			<div class="mt-4 flex justify-end items-center space-x-3">
+				<button id="export-button" class="btn disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+					Export as CSV
+				</button>
+				<button id="reset-button" class="btn btn-gray">
+					Reset
+				</button>
+			</div>
+			 <div id="export-success-message" class="mt-2 text-right text-green-600 font-medium opacity-0 transition-opacity duration-300">
+				CSV downloaded successfully!
+			</div>
+		</div>
+	</main>
+
+	<script>
+		// --- Global variables to hold parsed data ---
+		// I'll use these to store the cleaned-up data before it gets displayed or exported.
+		let courseDataForExport = [];
+		let fileSubjectCode = '';
+
+		// --- DOM Element References ---
+		// Here, I'm just grabbing all the interactive parts of the page so I can work with them in the script.
+		const fileUpload = document.getElementById('file-upload');
+		const fileNameDisplay = document.getElementById('file-name');
+		const resultsTextarea = document.getElementById('results');
+		const exportButton = document.getElementById('export-button');
+		const resetButton = document.getElementById('reset-button');
+		const exportSuccessMessage = document.getElementById('export-success-message');
+
+		/**
+		 * My function to reset the application to its initial state.
+		 * It clears out the file input, any displayed text, and the data variables.
+		 */
+		function resetApp() {
+			fileUpload.value = null; // This is how you clear a file input.
+			fileNameDisplay.textContent = '';
+			resultsTextarea.value = '';
+			exportButton.disabled = true;
+			courseDataForExport = [];
+			fileSubjectCode = '';
+		}
+
+		// --- Event Listeners ---
+		// This is the main starting point. When a user selects a file, this code runs.
+		fileUpload.addEventListener('change', (event) => {
+			const file = event.target.files[0];
+			// If the user closes the file dialog without picking a file, just reset.
+			if (!file) {
+				resetApp();
+				return;
+			}
+
+			// Show the name of the file they picked.
+			fileNameDisplay.textContent = `Selected file: ${file.name}`;
+			
+			// Now, I'll use the FileReader API to read the file's contents right here in the browser.
+			const reader = new FileReader();
+			const fileName = file.name.toLowerCase();
+			
+			// This function runs after the file has been successfully read.
+			reader.onload = (e) => {
+				let rows; // This will hold our data, structured as an array of rows.
+				try {
+					// This is the critical logic based on our troubleshooting.
+					if (fileName.endsWith('.xls')) {
+						// If it's an "untrusted" XLS, I treat it as the HTML file it really is.
+						const fileContent = e.target.result;
+						rows = parseHtmlTable(fileContent);
+					} else if (fileName.endsWith('.xlsx')) {
+						// For a proper, modern XLSX file, I read it as a binary array.
+						const data = new Uint8Array(e.target.result);
+						const workbook = XLSX.read(data, {type: 'array'});
+						const firstSheetName = workbook.SheetNames[0];
+						const worksheet = workbook.Sheets[firstSheetName];
+						rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+					} else {
+						// For a simple CSV, I just read it as text and split it by lines.
+						const fileContent = e.target.result;
+						const lines = fileContent.split(/\r?\n/);
+						rows = lines.map(line => parseCsvLine(line));
+					}
+					
+					// Once I have the data as an array of rows, I send it to my main parsing function.
+					parseRows(rows);
+
+				} catch (error) {
+					// If anything goes wrong, I'll show an error message.
+					console.error("Error processing file:", error);
+					resultsTextarea.value = "Error: Could not process the file. It may be corrupted or in an unexpected format.";
+					exportButton.disabled = true;
+				}
+			};
+
+			// This handles any errors during the file reading process itself.
+			reader.onerror = (e) => {
+				console.error("Error reading file:", e);
+				resultsTextarea.value = "Error: Could not read the selected file.";
+				exportButton.disabled = true;
+			};
+
+			// This kicks off the reading process, using the correct method for the file type.
+			if (fileName.endsWith('.xlsx')) {
+				reader.readAsArrayBuffer(file); // For binary XLSX
+			} else { // For CSV and our special case of HTML-as-XLS, read as text.
+				reader.readAsText(file);
+			}
+		});
+
+		// The reset button just calls my reset function.
+		resetButton.addEventListener('click', resetApp);
+		
+		// A simple helper function to parse a single line of a CSV file.
+		function parseCsvLine(text) {
+			const result = [];
+			let current = '';
+			let inQuotes = false;
+			for (let i = 0; i < text.length; i++) {
+				const char = text[i];
+				if (char === '"') {
+					inQuotes = !inQuotes;
+				} else if (char === ',' && !inQuotes) {
+					result.push(current);
+					current = '';
+				} else {
+					current += char;
+				}
+			}
+			result.push(current);
+			return result;
+		}
+
+		/**
+		 * This is my special function just for those "untrusted" XLS files.
+		 * It takes the file content (which is actually HTML), creates a temporary, invisible
+		 * HTML element, and then scrapes the data out of the tables within it.
+		 * @param {string} htmlString - The HTML content of the file.
+		 * @returns {Array<Array<string>>} The extracted rows.
+		 */
+		function parseHtmlTable(htmlString) {
+			const el = document.createElement('div');
+			el.innerHTML = htmlString;
+			const tables = el.querySelectorAll('table');
+			const combinedRows = [];
+			if (tables.length > 0) {
+				tables.forEach(table => {
+					for (let i = 0; i < table.rows.length; i++) {
+						const tableRow = table.rows[i];
+						const rowData = [];
+						for (let j = 0; j < tableRow.cells.length; j++) {
+							rowData.push(tableRow.cells[j].innerText || '');
+						}
+						combinedRows.push(rowData);
+					}
+				});
+			}
+			return combinedRows;
+		}
+
+		// This helper function cleans up text from the cells. It removes weird whitespace
+		// characters and makes everything uppercase so "SUBJ" always matches "SUBJ".
+		function norm(text) {
+			return String(text || '').replace(/[\u00A0\u200B\u202F]/g, ' ').trim().toUpperCase();
+		}
+
+		// This is the main brain of the operation. It takes the structured rows and extracts the data.
+		function parseRows(rows) {
+			// First, I reset everything from any previous run.
+			courseDataForExport = [];
+			fileSubjectCode = '';
+			const parsedResults = [];
+			const foundCourses = [];
+			let headerIndexes = {};
+
+			// --- Pass 1: Find all courses and their locations ---
+			// I loop through the entire file just to identify where each course block starts.
+			for (let i = 0; i < rows.length; i++) {
+				const row = rows[i];
+				const normalizedRow = row.map(norm); // Clean the row for reliable searching.
+
+				const subjIndex = normalizedRow.findIndex(c => c === 'SUBJ');
+				const crseIndex = normalizedRow.findIndex(c => c === 'CRSE');
+				const crnIndex = normalizedRow.findIndex(c => c === 'CRN');
+
+				// If I find a row with all three headers, I know it's a course header.
+				if (subjIndex !== -1 && crseIndex !== -1 && crnIndex !== -1) {
+					headerIndexes = { subj: subjIndex, crse: crseIndex, crn: crnIndex };
+
+					// Now, I scan forward from the header to find the next row that actually has data.
+					// This is what skips over those blank rows in the XLS files. I HATE XLS FILES NOW. Thanks.
+					for (let j = i + 1; j < rows.length; j++) {
+						const dataRow = rows[j];
+						if (!dataRow || dataRow.every(cell => String(cell).trim() === '')) continue; // Skip empty rows.
+
+						const subj = String(dataRow[headerIndexes.subj] || '').trim();
+						const crse = String(dataRow[headerIndexes.crse] || '').trim();
+						const crn = String(dataRow[headerIndexes.crn] || '').trim();
+
+						// If I found valid data, I'll store it along with the location of its header.
+						if (subj && crse && crn) {
+							foundCourses.push({ subj, crse, crn, instructor: '(blank)', headerRowIndex: i });
+							if (!fileSubjectCode) fileSubjectCode = subj; // Grab the subject code for the filename.
+						}
+						break; // I found the data, so I can stop scanning for this course.
+					}
+				}
+			}
+
+			// --- Pass 2: Find an instructor for each course within its block ---
+			// Now that I know where all the courses are, I can find the instructor for each one.
+			for (let c = 0; c < foundCourses.length; c++) {
+				const course = foundCourses[c];
+				const startRow = course.headerRowIndex;
+				// The block for this course ends where the next course's header begins.
+				const endRow = (c + 1 < foundCourses.length) ? foundCourses[c + 1].headerRowIndex : rows.length;
+
+				// I'll only search for the instructor between this course's header and the next one.
+				for (let i = startRow; i < endRow; i++) {
+					const row = rows[i];
+					const normalizedRow = row.map(norm);
+					if (normalizedRow.some(cell => /INSTRUCTOR\(S\)/.test(cell))) {
+						// Found the instructor header! Now I scan forward for the name.
+						for (let j = i + 1; j < endRow; j++) {
+							const instructorRow = rows[j];
+							if (!instructorRow || instructorRow.every(cell => String(cell).trim() === '')) continue; // Skip empty rows.
+
+							const instructorName = String(instructorRow[0] || '').trim();
+							if (instructorName) {
+								course.instructor = instructorName;
+							}
+							break; // Found the name, so I'm done with this instructor search.
+						}
+						break; // Done with this course's instructor block.
+					}
+				}
+			}
+
+			// --- Final Step: Format results for display and export ---
+			// Now I take my clean `foundCourses` array and prepare it for the user.
+			courseDataForExport = foundCourses;
+			foundCourses.forEach(course => {
+				parsedResults.push(`${course.subj}\t${course.crse}\t${course.instructor}\t${course.crn}`);
+			});
+
+			if (parsedResults.length > 0) {
+				resultsTextarea.value = `SUBJECT\tCOURSE\tINSTRUCTOR\tCRN\n` + parsedResults.join('\n');
+				exportButton.disabled = false;
+			} else {
+				resultsTextarea.value = "No valid course data found. Please check the file format.";
+				exportButton.disabled = true;
+			}
+		}
+
+		// This handles the "Export as CSV" button click.
+		exportButton.addEventListener('click', () => {
+			if (courseDataForExport.length === 0) return;
+
+			// I'll build the CSV string, starting with the header.
+			const header = 'SUBJECT,COURSE,INSTRUCTOR,CRN';
+			const csvRows = courseDataForExport.map(row => {
+				// I make sure to wrap the instructor name in quotes in case it contains a comma.
+				const instructorCell = `"${row.instructor.replace(/"/g, '""')}"`;
+				return [row.subj, row.crse, instructorCell, row.crn].join(',');
+			});
+			
+			const csvContent = [header, ...csvRows].join('\n');
+			// Here's the filename change we made!
+			const fileName = `${fileSubjectCode || 'course'}_parsed_roster.csv`;
+			
+			// Trigger a download in the browser.
+			// I create a blob, create a hidden link to it,
+			// programmatically click the link, and then remove it.
+			const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+			const link = document.createElement('a');
+			if (link.download !== undefined) {
+				const url = URL.createObjectURL(blob);
+				link.setAttribute('href', url);
+				link.setAttribute('download', fileName);
+				link.style.visibility = 'hidden';
+				document.body.appendChild(link);
+				link.click();
+				document.body.removeChild(link);
+			}
+
+			// And finally, show a little success message.
+			exportSuccessMessage.classList.remove('opacity-0');
+			setTimeout(() => {
+				exportSuccessMessage.classList.add('opacity-0');
+			}, 2500);
+		});
+
+	</script>
+</body>
+</html>
