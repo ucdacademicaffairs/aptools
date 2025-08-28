@@ -177,9 +177,8 @@
 			READER_TUTOR_RATE: 22.14,
 			HOURS_PER_FTE_PERCENT: 4.4, 
 			WORK_STUDY: {
-				UNIT_SALARY_EQUIVALENT: 5016, 
+				UNIT_SALARY_EQUIVALENT: 6526, 
 				SAVINGS_RATE: 0.75,
-				CAPPED_1_UNIT_SALARY_SAVINGS: 4894.83 // Explicit salary savings for a capped 1-unit appt.
 			}
 		};
 		// The main array for the calculator, holding all appointment objects.
@@ -552,12 +551,7 @@
 					// work-study is infuriating.
 					if (appt.values.workStudy) {
 						const salaryCap = COST_DATA.WORK_STUDY.UNIT_SALARY_EQUIVALENT * appt.values.workStudyUnits;
-						
-						let salarySavings = Math.min(appt.costs.salary, salaryCap) * COST_DATA.WORK_STUDY.SAVINGS_RATE;
-	
-						if (appt.costs.salary > salaryCap && appt.values.workStudyUnits == 1) {
-							salarySavings = COST_DATA.WORK_STUDY.CAPPED_1_UNIT_SALARY_SAVINGS; 
-						}
+						const salarySavings = Math.min(appt.costs.salary, salaryCap) * COST_DATA.WORK_STUDY.SAVINGS_RATE;
 	
 						appt.costs.workStudySalarySavings = salarySavings;
 	
