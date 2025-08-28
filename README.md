@@ -13,7 +13,7 @@ Last updated: July 23rd, 2025 (Trimmed UI to better fit iFrame.)
 ## [studentemployment.html](https://blueclustertools.ucdavis.edu/studentemployment.html)
 This calculator allows users to create an "employment schedule" for graduate student employees and display the costs associated. It is agnostic on the utility of including NRST costs for ASEs (as opposed to GSRs), and simply warns users if they go near NRST. Proper proration of same-quarter multiple-appointment benefits is in, as is work-study, although I'm continuing to test out each.
 
-Last updated: July 29th, 2025 (Further improvements to work-study handling.)
+Last updated: August 28th, 2025 (Further improvements to work-study handling -- 50% / 1-unit WS GSRs now have correct math-ing.)
 
 ***[studentemployment-facultygsr.html](https://blueclustertools.ucdavis.edu/studentemployment-facultygsr.html)***
 
