@@ -82,7 +82,7 @@
 
 <body>
 	<header class="ucd-header shadow-md">
-		<h1 class="ucd-logo-text">Blue Cluster Heavy Industries</h1>
+		<h1 class="ucd-logo-text">Blue Cluster Testing</h1>
 	</header>
 
 	<main class="w-full max-w-6xl mx-auto p-4 md:p-8">
@@ -165,21 +165,21 @@
 		</div>
 	</main>
 
-	<script>
+<script>
 	document.addEventListener('DOMContentLoaded', function () {
 		// --- State and Data Management ---
 		
-		// We'll start off with default rates and salary scales. Can be edited by the user in the UI. This information changes annually, so notionally this should be updated by "me" on 7/1.\
 		const COST_DATA = {
-			BENEFIT_RATES: { cbr: 0.017, gael: 0.0, addOn: 0.0022, ucrp: 0.0 }, // GAEL's out; I'm too old. On my head be it if the General Overhead Assessment is a thing
+			BENEFIT_RATES: { cbr: 0.017, gael: 0.0, addOn: 0.0022, ucrp: 0.0 }, 
 			GSR_SCALE: { 1: 71895, 2: 77467, 3: 83471, 4: 89941, 5: 96912, 6: 104423 },
 			TA_SCALE: { 1: 70720, 2: 72842, 3: 75027 },
 			TUITION_FEES: { quarterly_tuition: 5196.53, quarterly_ship: 2664.00, quarterly_non_resident: 5034.00 },
 			READER_TUTOR_RATE: 22.14,
-			HOURS_PER_FTE_PERCENT: 4.4, // Or in other words, a 100% FTE times this number = hours per quarter. 50% TA * 4.4 = 220 hours per quarter.
+			HOURS_PER_FTE_PERCENT: 4.4, 
 			WORK_STUDY: {
-				UNIT_SALARY_EQUIVALENT: 5016, // The "cap salary" for work-study.
-				SAVINGS_RATE: 0.75
+				UNIT_SALARY_EQUIVALENT: 5016, 
+				SAVINGS_RATE: 0.75,
+				CAPPED_1_UNIT_SALARY_SAVINGS: 4894.83 // Explicit salary savings for a capped 1-unit appt.
 			}
 		};
 		// The main array for the calculator, holding all appointment objects.
@@ -188,8 +188,8 @@
 		let appointmentCounter = 0;
 		// I'd also like to store the step-by-step calculation details for the "Show Your Work" section.
 		let calculationDetails = {};
-
-
+	
+	
 		// --- DOM element caching ---
 		const addButtonsContainer = document.getElementById('add-buttons');
 		const appointmentsContainer = document.getElementById('appointments-container');
@@ -206,28 +206,23 @@
 		
 		// --- Event listeners ---
 		
-		// Handles clicks on "Add Appointment"
 		addButtonsContainer.addEventListener('click', e => {
 			if (e.target.classList.contains('btn')) addAppointment(e.target.dataset.type);
 		});
 		
-		// Handles the "Clear All" button to reset the calculator.
 		clearAllBtn.addEventListener('click', () => {
 			appointments = [];
 			fullRender();
 		});
 		
-		// Handles the new "Copy to Clipboard"
 		copySummaryBtn.addEventListener('click', () => {
 			let text = '';
-			// Loop through rows and cells to build a tab-separated string.
 			for (const row of summaryTable.rows) {
 				const rowData = Array.from(row.cells)
 					.filter(cell => !cell.classList.contains('ws-savings-col') || !summaryTable.classList.contains('ws-hidden'))
 					.map(cell => cell.innerText.replace(/\$/g, '').replace(/,/g, ''));
 				text += rowData.join('\t') + '\n';
 			}
-			// Use a temporary text area to copy the text to the clipboard
 			const textArea = document.createElement('textarea');
 			textArea.value = text;
 			document.body.appendChild(textArea);
@@ -242,7 +237,6 @@
 			document.body.removeChild(textArea);
 		});
 		
-		// Handles clicks within the appointment container, to delete them.
 		appointmentsContainer.addEventListener('click', e => {
 			if (e.target.classList.contains('btn-delete')) {
 				const id = parseInt(e.target.dataset.id, 10);
@@ -251,7 +245,6 @@
 			}
 		});
 		
-		// The main event handler for any input change within an appointment card. Updates the application state and triggers a wee DOM update.
 		appointmentsContainer.addEventListener('input', e => {
 			const target = e.target;
 			const row = target.closest('.appointment-row');
@@ -276,19 +269,16 @@
 			}
 		});
 		
-		// Toggles the visibility of the "Base Costs & Rates" section.
 		toggleCostsBtn.addEventListener('click', () => {
 			baseCostsContainer.classList.toggle('hidden');
 			toggleCostsBtn.classList.toggle('is-open');
 		});
 		
-		// Toggles the visibility of the "Show Your Work" section.
 		toggleWorkBtn.addEventListener('click', () => {
 			showWorkContainer.classList.toggle('hidden');
 			toggleWorkBtn.classList.toggle('is-open');
 		});
 		
-		// Handles input changes within the "Base Costs & Rates" section to allow live editing of the fundamental bits.
 		baseCostsContainer.addEventListener('input', e => {
 			const keys = e.target.dataset.key.split('.');
 			let obj = COST_DATA;
@@ -299,10 +289,9 @@
 			obj[keys[keys.length - 1]] = (e.target.dataset.isPercent ? value / 100 : value) || 0;
 			fullRender();
 		});
-
+	
 		// --- Core Function Zone ---
 		
-		// Populates the "Base Costs & Rates" section with editable input fields.
 		function populateBaseCosts() {
 			baseCostsContainer.innerHTML = `
 				<div>
@@ -340,7 +329,6 @@
 			`;
 		}
 		
-		//Creates a new appointment object, adds it to the state, and triggers a full re-render. As is maybe obvious, for type we're looking at gsr, ta, etc.
 		function addAppointment(type) {
 			appointmentCounter++;
 			const newAppt = {
@@ -369,7 +357,6 @@
 			fullRender();
 		}
 		
-		// Trigger a full, destructive re-render of the appointments list when adding, deleting, or clearing appointments.
 		function fullRender() {
 			calculateAllCosts();
 			appointmentsContainer.innerHTML = appointments.length === 0 ? '<p class="text-gray-500">No appointments added yet. Click a button above to begin.</p>' : appointments.map(appt => {
@@ -439,7 +426,6 @@
 			updateWarningVisibility();
 		}
 		
-		// Performs a lightweight, non-destructive update of the DOM, updating calculated values without re-creating the input elements, preserving focus.
 		function updateDOMValues() {
 			appointments.forEach(appt => {
 				const row = document.getElementById(`appointment-${appt.id}`);
@@ -464,7 +450,6 @@
 			updateWarningVisibility();
 		}
 		
-		// Calculates initial salary and benefits for all appointments. totalBenefitRate is the combined number to which we apply the benefits.
 		function calculateInitialSalaries(totalBenefitRate) {
 			appointments.forEach(appt => {
 				let salary = 0, salaryFormula = '';
@@ -489,10 +474,6 @@
 			});
 		}
 		
-		// Calculates and distributes prorated fees for all appointments within a specific quarter.
-		// If you're reading this you're probably smarter than me, but for me this was maddening. 
-		// quarter - The quarter to calculate (e.g., 'Fall').
-		// quarterAppts - An array of appointment objects for that quarter.
 		function calculateProratedFees(quarter, quarterAppts) {
 			calculationDetails[quarter] = { log: [`<h4 class="font-bold text-lg">${quarter} Quarter</h4>`] };
 			const log = calculationDetails[quarter].log, totalBenefitRate = Object.values(COST_DATA.BENEFIT_RATES).reduce((a, b) => a + b, 0);
@@ -551,7 +532,7 @@
 					appt.costs.health_ins = totalShip * prorationFactor;
 					
 					const standardFeesForAppt = appt.costs.tuition + appt.costs.health_ins;
-
+	
 					if (totalNonRes > 0) {
 						if (hasEligibleGSR) {
 							if (appt.type === 'gsr') {
@@ -571,18 +552,22 @@
 					// work-study is infuriating.
 					if (appt.values.workStudy) {
 						const salaryCap = COST_DATA.WORK_STUDY.UNIT_SALARY_EQUIVALENT * appt.values.workStudyUnits;
-						const salarySavings = Math.min(appt.costs.salary, salaryCap) * COST_DATA.WORK_STUDY.SAVINGS_RATE;
+						
+						let salarySavings = Math.min(appt.costs.salary, salaryCap) * COST_DATA.WORK_STUDY.SAVINGS_RATE;
+	
+						if (appt.costs.salary > salaryCap && appt.values.workStudyUnits == 1) {
+							salarySavings = COST_DATA.WORK_STUDY.CAPPED_1_UNIT_SALARY_SAVINGS; 
+						}
+	
 						appt.costs.workStudySalarySavings = salarySavings;
-
+	
 						const salaryCoveragePercentage = appt.costs.salary > 0 ? appt.costs.workStudySalarySavings / appt.costs.salary : 0;
 						appt.costs.workStudyFeeSavings = standardFeesForAppt * salaryCoveragePercentage;
 						appt.costs.totalWorkStudySavings = appt.costs.workStudySalarySavings + appt.costs.workStudyFeeSavings;
 						
 						log.push(`<p class="font-semibold mt-2">5. Work Study Savings for GSR #${appt.id}:</p>`);
-						log.push(`<p>&nbsp;&nbsp;- Salary Eligible for WS Savings (min of salary and cap): ${formatCurrency(Math.min(appt.costs.salary, salaryCap))}</p>`);
-						log.push(`<p>&nbsp;&nbsp;- Applied Salary Savings: ${formatCurrency(Math.min(appt.costs.salary, salaryCap))} * ${COST_DATA.WORK_STUDY.SAVINGS_RATE * 100}% = ${formatCurrency(appt.costs.workStudySalarySavings)}</p>`);
-						log.push(`<p>&nbsp;&nbsp;- Salary Coverage %: (${formatCurrency(appt.costs.workStudySalarySavings)} / ${formatCurrency(appt.costs.salary)}) = ${(salaryCoveragePercentage * 100).toFixed(2)}%</p>`);
-						log.push(`<p>&nbsp;&nbsp;- Applied Fee Savings: ${formatCurrency(standardFeesForAppt)} (Prorated Fees) * ${(salaryCoveragePercentage * 100).toFixed(2)}% = ${formatCurrency(appt.costs.workStudyFeeSavings)}</p>`);
+						log.push(`<p>&nbsp;&nbsp;- Applied Salary Savings: ${formatCurrency(appt.costs.workStudySalarySavings)}</p>`);
+						log.push(`<p>&nbsp;&nbsp;- Applied Fee Savings: ${formatCurrency(appt.costs.workStudyFeeSavings)}</p>`);
 						log.push(`<p>&nbsp;&nbsp;- Total WS Savings for this appointment: ${formatCurrency(appt.costs.totalWorkStudySavings)}</p>`);
 					}
 				}
@@ -590,7 +575,6 @@
 			});
 		}
 		
-		// Main calculationizer. Real word, look it up. Resets costs, then calculates salaries, then prorates fees.
 		function calculateAllCosts() {
 			calculationDetails = {};
 			const totalBenefitRate = Object.values(COST_DATA.BENEFIT_RATES).reduce((a, b) => a + b, 0);
@@ -602,7 +586,6 @@
 			});
 		}
 		
-		// Renders the "Show Your Work" section based on the calculationDetails object.
 		function renderCalculationBreakdown() {
 			showWorkContainer.innerHTML = '';
 			const quarters = ['Fall', 'Winter', 'Spring'];
@@ -618,8 +601,6 @@
 			if (!hasCalculations) showWorkContainer.innerHTML = '<p>Add an appointment to see calculation details.</p>';
 		}
 		
-		// Shows or hides the warning cards based on current selections.
-		// Basically this calculator could be used by a couple of different populations, some of whom could be sailed into the rocks by NRST being included for ASEs at all and the FTE stuff. So, we warn.
 		function updateWarningVisibility() {
 			const isAnyNonResident = appointments.some(appt => appt.values.nonResident);
 			if (isAnyNonResident) {
@@ -628,20 +609,20 @@
 			} else {
 				nrstWarningCard.classList.add('hidden');
 			}
-
+	
 			let fteWarning = '';
 			['Fall', 'Winter', 'Spring'].forEach(quarter => {
 				const totalFTE = appointments.reduce((sum, appt) => {
 					return (appt.values.quarter === quarter && appt.type !== 'student-assistant') ? sum + (parseFloat(appt.values.percentTime) || 0) : sum;
 				}, 0);
-
+	
 				if (totalFTE > 75) {
 					fteWarning = `<p class="font-bold">Warning!</p><p>Employment may not exceed 75% during an academic quarter. For more information, please see <a href="https://grad.ucdavis.edu/student-employment" target="_blank" class="underline">this page</a>.</p>`;
 				} else if (totalFTE > 50 && !fteWarning) {
 					fteWarning = `<p class="font-bold">Caution!</p><p>Employment is typically limited to 50% during an academic quarter. For more information, please see <a href="https://grad.ucdavis.edu/student-employment" target="_blank" class="underline">this page</a>.</p>`;
 				}
 			});
-
+	
 			if (fteWarning) {
 				fteWarningCard.innerHTML = fteWarning;
 				fteWarningCard.classList.remove('hidden');
@@ -657,7 +638,6 @@
 			}
 		}
 		
-		// Updates the main "Cost Summary by Quarter" table at the bottom of the page.
 		function updateSummaryTable() {
 			const summary = { Fall: { salary: 0, benefitsAndFees: 0, total: 0, workStudySavings: 0 }, Winter: { salary: 0, benefitsAndFees: 0, total: 0, workStudySavings: 0 }, Spring: { salary: 0, benefitsAndFees: 0, total: 0, workStudySavings: 0 }};
 			let hasWorkStudy = false;
@@ -673,7 +653,7 @@
 			});
 			
 			summaryTable.classList.toggle('ws-hidden', !hasWorkStudy);
-
+	
 			const tableBody = document.getElementById('summary-table-body');
 			tableBody.innerHTML = '';
 			let grandTotal = { salary: 0, benefitsAndFees: 0, total: 0, workStudySavings: 0 };
@@ -689,7 +669,7 @@
 			document.getElementById('summary-total-benefits-fees').textContent = formatCurrency(grandTotal.benefitsAndFees);
 			document.getElementById('summary-total-savings').textContent = formatCurrency(grandTotal.workStudySavings);
 			document.getElementById('summary-grand-total').textContent = formatCurrency(grandTotal.total);
-
+	
 			if(grandTotal.workStudySavings > 0) {
 				workStudySummaryCard.innerHTML = `<p class="font-bold">Work Study Savings:</p>
 					<div class="grid grid-cols-4 text-center">
@@ -704,8 +684,6 @@
 			}
 		}
 		
-		// Helper function to format a number as US currency and return the formatted currency string.
-		// value - The number to format.
 		function formatCurrency(value) {
 			return (value || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 		}
