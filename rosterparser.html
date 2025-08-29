@@ -166,26 +166,44 @@
 			reader.onload = (e) => {
 				let rows; // This will hold our data, structured as an array of rows.
 				try {
-					// This is the critical logic based on our troubleshooting.
+					const fileContent = e.target.result;
+
+					// This is the hybrid logic to deal with the XLS issue. I hate XLS files very much now.
 					if (fileName.endsWith('.xls')) {
-						// If it's an "untrusted" XLS, I treat it as the HTML file it really is.
-						const fileContent = e.target.result;
-						rows = parseHtmlTable(fileContent);
+						// I'll check the file's "magic number" (the first few bytes) to see what it really is.
+						const arr = new Uint8Array(fileContent.slice(0, 8));
+						// This signature is for a true, binary XLS file (what Excel saves as after you "trust" it).
+						const isBinaryXLS = arr[0] === 0xD0 && arr[1] === 0xCF && arr[2] === 0x11 && arr[3] === 0xE0;
+
+						if (isBinaryXLS) {
+							// If it's a "trusted" file, I'll use the binary parser.
+							const workbook = XLSX.read(fileContent, {type: 'array'});
+							const firstSheetName = workbook.SheetNames[0];
+							const worksheet = workbook.Sheets[firstSheetName];
+							rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+						} else {
+							// If it's an "untrusted" file from the SIS, it's actually HTML. So, I need to
+							// decode the ArrayBuffer back into text and use my special HTML table parser.
+							const decoder = new TextDecoder('utf-8');
+							const textContent = decoder.decode(fileContent);
+							rows = parseHtmlTable(textContent);
+						}
 					} else if (fileName.endsWith('.xlsx')) {
-						// For a proper, modern XLSX file, I read it as a binary array.
-						const data = new Uint8Array(e.target.result);
-						const workbook = XLSX.read(data, {type: 'array'});
+						// Modern XLSX files are always binary, so this is straightforward.
+						const workbook = XLSX.read(fileContent, {type: 'array'});
 						const firstSheetName = workbook.SheetNames[0];
 						const worksheet = workbook.Sheets[firstSheetName];
 						rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
 					} else {
-						// For a simple CSV, I just read it as text and split it by lines.
-						const fileContent = e.target.result;
-						const lines = fileContent.split(/\r?\n/);
+						// CSV files are plain text. I decode them and split by line.
+						const decoder = new TextDecoder('utf-8');
+						const textContent = decoder.decode(fileContent);
+						const lines = textContent.split(/\r?\n/);
 						rows = lines.map(line => parseCsvLine(line));
 					}
 					
-					// Once I have the data as an array of rows, I send it to my main parsing function.
+					// Once I have the data as an array of rows, no matter where it came from,
+					// I send it to my main parsing function.
 					parseRows(rows);
 
 				} catch (error) {
@@ -203,12 +221,9 @@
 				exportButton.disabled = true;
 			};
 
-			// This kicks off the reading process, using the correct method for the file type.
-			if (fileName.endsWith('.xlsx')) {
-				reader.readAsArrayBuffer(file); // For binary XLSX
-			} else { // For CSV and our special case of HTML-as-XLS, read as text.
-				reader.readAsText(file);
-			}
+			// To check the file signature for the XLS logic, I ALWAYS need to read the file as an ArrayBuffer first.
+			// This gives me the raw bytes to inspect.
+			reader.readAsArrayBuffer(file);
 		});
 
 		// The reset button just calls my reset function.
@@ -235,7 +250,7 @@
 		}
 
 		/**
-		 * This is my special function just for those "untrusted" XLS files.
+		 * My special function just for those "untrusted" XLS files.
 		 * It takes the file content (which is actually HTML), creates a temporary, invisible
 		 * HTML element, and then scrapes the data out of the tables within it.
 		 * @param {string} htmlString - The HTML content of the file.
@@ -291,7 +306,7 @@
 					headerIndexes = { subj: subjIndex, crse: crseIndex, crn: crnIndex };
 
 					// Now, I scan forward from the header to find the next row that actually has data.
-					// This is what skips over those blank rows in the XLS files. I HATE XLS FILES NOW. Thanks.
+					// This is what skips over those pesky blank rows.
 					for (let j = i + 1; j < rows.length; j++) {
 						const dataRow = rows[j];
 						if (!dataRow || dataRow.every(cell => String(cell).trim() === '')) continue; // Skip empty rows.
@@ -371,7 +386,7 @@
 			// Here's the filename change we made!
 			const fileName = `${fileSubjectCode || 'course'}_parsed_roster.csv`;
 			
-			// Trigger a download in the browser.
+			// This is the standard way to trigger a file download in the browser.
 			// I create a blob, create a hidden link to it,
 			// programmatically click the link, and then remove it.
 			const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
