@@ -24,9 +24,9 @@ Simplified versions of the studentemployment.html calculator optimized for facul
 Last updated: August 11th, 2025 (First version.)
 
 ## [Roster Parser](https://blueclustertools.ucdavis.edu/rosterparser.html)
-This allows users to upload a roster export from SIS, from which point it will return a simple list of "course code / course number / instructor name (or blank) / CRN". It currently handles "untrusted" XLSes, XLSX, and CSV, but fails on "trusted" XLSes for some reason that is infuriating to me. Fortunately untrusted XLSes are SIS's main mode of export. 
+This allows users to upload a roster export from SIS, from which point it will return a simple list of "course code / course number / instructor name (or blank) / CRN". It currently handles "untrusted" and "trusted" XLSes, XLSX, and CSV as far as I can test. 
 
-Last updated: August 28th, 2025 (First version.)
+Last updated: August 28th, 2025 (Added a hybrid XLS handler.)
 
 ## Employee Disclosure Workflow Example
 
