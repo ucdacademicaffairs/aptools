@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>IPA Disclosure Formatter</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+	<style>
+		:root {
+			--ucd-blue: #002855;
+			--ucd-gold: #FFBF00;
+			--ucd-light-gray: #f2f2f2;
+		}
+		body {
+			font-family: 'Public Sans', 'Proxima Nova', sans-serif;
+			background-color: var(--ucd-light-gray);
+		}
+		.ucd-header {
+			background-color: var(--ucd-blue);
+			color: white;
+			padding: 1rem 2rem;
+			display: flex;
+			align-items: center;
+		}
+		.ucd-logo-text {
+			font-weight: 700;
+			font-size: 1.5rem;
+			letter-spacing: 0.5px;
+		}
+		.card {
+			background-color: white;
+			border-radius: 0;
+			border: 1px solid #ddd;
+			padding: 2rem;
+		}
+		.btn {
+			background-color: var(--ucd-blue);
+			color: white;
+			padding: 0.5rem 1rem;
+			border-radius: 0.25rem;
+			font-weight: 500;
+			transition: background-color 0.2s;
+			border: none;
+			cursor: pointer;
+		}
+		.btn:hover:not(:disabled) {
+			background-color: #001e3e;
+		}
+		.btn:disabled {
+			opacity: 0.5;
+			cursor: not-allowed;
+		}
+		.btn-gray {
+			background-color: #6b7280;
+		}
+		.btn-gray:hover:not(:disabled) {
+			background-color: #4b5563;
+		}
+		.btn-green {
+			background-color: #16a34a; 
+		}
+		.btn-green:hover:not(:disabled) {
+			background-color: #15803d;
+		}
+		.btn-teal {
+			background-color: #008eaa;
+		}
+		.btn-teal:hover:not(:disabled) {
+			background-color: #003a5d;
+		}
+
+
+		.icon-overlay {
+			position: absolute;
+			inset: 0;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			z-index: -10;
+			opacity: 0.20; 
+		}
+		.icon-overlay svg {
+			width: 5rem; 
+			height: 5rem;
+			fill: var(--ucd-gold);
+			margin: 0 -1rem; 
+			transform: rotate(-12deg); 
+		}
+		.icon-overlay svg:last-child {
+			fill: var(--ucd-blue); 
+			transform: rotate(6deg); 
+			margin-left: -2rem; 
+		}
+	</style>
+</head>
+<body>
+
+	<header class="ucd-header shadow-md">
+		<h1 class="ucd-logo-text">Blue Cluster Heavy Industries</h1>
+	</header>
+
+	<main class="w-full max-w-4xl mx-auto p-4 md:p-8">
+		
+		<div class="relative text-center mb-8">
+			<div class="icon-overlay">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-16 h-16 text-ucd-gold -rotate-12">
+					<path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm8.706-1.442c1.1-.435 2.1-.614 2.805-.445.71.166 1.157.696 1.157 1.352 0 .794-.654 1.352-1.465 1.48a4.532 4.532 0 0 1-1.477.17c-1.283 0-2.508-.49-3.419-1.399V12a.75.75 0 0 1 1.5 0v.172c.452.348 1.147.636 1.874.636 1.056 0 1.6-.395 1.6-.96 0-.543-.497-.926-1.313-1.077-.821-.151-1.802-.213-2.605-.045A3.704 3.704 0 0 0 9.25 12c0 1.625 1.455 2.75 3.326 2.75 1.259 0 2.49-.387 3.324-1.107l-.544-.664c-.655.549-1.543.896-2.42.896-1.096 0-1.848-.59-1.848-1.402A1.85 1.85 0 0 1 12.25 11.25a.75.75 0 0 1 .75-.75h.75ZM12 17.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd" />
+				</svg>
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-20 h-20 text-ucd-blue rotate-6 -ml-8">
+					<path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clip-rule="evenodd" />
+				</svg>
+			</div>
+			<h2 class="text-4xl font-bold text-[#002855]">IPA-Disclosure Double Checker</h2>
+		</div>
+
+		<div class="card mb-8">
+			<div class="mb-6 p-4 bg-blue-50 border border-blue-200">
+				<h3 class="text-lg font-semibold text-ucd-blue mb-2">How to Use</h3>
+				<ol class="list-decimal list-inside text-gray-700 space-y-1">
+					<li>Export the desired ASE list from the IPA tool as an XLSX file.</li>
+					<li>Click 'Choose File' and select your downloaded IPA export in this tool.</li>
+					<li>A preview of the extracted Name, Email, and Appointment Title will appear below.</li>
+					<li>Click 'Export as XLSX' to download the formatted results.</li>
+					<li>Use the 'Email Template' section below to prepare your email to L&S.</li>
+				</ol>
+			</div>
+
+			<div class="mb-6">
+				<label for="file-upload-label" class="block text-sm font-medium text-gray-700 mb-2">Upload your IPA export:</label>
+				<input id="file-upload" name="file-upload" type="file" accept=".xlsx" class="hidden">
+				<label for="file-upload" id="file-upload-label" class="cursor-pointer inline-block text-white font-bold py-2 px-4 rounded-md bg-[#6bca98] hover:bg-[#266040] transition-colors duration-200">
+					Choose File
+				</label>
+				<p id="file-name" class="mt-2 text-sm text-gray-500"></p>
+			</div>
+
+			<div class="w-full">
+				<label for="results" class="block text-sm font-medium text-gray-700 mb-2">Parsed Results Preview:</label>
+				<textarea id="results" rows="10" class="w-full p-3 border border-gray-300 shadow-sm focus:ring-[#002855] focus:border-[#002855]" placeholder="Results preview will appear here..." readonly></textarea>
+			</div>
+
+			<div class="mt-4 flex justify-end items-center space-x-3">
+				<button id="export-button" class="btn" disabled>
+					Export as XLSX
+				</button>
+				<button id="reset-button" class="btn btn-gray">
+					Reset
+				</button>
+			</div>
+			 <div id="export-success-message" class="mt-2 text-right text-green-600 font-medium opacity-0 transition-opacity duration-300">
+				XLSX downloaded successfully!
+			</div>
+		</div>
+
+		<div class="card">
+			<h3 class="text-lg font-semibold text-ucd-blue mb-2">Email Template</h3>
+			<p class="text-sm text-gray-600 mb-4">
+				Use the tools below to prepare and send your disclosure check request.
+			</p>
+			
+			<div class="mb-4">
+				<label for="email-template" class="block text-sm font-medium text-gray-700 mb-2">1. Copy this text for your email body:</label>
+				<textarea id="email-template" rows="5" class="w-full p-3 border border-gray-300 bg-gray-50 shadow-sm" readonly>Dear L&S Employee Disclosure Team,
+I am writing from the Blue Cluster Grad/AP team. Attached is a list of potential employees; I would be grateful if you could provide a double-check on whether each has completed the Employee Disclosure process. Thank you!</textarea>
+			</div>
+
+			<div class="mb-6">
+				 <label class="block text-sm font-medium text-gray-700 mb-2">2. Send the email (don't forget the attachment!):</label>
+				 <div class="flex items-center space-x-3">
+					<button id="copy-button" class="btn btn-teal">Copy to Clipboard</button>
+					<a href="mailto:lsdisclosure@ucdavis.edu" id="email-button" class="btn btn-teal">
+						Open Email to lsdisclosure@ucdavis.edu
+					</a>
+				 </div>
+				 <div id="copy-success-message" class="mt-2 text-left text-green-600 font-medium opacity-0 transition-opacity duration-300">
+					Email body copied!
+				</div>
+			</div>
+		</div>
+	</main>
+
+	<script>
+		// --- Global variable for parsed data ---
+		let employeeDataForExport = [];
+
+		// --- DOM Element References ---
+		const fileUpload = document.getElementById('file-upload');
+		const fileNameDisplay = document.getElementById('file-name');
+		const resultsTextarea = document.getElementById('results');
+		const exportButton = document.getElementById('export-button');
+		const resetButton = document.getElementById('reset-button');
+		const exportSuccessMessage = document.getElementById('export-success-message');
+		const emailTemplate = document.getElementById('email-template');
+		const copyButton = document.getElementById('copy-button');
+		const emailButton = document.getElementById('email-button');
+		const copySuccessMessage = document.getElementById('copy-success-message');
+
+		function resetApp() {
+			fileUpload.value = null;
+			fileNameDisplay.textContent = '';
+			resultsTextarea.value = '';
+			exportButton.disabled = true;
+			employeeDataForExport = [];
+		}
+
+		// --- Event Listeners ---
+		fileUpload.addEventListener('change', (event) => {
+			const file = event.target.files[0];
+			if (!file) {
+				resetApp();
+				return;
+			}
+			fileNameDisplay.textContent = `Selected file: ${file.name}`;
+			
+			const reader = new FileReader();
+			
+			reader.onload = (e) => {
+				try {
+					const fileContent = e.target.result;
+					const workbook = XLSX.read(fileContent, {type: 'array'});
+					const firstSheetName = workbook.SheetNames[0];
+					const worksheet = workbook.Sheets[firstSheetName];
+					// Convert sheet to an array of objects, which is easy to work with
+					const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+					
+					parseIPARows(jsonData);
+
+				} catch (error) {
+					console.error("Error processing file:", error);
+					resultsTextarea.value = "Error: Could not process the XLSX file. It may be corrupted or in an unexpected format.";
+					exportButton.disabled = true;
+				}
+			};
+
+			reader.onerror = (e) => {
+				console.error("Error reading file:", e);
+				resultsTextarea.value = "Error: Could not read the selected file.";
+				exportButton.disabled = true;
+			};
+			
+			// Read as ArrayBuffer, which is what SheetJS expects
+			reader.readAsArrayBuffer(file);
+		});
+
+		resetButton.addEventListener('click', resetApp);
+		
+		copyButton.addEventListener('click', () => {
+			navigator.clipboard.writeText(emailTemplate.value).then(() => {
+				// Show success feedback
+				copyButton.textContent = 'Copied!';
+				copySuccessMessage.classList.remove('opacity-0');
+				setTimeout(() => {
+					copyButton.textContent = 'Copy to Clipboard';
+					copySuccessMessage.classList.add('opacity-0');
+				}, 2000);
+			}).catch(err => {
+				console.error('Failed to copy text: ', err);
+			});
+		});
+
+		/**
+		 * Finds the correct header name from a list of possibilities.
+		 * This makes the parser more robust if column names change slightly.
+		 * @param {string[]} headers - Array of actual headers from the file.
+		 * @param {string[]} potentialNames - Array of possible names we're looking for (case-insensitive).
+		 * @returns {string|null} The found header name or null.
+		 */
+		function findHeader(headers, potentialNames) {
+			const lowerCaseHeaders = headers.map(h => String(h).toLowerCase().trim().replace(/\s+/g, ' '));
+			for (const name of potentialNames) {
+				const lowerCaseName = name.toLowerCase();
+				const headerIndex = lowerCaseHeaders.indexOf(lowerCaseName);
+				if (headerIndex !== -1) {
+					return headers[headerIndex];
+				}
+			}
+			return null;
+		}
+
+		/**
+		 * The main parsing logic for IPA data.
+		 * @param {Object[]} rows - Data from the XLSX file as an array of objects.
+		 */
+		function parseIPARows(rows) {
+			employeeDataForExport = [];
+			const parsedResults = [];
+			
+			if (rows.length === 0) {
+				resultsTextarea.value = "No data found in the file.";
+				exportButton.disabled = true;
+				return;
+			}
+
+			const headers = Object.keys(rows[0]);
+			
+			// Define potential header names (incorporating user's updates)
+			const nameHeaders = ['name', 'student name', 'employee name'];
+			const emailHeaders = ['email', 'email address', 'ucdavis email', 'person email'];
+			const titleHeaders = ['title', 'appointment title', 'job title', 'appointment type'];
+
+			// Find the actual headers from the file
+			const nameHeader = findHeader(headers, nameHeaders);
+			const emailHeader = findHeader(headers, emailHeaders);
+			const titleHeader = findHeader(headers, titleHeaders);
+
+			// Added more specific error messages.
+			let errorMessage = '';
+			if (!nameHeader) {
+				errorMessage = `Error: Could not find the 'Name' column. Looked for: [${nameHeaders.join(', ')}].`;
+			} else if (!emailHeader) {
+				errorMessage = `Error: Could not find the 'Email' column. Looked for: [${emailHeaders.join(', ')}].`;
+			} else if (!titleHeader) {
+				errorMessage = `Error: Could not find the 'Title' column. Looked for: [${titleHeaders.join(', ')}].`;
+			}
+
+			if (errorMessage) {
+				resultsTextarea.value = `${errorMessage}\n\nDetected headers in file: [${headers.join(', ')}]`;
+				exportButton.disabled = true;
+				return;
+			}
+			
+			// Process each row
+			rows.forEach(row => {
+				const name = String(row[nameHeader] || '').trim();
+				const email = String(row[emailHeader] || '').trim();
+				const title = String(row[titleHeader] || '').trim();
+
+				// Only add rows that have at least a name and email
+				if (name && email) {
+					employeeDataForExport.push({
+						'Name': name,
+						'Email': email,
+						'Title': title
+					});
+					parsedResults.push(`${name}\t${email}\t${title}`);
+				}
+			});
+
+			if (parsedResults.length > 0) {
+				resultsTextarea.value = `Name\tEmail\tTitle\n` + parsedResults.join('\n');
+				exportButton.disabled = false;
+			} else {
+				resultsTextarea.value = "No valid employee data found. Please check the file content.";
+				exportButton.disabled = true;
+			}
+		}
+
+		exportButton.addEventListener('click', () => {
+			if (employeeDataForExport.length === 0) return;
+
+			// Create a new workbook and a worksheet from our parsed data
+			const workbook = XLSX.utils.book_new();
+			const worksheet = XLSX.utils.json_to_sheet(employeeDataForExport);
+
+			// Add the worksheet to the workbook
+			XLSX.utils.book_append_sheet(workbook, worksheet, "Disclosure List");
+
+			// Use SheetJS's high-level function to trigger the download
+			XLSX.writeFile(workbook, "ipa_disclosure_list.xlsx");
+
+			// Show success message
+			exportSuccessMessage.classList.remove('opacity-0');
+			setTimeout(() => {
+				exportSuccessMessage.classList.add('opacity-0');
+			}, 2500);
+		});
+
+	</script>
+</body>
+</html>
