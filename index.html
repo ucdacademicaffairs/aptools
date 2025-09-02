@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blue Cluster Tools - UC Davis</title>
-    <!-- Using Google Fonts to load a font similar to Proxima Nova if not available -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
@@ -12,7 +11,7 @@
     <style>
         body {
             font-family: 'Inter', 'Proxima Nova', sans-serif;
-            background-color: #F3F4F6; /* A light gray background */
+            background-color: #F3F4F6;
         }
         .ucd-blue {
             background-color: #022851; /* Aggie Blue */
@@ -104,8 +103,42 @@
                 </div>
             </div>
 
-            <!-- Student Employment Calculator Card -->
+            <!-- Roster Parser Card -->
             <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col justify-between">
+                <div class="p-6">
+                    <h3 class="text-2xl font-bold text-ucd-blue mb-2">Roster Parser</h3>
+                    <p class="text-gray-700 mb-4">
+                        Upload a roster export from SIS (XLS, XLSX, CSV) to return a simple list of "course code / course number / instructor name (or blank) / CRN". Handles "untrusted" and "trusted" exports.
+                    </p>
+                </div>
+                <div class="p-6 bg-gray-50">
+                    <p class="text-sm text-gray-500 mb-1">Last updated: August 28th, 2025</p>
+                    <p class="text-xs text-gray-600 italic mb-2">Added a hybrid XLS handler.</p>
+                    <a href="rosterparser.html" class="btn-primary">
+                        Launch Tool &rarr;
+                    </a>
+                </div>
+            </div>
+
+            <!-- IPA-Disclosure Double Checker Card -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col justify-between">
+                <div class="p-6">
+                    <h3 class="text-2xl font-bold text-ucd-blue mb-2">IPA-Disclosure Double Checker</h3>
+                    <p class="text-gray-700 mb-4">
+                        This tool takes a Support Assignments XLSX exported from IPA and quickly pulls out name, email, and title. Its purpose is to streamline the process of double-checking whether or not an employee has completed the Disclosure Process.
+                    </p>
+                </div>
+                <div class="p-6 bg-gray-50">
+                    <p class="text-sm text-gray-500 mb-1">Last updated: September 2nd, 2025</p>
+                    <p class="text-xs text-gray-600 italic mb-2">First version.</p>
+                    <a href="ipa-checker.html" class="btn-primary">
+                        Launch Tool &rarr;
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Student Employment Calculator Card -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col justify-between md:col-span-2">
                 <div class="p-6">
                     <h3 class="text-2xl font-bold text-ucd-blue mb-2">Student Employment Cost Calculator</h3>
                     <p class="text-gray-700 mb-4">
@@ -129,22 +162,6 @@
                 </div>
             </div>
 
-            <!-- Roster Parser Card -->
-            <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col justify-between">
-                <div class="p-6">
-                    <h3 class="text-2xl font-bold text-ucd-blue mb-2">Roster Parser</h3>
-                    <p class="text-gray-700 mb-4">
-                        Upload a roster export from SIS (XLS, XLSX, CSV) to return a simple list of "course code / course number / instructor name (or blank) / CRN". Handles "untrusted" and "trusted" exports.
-                    </p>
-                </div>
-                <div class="p-6 bg-gray-50">
-                    <p class="text-sm text-gray-500 mb-1">Last updated: August 28th, 2025</p>
-                    <p class="text-xs text-gray-600 italic mb-2">Added a hybrid XLS handler.</p>
-                    <a href="rosterparser.html" class="btn-primary">
-                        Launch Tool &rarr;
-                    </a>
-                </div>
-            </div>
         </div>
 
         <!-- AGS Mini Resources Section -->
