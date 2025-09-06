@@ -6,213 +6,355 @@
     <title>Blue Cluster Tools - UC Davis</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
     <style>
+        /* --- Root Variables for Easy Theming --- */
+        :root {
+            --ucd-blue: #022851;
+            --ucd-gold: #FFBF00;
+            --deep-space: #000B1A;
+            --electric-gold: #FFD700;
+            --cyber-blue: #00D4FF;
+            --glow-color-1: #005f73;
+            --glow-color-2: #0a9396;
+            --glow-color-3: #94d2bd;
+            --glow-color-4: #ee9b00;
+            --text-primary: #f0f4f8;
+            --text-secondary: #adb5bd;
+            --glass-bg: rgba(12, 23, 35, 0.25);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --readability-shield-bg: rgba(0, 11, 26, 0.95); /* Made slightly more opaque */
+            --border-radius: 16px;
+            --animation-stagger: 100ms;
+        }
+
+        /* --- Base & Body Styles --- */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Inter', 'Proxima Nova', sans-serif;
-            background-color: #F3F4F6;
-        }
-        .ucd-blue {
-            background-color: #022851; /* Aggie Blue */
-        }
-        .text-ucd-blue {
-            color: #022851;
-        }
-        .btn-primary {
-             display: inline-block;
-             background-color: #6bca98;
-             color: white;
-             font-weight: bold;
-             padding: 0.5rem 1rem;
-             border-radius: 0.375rem;
-             transition: background-color 0.3s;
-        }
-        .btn-primary:hover {
-            background-color: #266040;
-        }
-        .btn-secondary {
-             display: inline-block;
-             background-color: #008eaa;
-             color: white;
-             font-weight: bold;
-             padding: 0.5rem 1rem;
-             border-radius: 0.375rem;
-             transition: background-color 0.3s;
-             margin-top: 0.5rem;
-             margin-right: 0.5rem;
-        }
-        .btn-secondary:hover {
-            background-color: #003a5d;
+            background-color: var(--deep-space); color: var(--text-primary);
+            overflow-x: hidden; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; min-height: 100vh;
         }
 
+        /* --- Layered Background Effects --- */
+        body::before {
+            content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -3;
+            background: 
+                radial-gradient(circle at 15% 25%, var(--glow-color-1) 0%, transparent 45%),
+                radial-gradient(circle at 85% 15%, var(--glow-color-2) 0%, transparent 55%),
+                radial-gradient(circle at 25% 95%, var(--glow-color-3) 0%, transparent 40%),
+                radial-gradient(circle at 95% 75%, var(--glow-color-4) 0%, transparent 50%);
+            background-size: 200% 200%; animation: aurora 25s linear infinite alternate;
+        }
+        @keyframes aurora { 0% { background-position: 0% 0%; } 100% { background-position: 100% 100%; } }
+        
+        .energy-grid {
+            position: fixed; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none; opacity: 0.07;
+            background-image: 
+                linear-gradient(var(--electric-gold) 1px, transparent 1px),
+                linear-gradient(90deg, var(--electric-gold) 1px, transparent 1px);
+            background-size: 100px 100px; z-index: -2; animation: grid-pulse 6s ease-in-out infinite;
+        }
+        @keyframes grid-pulse { 0%, 100% { opacity: 0.05; transform: scale(1); } 50% { opacity: 0.1; transform: scale(1.02); } }
+        
+        .matrix-text {
+            position: fixed; font-family: monospace; color: var(--ucd-gold); opacity: 0.1; font-size: 14px;
+            animation: matrix-fall linear infinite; text-shadow: 0 0 5px var(--ucd-gold); z-index: -1;
+        }
+        @keyframes matrix-fall { 0% { transform: translateY(-100vh); opacity: 0; } 10% { opacity: 0.1; } 90% { opacity: 0.1; } 100% { transform: translateY(100vh); opacity: 0; } }
+
+        /* --- Header & Footer --- */
+        .page-header, .page-footer { background-color: rgba(0, 11, 26, 0.5); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--glass-border); }
+        .page-footer { border-bottom: none; border-top: 1px solid var(--glass-border); margin-top: 4rem; }
+        .header-content { display: flex; align-items: center; justify-content: space-between; padding: 1rem 0; }
+        .footer-content { padding: 2rem 0; text-align: center; color: var(--text-secondary); }
+        .footer-content a { color: var(--electric-gold); font-weight: 600; text-decoration: none; transition: all 0.3s ease; }
+        .footer-content a:hover { color: var(--text-primary); text-shadow: 0 0 10px var(--electric-gold); }
+        .uc-badge {
+            width: 40px; height: 40px; background: linear-gradient(135deg, var(--ucd-gold) 0%, var(--electric-gold) 100%);
+            border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 1.1rem; color: var(--ucd-blue);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); transition: all 0.3s ease; cursor: pointer; margin-right: 1rem;
+        }
+
+        /* --- Main Content & Typography --- */
+        .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+        main { padding: 4rem 0 3rem; }
+        .intro-section { text-align: center; margin-bottom: 4rem; }
+        .section-heading {
+            font-family: 'Space Grotesk', sans-serif; font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 700; color: var(--text-primary);
+            text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1.5rem;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.8), 0 0 15px rgba(0, 212, 255, 0.7), 0 0 30px rgba(0, 212, 255, 0.5), 0 0 50px rgba(0, 212, 255, 0.3);
+        }
+        .section-subheading { font-size: 1.125rem; color: var(--text-secondary); max-width: 48rem; margin: 0 auto; line-height: 1.6; }
+        .resources-section { text-align: center; margin-top: 5rem; margin-bottom: 2.5rem; }
+
+        /* --- Glassmorphic Cards --- */
+        .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem; }
+        
+        .card {
+            background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border); border-radius: var(--border-radius);
+            display: flex; flex-direction: column; justify-content: space-between;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+            position: relative; overflow: hidden;
+        }
+        .card::before {
+            content: ''; position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px;
+            background: linear-gradient(45deg, var(--electric-gold), var(--cyber-blue), var(--electric-gold)); background-size: 400% 400%;
+            border-radius: var(--border-radius); opacity: 0; z-index: 1; /* Sits above base, below content */
+            transition: opacity 0.4s ease; animation: gradient-border 4s ease infinite;
+        }
+        @keyframes gradient-border { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+        
+        .card:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4); }
+        .card:hover::before { opacity: 1; }
+        
+        .card-hover-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--readability-shield-bg);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: 2; /* Sits above the glow, below the content */
+            pointer-events: none; /* Allows clicks to go through to buttons */
+        }
+        .card:hover .card-hover-overlay {
+            opacity: 1;
+        }
+
+        .card-content, .card-footer {
+            position: relative;
+            z-index: 3;
+        }
+        .card-content { padding: 1.5rem; }
+        .card-footer { padding: 1.5rem; background-color: rgba(0, 0, 0, 0.2); border-top: 1px solid var(--glass-border); }
+        
+        .card.card-span-2 { grid-column: span 1; }
+        @media (min-width: 1024px) { .card.card-span-2 { grid-column: span 2; } }
+        
+        .card-title { font-family: 'Space Grotesk', sans-serif; font-size: 1.6rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem; }
+        .card-description { color: var(--text-secondary); line-height: 1.6; margin-bottom: 1rem; }
+        .update-info { font-size: 0.875rem; color: var(--cyber-blue); margin-bottom: 0.25rem; }
+        .update-note { font-size: 0.8rem; color: var(--text-secondary); font-style: italic; margin-bottom: 1rem; }
+
+        /* --- Buttons --- */
+        .btn { display: inline-block; padding: 0.65rem 1.25rem; border-radius: 8px; font-weight: 600; text-decoration: none; transition: all 0.3s ease; border: none; cursor: pointer; text-align: center; }
+        .btn-primary { background-color: var(--electric-gold); color: var(--ucd-blue); }
+        .btn-primary:hover { background-color: white; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4); }
+        .btn-secondary { background-color: transparent; color: var(--electric-gold); border: 1px solid var(--electric-gold); }
+        .btn-secondary:hover { background-color: rgba(255, 215, 0, 0.1); border-color: white; color: white; }
+        .card-footer .btn { margin-right: 0.5rem; margin-bottom: 0.5rem; }
+        .simplified-tools { border-top: 1px solid var(--glass-border); padding-top: 1rem; margin-top: 1.5rem; }
+        .simplified-tools-title { font-size: 0.9rem; font-weight: 600; color: var(--electric-gold); text-transform: uppercase; letter-spacing: 0.5px; }
+        .simplified-tools-desc { font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem; margin-bottom: 1rem; }
+        
+        /* --- On-Load Animations --- */
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-on-load { animation: fadeInUp 0.6s ease-out forwards; opacity: 0; }
     </style>
 </head>
-<body class="antialiased">
+<body>
+    
+    <div class="energy-grid"></div>
 
-    <!-- Header Section -->
-    <header class="ucd-blue shadow-md">
-        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center space-x-4">
-                <h1 class="text-xl md:text-3xl font-bold text-white tracking-tight">Blue Cluster Tools</h1>
+    <header class="page-header animate-on-load">
+        <div class="container">
+            <div class="header-content">
+                <div style="display: flex; align-items: center;">
+                    <div class="uc-badge" title="Click me 5 times!">💙</div>
+                    <h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 700; color: white; letter-spacing: -0.5px;">Blue Cluster Tools</h1>
+                </div>
             </div>
         </div>
     </header>
 
-    <!-- Main Content Section -->
-    <main class="container mx-auto px-6 py-8 md:py-12">
-        <div class="text-center mb-10">
-            <h2 class="text-3xl md:text-4xl font-bold text-ucd-blue">Administrative Tools</h2>
-            <p class="text-gray-600 mt-4 text-lg max-w-4xl mx-auto">The intention of these tools is to provide staff and faculty with easily-referenced tools to aid their work, replacing either ad-hoc calculation or somewhat ungraceful Excel calculators.</p>
+    <main class="container">
+        <div class="intro-section animate-on-load" style="animation-delay: 100ms;">
+               <br>
+            <h2 class="section-heading">Widgets</h2>
+            <!-- 
+<p class="section-subheading">The intention of these tools is to provide staff and faculty with easily-referenced tools to aid their work, replacing either ad-hoc calculation or somewhat ungraceful Excel calculators.</p>
         </div>
+ -->
 
-        <!-- Tool Cards Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            
-            <!-- Summer Compensation Calculator Card -->
-            <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col justify-between">
-                <div class="p-6">
-                    <h3 class="text-2xl font-bold text-ucd-blue mb-2">Summer Compensation Calculator</h3>
-                    <p class="text-gray-700 mb-4">
-                        Derives a maximum available summer compensation from an annual salary. Users can then explore summer-research scenarios by activating months and adjusting FTE. Built for faculty on 9/12 ("academic year") appointments (for now), and optimized for inclusion in SiteFarm via iFrame.
-                    </p>
+        <div class="tools-grid">
+            <div class="card animate-on-load" style="animation-delay: 200ms;">
+                <div class="card-content">
+                    <h3 class="card-title">Summer Compensation Calculator</h3>
+                    <p class="card-description">Derives a maximum available summer compensation from an annual salary. Users can then explore summer-research scenarios by activating months and adjusting FTE. Built for faculty on 9/12 ("academic year") appointments (for now), and optimized for inclusion in SiteFarm via iFrame.</p>
                 </div>
-                <div class="p-6 bg-gray-50">
-                    <p class="text-sm text-gray-500 mb-1">Last updated: July 23rd, 2025</p>
-                    <p class="text-xs text-gray-600 italic mb-2">Trimmed UI to better fit iFrame.</p>
-                    <a href="summercomp.html" class="btn-primary">
-                        Launch Tool &rarr;
-                    </a>
+                <div class="card-footer">
+                    <p class="update-info">Last updated: July 23rd, 2025</p>
+                    <p class="update-note">Trimmed UI to better fit iFrame.</p>
+                    <a href="summercomp.html" class="btn btn-primary">Launch Tool &rarr;</a>
                 </div>
+                <div class="card-hover-overlay"></div>
             </div>
-
-            <!-- Sabbatical Calculator Card -->
-            <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col justify-between">
-                <div class="p-6">
-                    <h3 class="text-2xl font-bold text-ucd-blue mb-2">Sabbatical Planning Calculator</h3>
-                    <p class="text-gray-700 mb-4">
-                        Enter a sabbatical credit total and annual salary, then activate quarters, play with salary level and residency, and see the impact on sabbatical credit usage and total salary. Optimized for inclusion in SiteFarm via iFrame.
-                    </p>
+            <div class="card animate-on-load" style="animation-delay: 300ms;">
+                <div class="card-content">
+                    <h3 class="card-title">Sabbatical Planning Calculator</h3>
+                    <p class="card-description">Enter a sabbatical credit total and annual salary, then activate quarters, play with salary level and residency, and see the impact on sabbatical credit usage and total salary. Optimized for inclusion in SiteFarm via iFrame.</p>
                 </div>
-                <div class="p-6 bg-gray-50">
-                     <p class="text-sm text-gray-500 mb-1">Last updated: July 23rd, 2025</p>
-                     <p class="text-xs text-gray-600 italic mb-2">Trimmed UI to better fit iFrame.</p>
-                    <a href="sabbatical.html" class="btn-primary">
-                        Launch Tool &rarr;
-                    </a>
+                <div class="card-footer">
+                     <p class="update-info">Last updated: July 23rd, 2025</p>
+                     <p class="update-note">Trimmed UI to better fit iFrame.</p>
+                    <a href="sabbatical.html" class="btn btn-primary">Launch Tool &rarr;</a>
                 </div>
+                <div class="card-hover-overlay"></div>
             </div>
-
-            <!-- Roster Parser Card -->
-            <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col justify-between">
-                <div class="p-6">
-                    <h3 class="text-2xl font-bold text-ucd-blue mb-2">Roster Parser</h3>
-                    <p class="text-gray-700 mb-4">
-                        Upload a roster export from SIS (XLS, XLSX, CSV) to return a simple list of "course code / course number / instructor name (or blank) / CRN". Handles "untrusted" and "trusted" exports.
-                    </p>
+            <div class="card animate-on-load" style="animation-delay: 400ms;">
+                <div class="card-content">
+                    <h3 class="card-title">Roster Parser</h3>
+                    <p class="card-description">Upload a roster export from SIS (XLS, XLSX, CSV) to return a simple list of "course code / course number / instructor name (or blank) / CRN". Handles "untrusted" and "trusted" exports.</p>
                 </div>
-                <div class="p-6 bg-gray-50">
-                    <p class="text-sm text-gray-500 mb-1">Last updated: August 28th, 2025</p>
-                    <p class="text-xs text-gray-600 italic mb-2">Added a hybrid XLS handler.</p>
-                    <a href="rosterparser.html" class="btn-primary">
-                        Launch Tool &rarr;
-                    </a>
+                <div class="card-footer">
+                    <p class="update-info">Last updated: August 28th, 2025</p>
+                    <p class="update-note">Added a hybrid XLS handler.</p>
+                    <a href="rosterparser.html" class="btn btn-primary">Launch Tool &rarr;</a>
                 </div>
+                <div class="card-hover-overlay"></div>
             </div>
-
-            <!-- IPA-Disclosure Double Checker Card -->
-            <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col justify-between">
-                <div class="p-6">
-                    <h3 class="text-2xl font-bold text-ucd-blue mb-2">IPA-Disclosure Double Checker</h3>
-                    <p class="text-gray-700 mb-4">
-                        This tool takes a Support Assignments XLSX exported from IPA and quickly pulls out name, email, and title. Its purpose is to streamline the process of double-checking whether or not an employee has completed the Disclosure Process.
-                    </p>
+            <div class="card animate-on-load" style="animation-delay: 500ms;">
+                <div class="card-content">
+                    <h3 class="card-title">IPA-Disclosure Double Checker</h3>
+                    <p class="card-description">This tool takes a Support Assignments XLSX exported from IPA and quickly pulls out name, email, and title. Its purpose is to streamline the process of double-checking whether or not an employee has completed the Disclosure Process.</p>
                 </div>
-                <div class="p-6 bg-gray-50">
-                    <p class="text-sm text-gray-500 mb-1">Last updated: September 2nd, 2025</p>
-                    <p class="text-xs text-gray-600 italic mb-2">First version.</p>
-                    <a href="ipaparser.html" class="btn-primary">
-                        Launch Tool &rarr;
-                    </a>
+                <div class="card-footer">
+                    <p class="update-info">Last updated: September 2nd, 2025</p>
+                    <p class="update-note">First version.</p>
+                    <a href="ipa-checker.html" class="btn btn-primary">Launch Tool &rarr;</a>
                 </div>
+                <div class="card-hover-overlay"></div>
             </div>
-            
-            <!-- Student Employment Calculator Card -->
-            <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col justify-between md:col-span-2">
-                <div class="p-6">
-                    <h3 class="text-2xl font-bold text-ucd-blue mb-2">Student Employment Cost Calculator</h3>
-                    <p class="text-gray-700 mb-4">
-                        Create an "employment schedule" for graduate student employees and display the costs associated. Features proper proration of same-quarter multiple-appointment benefits and work-study.
-                    </p>
+            <div class="card card-span-2 animate-on-load" style="animation-delay: 600ms;">
+                <div class="card-content">
+                    <h3 class="card-title">Student Employment Cost Calculator</h3>
+                    <p class="card-description">Create an "employment schedule" for graduate student employees and display the costs associated. Features proper proration of same-quarter multiple-appointment benefits and work-study.</p>
                 </div>
-                <div class="p-6 bg-gray-50">
-                    <p class="text-sm text-gray-500 mb-1">Last updated: August 28th, 2025</p>
-                    <p class="text-xs text-gray-600 italic mb-2">Further improvements to work-study handling (50% GSR w/ 1-unit no longer has an error).</p>
-                    <a href="studentemployment.html" class="btn-primary mb-3">
-                        Launch Full Tool &rarr;
-                    </a>
-                    <div class="border-t pt-3">
-                        <p class="text-sm text-gray-600 font-bold">SIMPLIFIED FACULTY VERSIONS</p>
-                        <p class="text-xs text-gray-600 mt-1 mb-2">Restrictive, single-quarter versions for faculty to use, optimized for inclusion in SiteFarm via iFrame.</p>
-                        <div class="mt-2">
-                             <a href="studentemployment-facultygsr.html" class="btn-secondary">GSR Version</a>
-                             <a href="studentemployment-facultystdt.html" class="btn-secondary">STDT Version</a>
+                <div class="card-footer">
+                    <p class="update-info">Last updated: August 28th, 2025</p>
+                    <p class="update-note">Further improvements to work-study handling (50% GSR w/ 1-unit no longer has an error).</p>
+                    <a href="studentemployment.html" class="btn btn-primary">Launch Full Tool &rarr;</a>
+                    <div class="simplified-tools">
+                        <p class="simplified-tools-title">Simplified Faculty Versions</p>
+                        <p class="simplified-tools-desc">Restrictive, single-quarter versions for faculty to use, optimized for inclusion in SiteFarm via iFrame.</p>
+                        <div>
+                             <a href="studentemployment-facultygsr.html" class="btn btn-secondary">GSR Version</a>
+                             <a href="studentemployment-facultystdt.html" class="btn btn-secondary">STDT Version</a>
                         </div>
                     </div>
                 </div>
+                <div class="card-hover-overlay"></div>
             </div>
-
         </div>
 
-        <!-- AGS Mini Resources Section -->
-        <div class="text-center mt-16 mb-10">
-            <h2 class="text-3xl md:text-4xl font-bold text-ucd-blue">AGS Mini Resources</h2>
-            <p class="text-gray-600 mt-2 text-lg">Downloads and examples for AGS Mini attendees.</p>
+        <div class="resources-section animate-on-load" style="animation-delay: 700ms;">
+            <h2 class="section-heading">AGS Mini Resources</h2>
+            <!-- <p class="section-subheading">Downloads and examples for AGS Mini attendees.</p> -->
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Employee Disclosure Card -->
-            <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col justify-between">
-                <div class="p-6">
-                    <h3 class="text-2xl font-bold text-ucd-blue mb-2">Employee Disclosure Workflow</h3>
-                    <p class="text-gray-700 mb-4">
-                        This ZIP folder contains each piece of the Employee Disclosure workflow. Please email me to be added as a user to the "read the form" AI model, or I'd be glad to Zoom with you to help you build your own!
-                    </p>
+        <div class="tools-grid">
+            <div class="card animate-on-load" style="animation-delay: 800ms;">
+                <div class="card-content">
+                    <h3 class="card-title">Employee Disclosure Workflow</h3>
+                    <p class="card-description">This ZIP folder contains each piece of the Employee Disclosure workflow. Please email me to be added as a user to the "read the form" AI model, or I'd be glad to Zoom with you to help you build your own!</p>
                 </div>
-                <div class="p-6 bg-gray-50">
-                    <a href="https://bombandgrapnel.com/disclosurehandler.zip" class="btn-secondary">Download .ZIP</a>
-                    <a href="mailto:woangel@ucdavis.edu" class="btn-secondary">Request Access</a>
+                <div class="card-footer">
+                    <a href="https://bombandgrapnel.com/disclosurehandler.zip" class="btn btn-secondary">Download .ZIP</a>
+                    <a href="mailto:woangel@ucdavis.edu" class="btn btn-secondary">Request Access</a>
                 </div>
+                <div class="card-hover-overlay"></div>
             </div>
-            <!-- Docusign Powerforms Card -->
-            <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col justify-between">
-                <div class="p-6">
-                    <h3 class="text-2xl font-bold text-ucd-blue mb-2">Docusign "eForms" Example</h3>
-                    <p class="text-gray-700 mb-4">
-                        Contains Docusign templates to create Powerforms for Grad Studies Legacy Forms and example HTML for a SiteFarm page.
-                    </p>
+            <div class="card animate-on-load" style="animation-delay: 900ms;">
+                <div class="card-content">
+                    <h3 class="card-title">Docusign "eForms" Example</h3>
+                    <p class="card-description">Contains Docusign templates to create Powerforms for Grad Studies Legacy Forms and example HTML for a SiteFarm page.</p>
                 </div>
-                <div class="p-6 bg-gray-50">
-                    <a href="https://bombandgrapnel.com/eformstemplates.zip" class="btn-secondary">Download Templates (.zip)</a>
-                    <a href="https://bombandgrapnel.com/eformswebsite.html" class="btn-secondary">Download HTML</a>
+                <div class="card-footer">
+                    <a href="https://bombandgrapnel.com/eformstemplates.zip" class="btn btn-secondary">Download Templates (.zip)</a>
+                    <a href="https://bombandgrapnel.com/eformswebsite.html" class="btn btn-secondary">Download HTML</a>
                 </div>
+                <div class="card-hover-overlay"></div>
             </div>
         </div>
     </main>
 
-    <!-- Footer Section -->
-    <footer class="ucd-blue mt-12">
-        <div class="container mx-auto px-6 py-8 text-center text-gray-300">
-            <p class="mb-4">
-                Please contact <a href="mailto:woangel@ucdavis.edu" class="text-white font-bold underline hover:text-gray-200">Will Arcement-Angel (woangel@ucdavis.edu)</a> with questions.
-            </p>
-            <p class="mb-4">
-                This subdomain hosts tools created by and for the Blue Cluster team. The official Blue Cluster website can be found at <a href="https://bluecluster.ucdavis.edu" target="_blank" rel="noopener" class="text-white font-bold underline hover:text-gray-200">bluecluster.ucdavis.edu</a>.
-            </p>
-            <p class="text-sm">&copy; 2024 Regents of the University of California, Davis campus. All rights reserved.</p>
+    <footer class="page-footer">
+        <div class="container footer-content">
+            <br>
+            <p style="margin-bottom: 1rem;">Please contact <a href="mailto:woangel@ucdavis.edu">Will Arcement-Angel (woangel@ucdavis.edu)</a> with questions.</p>
+            <p style="margin-bottom: 1rem;">This subdomain hosts tools created by and for the Blue Cluster team. The official Blue Cluster website can be found at <a href="https://bluecluster.ucdavis.edu" target="_blank" rel="noopener">bluecluster.ucdavis.edu</a>.</p>
+            <p style="font-size: 0.875rem;">&copy; 2024 Regents of the University of California, Davis campus. All rights reserved.</p>
+            <br>
         </div>
     </footer>
 
+    <script>
+        const easterEggs = ['MOO SEE DAVIS', 'CONFUSED BY TRACEY', 'EST.1905', 'FIAT LUX', 'BIKE CITY', 'ARBORETUM', 'LOST IN THE DEATH STAR', '530'];
+        const matrixChars = ['UCD', '∆', 'λ', 'Σ', 'Φ', 'Ω', '01', '10', 'PHD', 'GSR', 'TA', '∫', '∂', '∇', '∞'];
+        const allChars = [...matrixChars, ...matrixChars, ...matrixChars, ...easterEggs];
+        for (let i = 0; i < 30; i++) {
+            const span = document.createElement('span');
+            span.className = 'matrix-text';
+            span.style.left = Math.random() * 100 + '%';
+            span.style.animationDuration = (Math.random() * 10 + 8) + 's';
+            span.style.animationDelay = Math.random() * 15 + 's';
+            span.textContent = allChars[Math.floor(Math.random() * allChars.length)];
+            if (easterEggs.includes(span.textContent)) {
+                span.style.opacity = '0.15';
+                span.style.color = Math.random() > 0.5 ? 'var(--electric-gold)' : 'var(--cyber-blue)';
+            }
+            document.body.appendChild(span);
+        }
+
+        let konamiCode = [];
+        const konamiPattern = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+        document.addEventListener('keydown', (e) => {
+            konamiCode.push(e.key);
+            konamiCode = konamiCode.slice(-10);
+            if (JSON.stringify(konamiCode) === JSON.stringify(konamiPattern)) {
+                activateSecretMode();
+            }
+        });
+        function activateSecretMode() {
+            document.body.style.animation = 'rainbow-shift 2s linear infinite';
+            const gunrock = document.createElement('div');
+            gunrock.style.cssText = `position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: monospace; font-size: 2rem; color: var(--electric-gold); text-shadow: 0 0 30px rgba(255, 215, 0, 0.8); z-index: 9999; animation: spin 2s linear infinite; pointer-events: none;`;
+            gunrock.textContent = '🐴';
+            document.body.appendChild(gunrock);
+            setTimeout(() => { gunrock.remove(); document.body.style.animation = ''; }, 5000);
+        }
+        const style = document.createElement('style');
+        style.textContent = `@keyframes rainbow-shift { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } } @keyframes spin { from { transform: translate(-50%, -50%) rotate(0deg) scale(1); } to { transform: translate(-50%, -50%) rotate(360deg) scale(3); } }`;
+        document.head.appendChild(style);
+
+        console.log('%cYou found the console Easter egg! Try the Konami code: ↑↑↓↓←→←→BA', 'color: #00D4FF; font-size: 12px;');
+        console.log('%cAlso try clicking the UC badge 5 times...', 'color: #00D4FF; font-size: 12px;');
+
+        let badgeClicks = 0;
+        document.querySelector('.uc-badge').addEventListener('click', function() {
+            badgeClicks++;
+            if (badgeClicks >= 5) {
+                this.style.animation = 'spin 1s ease-in-out';
+                this.textContent = '🐴';
+                setTimeout(() => { this.textContent = '💙'; this.style.animation = ''; badgeClicks = 0; }, 1000);
+                for (let i = 0; i < 10; i++) {
+                    const cow = document.createElement('div');
+                    cow.textContent = '🐄';
+                    cow.style.cssText = `position: fixed; top: -50px; left: ${Math.random() * 100}%; font-size: 2rem; z-index: 10000; animation: fall ${2 + Math.random() * 2}s linear; pointer-events: none;`;
+                    document.body.appendChild(cow);
+                    setTimeout(() => cow.remove(), 4000);
+                }
+            }
+        });
+        if (!document.querySelector('#easter-egg-styles')) {
+            const eggStyles = document.createElement('style');
+            eggStyles.id = 'easter-egg-styles';
+            eggStyles.textContent = `@keyframes fall { to { transform: translateY(calc(100vh + 100px)); } }`;
+            document.head.appendChild(eggStyles);
+        }
+    </script>
+
 </body>
 </html>
-
