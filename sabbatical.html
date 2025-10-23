@@ -15,7 +15,7 @@
 			--ucd-light-gray: #f2f2f2;
 		}
 		body {
-			font-family: 'Public Sans', sans-serif; // sorry, Proxima Nova.
+			font-family: 'Public Sans', sans-serif; //"approxima nova"
 			background-color: var(--ucd-light-gray);
 		}
 		.card {
@@ -66,8 +66,13 @@
 					</div>
 					<div>
 						<label for="annualSalary" class="block text-sm font-medium text-gray-700">Annual Salary</label>
-						<input type="number" id="annualSalary" value="123456" step="100" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#002855] focus:ring-[#002855] sm:text-sm p-2">
-						<p class="text-sm text-gray-500 mt-1" id="quarterlySalaryDisplay">($46,800 per quarter)</p>
+						<div class="relative mt-1 rounded-md shadow-sm">
+							<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+								<span class="text-gray-500 sm:text-sm">$</span>
+							</div>
+							<input type="text" id="annualSalary" value="123,456" class="block w-full rounded-md border-gray-300 pl-7 pr-2 py-2 focus:border-[#002855] focus:ring-[#002855] sm:text-sm">
+						</div>
+						<p class="text-sm text-gray-500 mt-1" id="quarterlySalaryDisplay">($41,185 per quarter)</p>
 					</div>
 				</div>
 				<p class="text-xs text-gray-600 mt-4">
@@ -86,7 +91,7 @@
 					</div>
 					<div>
 						<p class="text-sm text-gray-600">Remaining Credits</p>
-						<p class="text-2xl font-bold text-gray-800" id="summaryCreditsRemaining">30</p>
+						<p class="text-2xl font-bold text-gray-800" id="summaryCreditsRemaining">0</p>
 					</div>
 					<div>
 						<p class="text-sm text-gray-600">Total Sabbatical Pay</p>
@@ -94,7 +99,7 @@
 					</div>
 					<div>
 						<p class="text-sm text-gray-600">Total Annual Income</p>
-						<p class="text-2xl font-bold text-gray-800" id="summaryTotalIncome">$140,400</p>
+						<p class="text-2xl font-bold text-gray-800" id="summaryTotalIncome">$123,456</p>
 					</div>
 				</div>
 				<div id="summaryWarning" class="mt-4 p-3 bg-[#FFBF00]/20 border border-[#FFBF00] text-[#002855] rounded-md text-center font-medium hidden">
@@ -106,10 +111,13 @@
 
 	<script>
 		document.addEventListener('DOMContentLoaded', function () {
+			// Added this helper function to parse numbers that might contain commas, like the summer comp one
+			const getCleanNumber = (value) => parseFloat(String(value).replace(/,/g, '')) || 0;
+
 			let ANNUAL_SALARY = 123456;
 			let QUARTERLY_SALARY = ANNUAL_SALARY / 3;
 			const FULL_SABBATICAL_CREDIT_COST = 9;
-			const QUARTERS = ['Fall', 'Winter', 'Spring']; // semester system when?
+			const QUARTERS = ['Fall', 'Winter', 'Spring'];
 
 			const totalCreditsInput = document.getElementById('totalCredits');
 			const annualSalaryInput = document.getElementById('annualSalary');
@@ -186,7 +194,7 @@
 			}
 
 			function updateCalculations() {
-				ANNUAL_SALARY = parseFloat(annualSalaryInput.value) || 0;
+				ANNUAL_SALARY = getCleanNumber(annualSalaryInput.value);
 				QUARTERLY_SALARY = ANNUAL_SALARY / 3;
 				quarterlySalaryDisplay.textContent = `($${QUARTERLY_SALARY.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} per quarter)`;
 
@@ -233,7 +241,7 @@
 					salaryEl.textContent = `$${quarterSalary.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 				});
 
-				const totalAvailableCredits = parseFloat(totalCreditsInput.value) || 0;
+				const totalAvailableCredits = getCleanNumber(totalCreditsInput.value);
 				const remainingCredits = totalAvailableCredits - totalCreditsUsed;
 
 				summaryCreditsUsed.textContent = totalCreditsUsed.toFixed(2).replace(/\.00$/, '').replace(/.67/, '.67');
