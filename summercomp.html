@@ -62,7 +62,12 @@
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<div>
 						<label for="annualSalary" class="block text-sm font-medium text-gray-700">Enter your Annual Salary:</label>
-						<input type="text" id="annualSalary" value="123,456" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#002855] focus:ring-[#002855] sm:text-sm p-2">
+						<div class="relative mt-1 rounded-md shadow-sm">
+							<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+								<span class="text-gray-500 sm:text-sm">$</span>
+							</div>
+							<input type="text" id="annualSalary" value="123,456" class="block w-full rounded-md border-gray-300 pl-7 pr-2 py-2 focus:border-[#002855] focus:ring-[#002855] sm:text-sm">
+						</div>
 					</div>
 					<div class="text-left md:text-right">
 						<label class="block text-sm font-medium text-gray-700">Max Summer Comp (3/9ths)</label>
@@ -88,13 +93,23 @@
 				<div id="teachingCompControls" class="hidden mt-4 pt-4 border-t border-gray-200">
 					<p class="text-sm text-gray-600 mb-4">Please enter the dollar value of any summer teaching compensation.</p>
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-						<div>
+						<div class="border border-gray-200 rounded-lg p-4">
 							<label for="ss1CompInput" class="block text-sm font-medium text-gray-700">Summer Session 1 (Jun-Jul)</label>
-							<input type="text" id="ss1CompInput" value="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#002855] focus:ring-[#002855] sm:text-sm p-2">
+							<div class="relative mt-1 rounded-md shadow-sm">
+								<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+									<span class="text-gray-500 sm:text-sm">$</span>
+								</div>
+								<input type="text" id="ss1CompInput" value="0" class="block w-full rounded-md border-gray-300 pl-7 pr-2 py-2 focus:border-[#002855] focus:ring-[#002855] sm:text-sm">
+							</div>
 						</div>
-						<div>
+						<div class="border border-gray-200 rounded-lg p-4">
 							<label for="ss2CompInput" class="block text-sm font-medium text-gray-700">Summer Session 2 (Aug-Sep)</label>
-							<input type="text" id="ss2CompInput" value="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#002855] focus:ring-[#002855] sm:text-sm p-2">
+							<div class="relative mt-1 rounded-md shadow-sm">
+								<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+									<span class="text-gray-500 sm:text-sm">$</span>
+								</div>
+								<input type="text" id="ss2CompInput" value="0" class="block w-full rounded-md border-gray-300 pl-7 pr-2 py-2 focus:border-[#002855] focus:ring-[#002855] sm:text-sm">
+							</div>
 						</div>
 					</div>
 				</div>
@@ -131,7 +146,7 @@
 			
 			// Here are the core settings for each summer month.
 			// The payMultiplier is for the weird June rule coming from the summer comp guidelines. Notionally easy to swap to September if they go back.
-			// This place is crazy. 
+			// This place is crazy. 
 			const MONTHS = [
 				{ name: 'June', id: 'june', multiplier: 0.5, payMultiplier: 0.9546, label: 'Half Month', color: '#a4d9e8' },
 				{ name: 'July', id: 'july', multiplier: 1.0, payMultiplier: 1.0, label: 'Full Month', color: '#9acbb5' },
@@ -156,8 +171,8 @@
 			let oneNinthRate = 0;
 			let availableMonthMaxes = {}; // This will hold the max research comp for each month after reductions.
 
-			// A helper function to strip commas from a string. Somehow I'd omitted this from all my calculators, to the confusion of all. 
-			const getCleanNumber = (value) => parseFloat(value.replace(/,/g, '')) || 0;
+			// A helper function to strip commas from a string. Somehow I'd omitted this from all my calculators, to the confusion of all. 
+			const getCleanNumber = (value) => parseFloat(String(value).replace(/,/g, '')) || 0;
 
 			// This function builds the HTML for the four month cards dynamically.
 			function createMonthCards() {
@@ -186,7 +201,12 @@
 							</div>
 							<div>
 								<label for="${month.id}Input" class="text-sm font-medium text-gray-700">Compensation Amount ($)</label>
-								<input type="text" id="${month.id}Input" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#002855] focus:ring-[#002855] sm:text-sm p-2">
+								<div class="relative mt-1 rounded-md shadow-sm">
+									<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+										<span class="text-gray-500 sm:text-sm">$</span>
+									</div>
+									<input type="text" id="${month.id}Input" class="block w-full rounded-md border-gray-300 pl-7 pr-2 py-2 focus:border-[#002855] focus:ring-[#002855] sm:text-sm">
+								</div>
 							</div>
 							${juneNote}
 						</div>`;
@@ -347,7 +367,7 @@
 					const fullMonthPotential = oneNinthRate * month.multiplier;
 					availableMonthMaxes[month.id] = Math.max(0, fullMonthPotential - (reductions[month.id] || 0));
 					
-					// If the current value exceeds the new max, I clamp it down.
+					// If the current value exceeds the new max, clamp it down.
 					const monthInput = document.getElementById(`${month.id}Input`);
 					if (document.getElementById(`${month.id}Toggle`).checked) {
 						let currentAmount = getCleanNumber(monthInput.value);
