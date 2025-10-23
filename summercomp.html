@@ -62,7 +62,7 @@
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<div>
 						<label for="annualSalary" class="block text-sm font-medium text-gray-700">Enter your Annual Salary:</label>
-						<input type="number" id="annualSalary" value="123456" step="100" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#002855] focus:ring-[#002855] sm:text-sm p-2">
+						<input type="text" id="annualSalary" value="123,456" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#002855] focus:ring-[#002855] sm:text-sm p-2">
 					</div>
 					<div class="text-left md:text-right">
 						<label class="block text-sm font-medium text-gray-700">Max Summer Comp (3/9ths)</label>
@@ -75,6 +75,32 @@
 				</p>
 			</div>
 		</section>
+
+		<section class="w-full max-w-5xl mx-auto px-4 md:px-0">
+			<div class="card p-6">
+				<div class="flex justify-between items-center">
+					<h3 class="text-lg font-bold text-gray-800">Any Summer Teaching?</h3>
+					<div class="relative inline-block w-10 h-6 align-middle select-none">
+						<input type="checkbox" name="teachingCompToggle" id="teachingCompToggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-2 appearance-none cursor-pointer"/>
+						<label for="teachingCompToggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+					</div>
+				</div>
+				<div id="teachingCompControls" class="hidden mt-4 pt-4 border-t border-gray-200">
+					<p class="text-sm text-gray-600 mb-4">Please enter the dollar value of any summer teaching compensation.</p>
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+						<div>
+							<label for="ss1CompInput" class="block text-sm font-medium text-gray-700">Summer Session 1 (Jun-Jul)</label>
+							<input type="text" id="ss1CompInput" value="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#002855] focus:ring-[#002855] sm:text-sm p-2">
+						</div>
+						<div>
+							<label for="ss2CompInput" class="block text-sm font-medium text-gray-700">Summer Session 2 (Aug-Sep)</label>
+							<input type="text" id="ss2CompInput" value="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#002855] focus:ring-[#002855] sm:text-sm p-2">
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
 
 		<section class="w-full max-w-7xl mx-auto px-4 md:px-0">
 			<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 items-start" id="monthsContainer"></div>
@@ -102,6 +128,10 @@
 
 	<script>
 		document.addEventListener('DOMContentLoaded', function () {
+			
+			// Here are the core settings for each summer month.
+			// The payMultiplier is for the weird June rule coming from the summer comp guidelines. Notionally easy to swap to September if they go back.
+			// This place is crazy. 
 			const MONTHS = [
 				{ name: 'June', id: 'june', multiplier: 0.5, payMultiplier: 0.9546, label: 'Half Month', color: '#a4d9e8' },
 				{ name: 'July', id: 'july', multiplier: 1.0, payMultiplier: 1.0, label: 'Full Month', color: '#9acbb5' },
@@ -109,6 +139,7 @@
 				{ name: 'September', id: 'september', multiplier: 0.5, payMultiplier: 1.0, label: 'Half Month', color: '#ffb2b6' }
 			];
 
+			// The elements with which we'll interact.
 			const annualSalaryInput = document.getElementById('annualSalary');
 			const threeNinthsLimitDisplay = document.getElementById('threeNinthsLimit');
 			const oneNinthRateDisplay = document.getElementById('oneNinthRate');
@@ -116,20 +147,27 @@
 			const summaryTotalComp = document.getElementById('summaryTotalComp');
 			const summaryRemaining = document.getElementById('summaryRemaining');
 			const summaryWarning = document.getElementById('summaryWarning');
+			const teachingCompToggle = document.getElementById('teachingCompToggle');
+			const teachingCompControls = document.getElementById('teachingCompControls');
+			const ss1CompInput = document.getElementById('ss1CompInput');
+			const ss2CompInput = document.getElementById('ss2CompInput');
 			
+			// These are global variables for my script's state.
 			let oneNinthRate = 0;
+			let availableMonthMaxes = {}; // This will hold the max research comp for each month after reductions.
 
+			// A helper function to strip commas from a string. Somehow I'd omitted this from all my calculators, to the confusion of all. 
+			const getCleanNumber = (value) => parseFloat(value.replace(/,/g, '')) || 0;
+
+			// This function builds the HTML for the four month cards dynamically.
 			function createMonthCards() {
 				monthsContainer.innerHTML = '';
 				MONTHS.forEach(month => {
 					const card = document.createElement('div');
 					card.className = 'card overflow-hidden p-0';
-					
-					let juneNote = '';
-					if (month.id === 'june') {
-						juneNote = `<p class="text-xs text-gray-600 mt-2">Note: A 95.46% FTE is used to issue a full half-month of compensation for June.</p>`; // why do we do this to ourselves.
-					}
+					let juneNote = (month.id === 'june') ? `<p class="text-xs text-gray-600 mt-2">Note: A 95.46% FTE is used to issue a full half-month of compensation for June.</p>` : '';
 
+					// Create the card's inner HTML.
 					card.innerHTML = `
 						<div class="p-4 flex justify-between items-center" style="background-color: ${month.color};">
 							<h3 class="text-lg font-bold text-gray-800">${month.name} <span class="font-normal">(${month.label})</span></h3>
@@ -142,23 +180,36 @@
 							<div>
 								<div class="flex justify-between items-center">
 									<label for="${month.id}Slider" class="text-sm font-medium text-gray-700">Compensation Level</label>
-									<span id="${month.id}PercentLabel" class="text-sm font-bold text-[#002855]">95.46%</span>
+									<span id="${month.id}PercentLabel" class="text-sm font-bold text-[#002855]">0.00%</span>
 								</div>
 								<input type="range" id="${month.id}Slider" min="0" max="100" value="100" step="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mt-1">
 							</div>
 							<div>
 								<label for="${month.id}Input" class="text-sm font-medium text-gray-700">Compensation Amount ($)</label>
-								<input type="number" id="${month.id}Input" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#002855] focus:ring-[#002855] sm:text-sm p-2">
+								<input type="text" id="${month.id}Input" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#002855] focus:ring-[#002855] sm:text-sm p-2">
 							</div>
 							${juneNote}
-						</div>
-					`;
+						</div>`;
 					monthsContainer.appendChild(card);
 				});
 			}
 
+			// This is where I hook up all the interactive elements to their event handler functions.
 			function addEventListeners() {
 				annualSalaryInput.addEventListener('input', updateCalculations);
+				
+				teachingCompToggle.addEventListener('change', () => {
+					teachingCompControls.classList.toggle('hidden');
+					if (!teachingCompToggle.checked) {
+						ss1CompInput.value = '0';
+						ss2CompInput.value = '0';
+					}
+					updateCalculations();
+				});
+
+				ss1CompInput.addEventListener('input', updateCalculations);
+				ss2CompInput.addEventListener('input', updateCalculations);
+
 				MONTHS.forEach(month => {
 					document.getElementById(`${month.id}Toggle`).addEventListener('change', handleToggle);
 					document.getElementById(`${month.id}Slider`).addEventListener('input', handleSlider);
@@ -166,93 +217,153 @@
 				});
 			}
 
+			// This handles what happens when user toggles a month on or off.
 			function handleToggle(e) {
 				const monthId = e.target.id.replace('Toggle', '');
 				const controls = document.getElementById(`${monthId}Controls`);
+				const monthInput = document.getElementById(`${monthId}Input`);
+
 				if (e.target.checked) {
 					controls.classList.remove('hidden');
-					handleSlider({ target: document.getElementById(`${monthId}Slider`) });
+					// When user turns a month on, I want it to default to its max available amount. Money money money
+					monthInput.value = availableMonthMaxes[monthId].toFixed(2);
+					handleInput({ target: monthInput });
 				} else {
 					controls.classList.add('hidden');
 				}
 				updateSummary();
 			}
 
+			// This function runs when user moves a slider.
 			function handleSlider(e) {
 				const monthId = e.target.id.replace('Slider', '');
-				const monthConfig = MONTHS.find(m => m.id === monthId);
-				
 				const sliderPercentage = parseFloat(e.target.value);
-				const ftePercentage = sliderPercentage * monthConfig.payMultiplier;
-				const amount = (ftePercentage / 100) * (oneNinthRate * monthConfig.multiplier);
-
+				const maxAvailableForMonth = availableMonthMaxes[monthId];
+				const amount = (sliderPercentage / 100) * maxAvailableForMonth;
+				
+				// I update the dollar amount and the FTE percentage label.
 				document.getElementById(`${monthId}Input`).value = amount.toFixed(2);
-				document.getElementById(`${monthId}PercentLabel`).textContent = `${ftePercentage.toFixed(2)}%`;
+				updateFteLabel(monthId, amount);
 				updateSummary();
 			}
 
+			// This function runs when user types a dollar amount into an input field.
 			function handleInput(e) {
 				const monthId = e.target.id.replace('Input', '');
-				const monthConfig = MONTHS.find(m => m.id === monthId);
+				let amount = getCleanNumber(e.target.value);
+				const maxAvailableForMonth = availableMonthMaxes[monthId];
 				
-				const amount = parseFloat(e.target.value) || 0;
-				const monthBasePay = oneNinthRate * monthConfig.multiplier;
-				
-				let ftePercentage = 0;
-				if (monthBasePay > 0) {
-					ftePercentage = (amount / monthBasePay) * 100;
+				// I'm clamping the input so the user can't enter more than the available max for that month.
+				if (amount > maxAvailableForMonth) {
+					amount = maxAvailableForMonth;
+					e.target.value = amount.toFixed(2);
 				}
-				
-				let sliderPercentage = ftePercentage / monthConfig.payMultiplier;
 
-				document.getElementById(`${monthId}Slider`).value = Math.min(Math.max(sliderPercentage, 0), 100);
-				document.getElementById(`${monthId}PercentLabel`).textContent = `${ftePercentage.toFixed(2)}%`;
+				// Then I update the slider position and the FTE label to match.
+				updateSlider(monthId, amount);
+				updateFteLabel(monthId, amount);
 				updateSummary();
 			}
 			
+			// A small helper to update the slider's position based on a dollar amount.
+			function updateSlider(monthId, amount) {
+				const maxAvailableForMonth = availableMonthMaxes[monthId];
+				let sliderPercentage = (maxAvailableForMonth > 0) ? (amount / maxAvailableForMonth) * 100 : 0;
+				document.getElementById(`${monthId}Slider`).value = sliderPercentage;
+			}
+			
+			// A helper to calculate and update the FTE percentage label for a given month.
+			function updateFteLabel(monthId, amount) {
+				const monthConfig = MONTHS.find(m => m.id === monthId);
+				const fullMonthBasePay = oneNinthRate * monthConfig.multiplier;
+				let ftePercentage = (fullMonthBasePay > 0) ? (amount / fullMonthBasePay) * 100 * monthConfig.payMultiplier : 0;
+				document.getElementById(`${monthId}PercentLabel`).textContent = `${ftePercentage.toFixed(2)}%`;
+			}
+
+			// This calculates and displays the totals at the bottom of the page.
 			function updateSummary() {
 				let totalSummerComp = 0;
-				const threeNinthsLimit = (parseFloat(annualSalaryInput.value) || 0) / 9 * 3;
+				const threeNinthsLimit = getCleanNumber(annualSalaryInput.value) / 9 * 3;
+				
+				// I add any teaching compensation first.
+				if (teachingCompToggle.checked) {
+					totalSummerComp += getCleanNumber(ss1CompInput.value);
+					totalSummerComp += getCleanNumber(ss2CompInput.value);
+				}
 
+				// Then I add the research compensation from any active months.
 				MONTHS.forEach(month => {
 					if (document.getElementById(`${month.id}Toggle`).checked) {
-						const amount = parseFloat(document.getElementById(`${month.id}Input`).value) || 0;
-						totalSummerComp += amount;
+						totalSummerComp += getCleanNumber(document.getElementById(`${month.id}Input`).value);
 					}
 				});
 
 				const remaining = threeNinthsLimit - totalSummerComp;
 
+				// I format the numbers nicely with commas and two decimal places.
 				summaryTotalComp.textContent = `$${totalSummerComp.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 				summaryRemaining.textContent = `$${remaining.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-
+				
+				// Finally, I show or hide the warning message if they go over the limit.
 				const remainingEl = document.getElementById('summaryRemaining');
 				if (remaining < 0) {
 					summaryWarning.classList.remove('hidden');
-					remainingEl.classList.add('text-[#FFBF00]');
+					remainingEl.classList.add('text-red-600', 'font-bold');
 				} else {
 					summaryWarning.classList.add('hidden');
-					remainingEl.classList.remove('text-[#FFBF00]');
+					remainingEl.classList.remove('text-red-600', 'font-bold');
 				}
 			}
 
+			// This is the main function that runs whenever a key value changes. It recalculates everything.
 			function updateCalculations() {
-				const annualSalary = parseFloat(annualSalaryInput.value) || 0;
+				const annualSalary = getCleanNumber(annualSalaryInput.value);
 				oneNinthRate = annualSalary / 9;
 				const threeNinthsLimit = oneNinthRate * 3;
 
+				// Update the main displays for the 3/9ths limit and 1/9th rate.
 				threeNinthsLimitDisplay.textContent = `$${threeNinthsLimit.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 				oneNinthRateDisplay.textContent = `1/9th = $${oneNinthRate.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 
+				// Get the teaching compensation values, making sure to strip any commas.
+				const ss1Comp = teachingCompToggle.checked ? getCleanNumber(ss1CompInput.value) : 0;
+				const ss2Comp = teachingCompToggle.checked ? getCleanNumber(ss2CompInput.value) : 0;
+
+				// Here's the proportional reduction logic.
+				// I find the total "weight" for each summer session (1.5 for both).
+				const ss1TotalProportion = MONTHS[0].multiplier + MONTHS[1].multiplier; // June + July
+				const ss2TotalProportion = MONTHS[2].multiplier + MONTHS[3].multiplier; // Aug + Sep
+				
+				// ...then calculate how much of the teaching comp should be "billed" against each research month.
+				const reductions = {
+					june: (ss1TotalProportion > 0) ? ss1Comp * (MONTHS[0].multiplier / ss1TotalProportion) : 0,
+					july: (ss1TotalProportion > 0) ? ss1Comp * (MONTHS[1].multiplier / ss1TotalProportion) : 0,
+					august: (ss2TotalProportion > 0) ? ss2Comp * (MONTHS[2].multiplier / ss2TotalProportion) : 0,
+					september: (ss2TotalProportion > 0) ? ss2Comp * (MONTHS[3].multiplier / ss2TotalProportion) : 0
+				};
+
+				// Now update the max available research funds for each month.
 				MONTHS.forEach(month => {
+					const fullMonthPotential = oneNinthRate * month.multiplier;
+					availableMonthMaxes[month.id] = Math.max(0, fullMonthPotential - (reductions[month.id] || 0));
+					
+					// If the current value exceeds the new max, I clamp it down.
+					const monthInput = document.getElementById(`${month.id}Input`);
 					if (document.getElementById(`${month.id}Toggle`).checked) {
-						handleSlider({ target: document.getElementById(`${month.id}Slider`) });
+						let currentAmount = getCleanNumber(monthInput.value);
+						if (currentAmount > availableMonthMaxes[month.id]) {
+							monthInput.value = availableMonthMaxes[month.id].toFixed(2);
+						}
+						// and resync the UI for any active month.
+						handleInput({ target: monthInput });
 					}
 				});
 				
+				// And finally, update the summary at the bottom.
 				updateSummary();
 			}
 
+			// These three lines kick everything off when the page first loads.
 			createMonthCards();
 			addEventListeners();
 			updateCalculations();
