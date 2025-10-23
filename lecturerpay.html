@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Lecturer Pay Calculator</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+	<style>
+		:root {
+			--ucd-blue: #002855;
+			--ucd-gold: #FFBF00;
+			--ucd-light-gray: #f2f2f2;
+		}
+		body {
+			font-family: 'Public Sans', sans-serif;
+			background-color: var(--ucd-light-gray);
+		}
+		.ucd-header {
+			background-color: var(--ucd-blue);
+			color: white;
+			padding: 1rem 2rem;
+			display: flex;
+			align-items: center;
+		}
+		.ucd-logo-text {
+			font-weight: 700;
+			font-size: 1.5rem;
+			letter-spacing: 0.5px;
+		}
+		.card {
+			background-color: white;
+			border-radius: 0;
+			border: 1px solid #ddd;
+			padding: 1.5rem;
+		}
+		.btn {
+			background-color: var(--ucd-blue);
+			color: white;
+			padding: 0.5rem 1rem;
+			border-radius: 0.25rem;
+			font-weight: 500;
+			transition: background-color 0.2s;
+			cursor: pointer;
+		}
+		.btn:hover {
+			background-color: #001e3e;
+		}
+		.btn-delete {
+			background-color: #d9534f;
+		}
+		.btn-delete:hover {
+			background-color: #c9302c;
+		}
+		.toggle-btn svg {
+			transition: transform 0.3s ease-in-out;
+		}
+		.toggle-btn.is-open svg {
+			transform: rotate(90deg);
+		}
+		input[readonly] {
+			background-color: #f0f0f0;
+			cursor: not-allowed;
+		}
+		table {
+			width: 100%;
+			border-collapse: collapse;
+		}
+		th, td {
+			padding: 0.75rem;
+			text-align: left;
+			border-bottom: 1px solid #e2e8f0;
+		}
+		th {
+			background-color: #f8fafc;
+			font-weight: 600;
+		}
+		.summary-table tfoot tr:first-child td {
+			border-top: 2px solid var(--ucd-blue);
+			font-weight: bold;
+		}
+	</style>
+</head>
+<body>
+	<header class="ucd-header shadow-md">
+		<h1 class="ucd-logo-text">Blue Cluster Heavy Industries</h1>
+	</header>
+
+	<main class="w-full max-w-5xl mx-auto p-4 md:p-8">
+		<div class="space-y-6">
+			<div class="text-center">
+				<h1 class="text-4xl font-bold text-gray-800">Lecturer Pay Calculator</h1>
+				<p class="text-lg text-gray-600 mt-1">For Academic Year 2025-26</p>
+			</div>
+
+			<section class="card">
+				<h2 class="text-xl font-bold text-gray-800 mb-4">1. Salary & Benefits Information</h2>
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<div>
+						<label class="block text-sm font-medium text-gray-700">Salary Method</label>
+						<select id="salaryMethod" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+							<option value="scale">Use Salary Scale</option>
+							<option value="manual">Enter Annual Salary Manually</option>
+						</select>
+					</div>
+					<div id="salaryScaleControls">
+						<div class="grid grid-cols-2 gap-4">
+							<div>
+								<label for="lecturerTitle" class="block text-sm font-medium text-gray-700">Title</label>
+								<select id="lecturerTitle" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+									<option value="preSix">Lecturer (Pre-Six Year)</option>
+									<option value="continuing">Lecturer (Continuing)</option>
+									<option value="senior">Senior Lecturer (Continuing)</option>
+								</select>
+							</div>
+							<div>
+								<label for="lecturerStep" class="block text-sm font-medium text-gray-700">Step</label>
+								<select id="lecturerStep" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></select>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+					<div>
+						<label for="annualSalary" class="block text-sm font-medium text-gray-700">Annual Salary (100% FTE)</label>
+						<div class="relative mt-1">
+							<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+								<span class="text-gray-500 sm:text-sm">$</span>
+							</div>
+							<input type="text" id="annualSalary" class="block w-full rounded-md border-gray-300 pl-7">
+						</div>
+					</div>
+					<div>
+						<label for="benefitRate" class="block text-sm font-medium text-gray-700 text-right">Benefit Rate</label>
+						<div class="relative mt-1">
+							<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+								<span class="text-gray-500 sm:text-sm">%</span>
+							</div>
+							<input type="text" id="benefitRate" value="40.4" class="block w-full rounded-md border-gray-300 text-right pr-8">
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<section class="card">
+				<div class="flex justify-between items-center mb-4">
+					<h2 class="text-xl font-bold text-gray-800">2. Instructional Workload</h2>
+					<button id="addDutyBtn" class="btn text-sm">Add Duty</button>
+				</div>
+				<div class="overflow-x-auto">
+					<table class="min-w-full">
+						<thead>
+							<tr>
+								<th>Quarter</th>
+								<th>Course / Description</th>
+								<th class="w-1/5">IWC</th>
+								<th class="w-16"></th>
+							</tr>
+						</thead>
+						<tbody id="iwc-container">
+						</tbody>
+					</table>
+					<p id="no-duties-msg" class="text-center text-gray-500 py-4">No duties added yet.</p>
+				</div>
+			</section>
+			
+			<div id="warnings-card" class="card hidden"></div>
+
+			<section class="card bg-gray-50">
+				<div class="flex justify-between items-center mb-4">
+					<h2 class="text-xl font-bold text-gray-800">3. Summary</h2>
+					<button id="saveCsvBtn" class="btn text-sm">Save to CSV</button>
+				</div>
+				<div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center mb-6">
+					<div>
+						<p class="text-sm text-gray-600">Academic Year IWC</p>
+						<p class="text-2xl font-bold text-[#002855]" id="summary-total-iwc">0.00</p>
+					</div>
+					<div>
+						<p class="text-sm text-gray-600">Academic Year FTE</p>
+						<p class="text-2xl font-bold text-[#002855]" id="summary-academic-year-fte">0.00%</p>
+					</div>
+					<div>
+						<p class="text-sm text-gray-600">Total Annual Pay</p>
+						<p class="text-2xl font-bold text-gray-800" id="summary-total-pay">$0.00</p>
+					</div>
+					<div>
+						<p class="text-sm text-gray-600">Total Annual Cost</p>
+						<p class="text-2xl font-bold text-green-700" id="summary-total-cost">$0.00</p>
+					</div>
+				</div>
+				<div class="overflow-x-auto">
+					<table class="min-w-full text-sm summary-table">
+						<thead>
+							<tr>
+								<th>Quarter</th>
+								<th class="text-right">IWC</th>
+								<th class="text-right">Quarter FTE</th>
+								<th class="text-right">Salary</th>
+								<th class="text-right">Benefits</th>
+								<th class="text-right">Total Cost</th>
+							</tr>
+						</thead>
+						<tbody id="summary-table-body">
+						</tbody>
+						<tfoot>
+							<tr>
+								<td><strong>Total</strong></td>
+								<td class="text-right" id="summary-table-total-iwc"><strong>0.00</strong></td>
+								<td class="text-right"></td>
+								<td class="text-right" id="summary-table-total-pay"><strong>$0.00</strong></td>
+								<td class="text-right" id="summary-table-total-benefits"><strong>$0.00</strong></td>
+								<td class="text-right" id="summary-table-total-cost"><strong>$0.00</strong></td>
+							</tr>
+						</tfoot>
+					</table>
+				</div>
+			</section>
+
+			<div class="card">
+				<button id="toggle-costs-btn" class="toggle-btn w-full text-left font-bold text-lg text-gray-800 flex items-center gap-2">
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+					<span>Base Costs & Rates</span>
+				</button>
+				<div id="base-costs-container" class="hidden mt-4 space-y-4">
+				</div>
+			</div>
+		</div>
+	</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+	// --- STATE AND DATA MANAGEMENT ---
+
+	// Here's all the salary scale data for 25-26, pulled from Tables 15 and 16. RIP whoever updates this.
+	const SALARY_DATA = {
+		preSix: { name: 'Lecturer (Pre-Six Year)', salaries: [70977, 73107, 75301, 77561, 79887, 82284, 84752, 87294, 89913, 92609, 95388, 98249, 101198, 104233, 107361, 110581, 113897, 117315, 120835, 124460, 128194, 132039, 136000, 140080, 144283, 148611, 153069, 157661, 162391, 167264, 172281, 177449, 182772, 188256, 193904, 199722] },
+		continuing: { name: 'Lecturer (Continuing)', salaries: [79887, 82284, 84752, 87294, 89913, 92609, 95388, 98249, 101198, 104233, 107361, 110581, 113897, 117315, 120835, 124460, 128194, 132039, 136000, 140080, 144283, 148611, 153069, 157661, 162391, 167264, 172281, 177449, 182772, 188256, 193904, 199722, 205714, 211884, 218239, 224786] },
+		senior: { name: 'Senior Lecturer (Continuing)', salaries: [95388, 98249, 101198, 104233, 107361, 110581, 113897, 117315, 120835, 124460, 128194, 132039, 136000, 140080, 144283, 148611, 153069, 157661, 162391, 167264, 172281, 177449, 182772, 188256, 193904, 199722, 205714, 211884, 218239, 224786] }
+	};
+	
+	// These are the main state variables for the app. 'duties' holds all the workload rows the user adds.
+	let duties = [];
+	let dutyCounter = 0;
+	let quarterlySummaryData = {}; // I'll stash the summary data here for the CSV export.
+
+	// Caching all the DOM elements we'll need to mess with. Standard stuff.
+	const salaryMethodSelect = document.getElementById('salaryMethod');
+	const annualSalaryInput = document.getElementById('annualSalary');
+	const benefitRateInput = document.getElementById('benefitRate');
+	const lecturerTitleSelect = document.getElementById('lecturerTitle');
+	const lecturerStepSelect = document.getElementById('lecturerStep');
+	const salaryScaleControls = document.getElementById('salaryScaleControls');
+	const addDutyBtn = document.getElementById('addDutyBtn');
+	const iwcContainer = document.getElementById('iwc-container');
+	const noDutiesMsg = document.getElementById('no-duties-msg');
+	const baseCostsContainer = document.getElementById('base-costs-container');
+	const toggleCostsBtn = document.getElementById('toggle-costs-btn');
+	const warningsCard = document.getElementById('warnings-card');
+	const saveCsvBtn = document.getElementById('saveCsvBtn');
+
+	// --- HELPER FUNCTIONS ---
+
+	// My trusty helper functions to format money and clean up user input.
+	const formatCurrency = (value) => (value || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+	const getCleanNumber = (value) => parseFloat(String(value).replace(/[^0-9.]/g, '')) || 0;
+
+	// --- CORE LOGIC & DOM UPDATES ---
+
+	// This is my main 'do everything' function. When something important changes, I call this to recalculate and redraw the summary.
+	function runAllCalculations() {
+		updateSalaryInputFromScale();
+		updateSummaryAndPay();
+	}
+
+	// If the user is using the salary scale, this makes sure the annual salary input reflects their dropdown choices.
+	function updateSalaryInputFromScale() {
+		if (salaryMethodSelect.value !== 'scale') return;
+		const title = lecturerTitleSelect.value;
+		const step = lecturerStepSelect.value ? parseInt(lecturerStepSelect.value, 10) : 1;
+		const salary = SALARY_DATA[title]?.salaries[step - 1];
+		if (salary !== undefined) {
+			annualSalaryInput.value = salary.toLocaleString('en-US');
+		}
+	}
+
+	// This populates the 'Step' dropdown based on which title is selected. Different titles have different numbers of steps.
+	function populateStepDropdown() {
+		const selectedTitle = lecturerTitleSelect.value;
+		lecturerStepSelect.innerHTML = '';
+		if (SALARY_DATA[selectedTitle]) {
+			const steps = SALARY_DATA[selectedTitle].salaries.length;
+			for (let i = 1; i <= steps; i++) {
+				lecturerStepSelect.appendChild(new Option(i, i));
+			}
+		}
+	}
+
+	// This draws the table rows for each course/duty the user adds.
+	function renderDuties() {
+		iwcContainer.innerHTML = '';
+		noDutiesMsg.style.display = duties.length === 0 ? 'block' : 'none';
+		duties.forEach(duty => {
+			const row = document.createElement('tr');
+			row.dataset.id = duty.id;
+			row.innerHTML = `
+				<td>
+					<select data-field="quarter" class="w-full rounded-md border-gray-300 shadow-sm">
+						<option value="Fall" ${duty.quarter === 'Fall' ? 'selected' : ''}>Fall</option>
+						<option value="Winter" ${duty.quarter === 'Winter' ? 'selected' : ''}>Winter</option>
+						<option value="Spring" ${duty.quarter === 'Spring' ? 'selected' : ''}>Spring</option>
+					</select>
+				</td>
+				<td><input type="text" data-field="description" value="${duty.description}" class="w-full rounded-md border-gray-300 shadow-sm"></td>
+				<td><input type="number" step="0.1" data-field="iwc" value="${duty.iwc}" class="w-full rounded-md border-gray-300 shadow-sm"></td>
+				<td><button class="btn btn-delete w-full" data-action="delete">X</button></td>
+			`;
+			iwcContainer.appendChild(row);
+		});
+	}
+
+	// This builds the editable salary tables in the "Base Costs & Rates" section.
+	function renderBaseCosts() {
+		baseCostsContainer.innerHTML = '';
+		for (const [key, value] of Object.entries(SALARY_DATA)) {
+			const titleContainer = document.createElement('div');
+			let tableHTML = `<h3 class="font-bold text-lg mt-4">${value.name}</h3><div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">`;
+			value.salaries.forEach((salary, index) => {
+				const step = index + 1;
+				tableHTML += `<div>
+					<label class="text-xs font-medium text-gray-600">Step ${step}</label>
+					<input type="number" value="${salary}" data-title="${key}" data-step="${step}" class="w-full p-1 border rounded mt-1">
+				</div>`;
+			});
+			tableHTML += `</div>`;
+			titleContainer.innerHTML = tableHTML;
+			baseCostsContainer.appendChild(titleContainer);
+		}
+	}
+
+	// This one does all the math and updates the summary cards and table at the bottom. The heart of the machine.
+	function updateSummaryAndPay() {
+		const annualSalary = getCleanNumber(annualSalaryInput.value);
+		const benefitRate = getCleanNumber(benefitRateInput.value) / 100;
+		const quarterlyData = { Fall: { iwc: 0 }, Winter: { iwc: 0 }, Spring: { iwc: 0 } };
+
+		// First, sum up the IWC for each quarter.
+		duties.forEach(duty => {
+			quarterlyData[duty.quarter].iwc += parseFloat(duty.iwc) || 0;
+		});
+
+		let totalIWC = 0, totalPay = 0, totalBenefits = 0;
+		const summaryTableBody = document.getElementById('summary-table-body');
+		summaryTableBody.innerHTML = '';
+		
+		// Then, loop through each quarter to calculate pay, benefits, and build the summary table.
+		Object.keys(quarterlyData).forEach(quarter => {
+			const data = quarterlyData[quarter];
+			data.fte = data.iwc / 3.0; // 3.0 IWC is a 100% quarter.
+			data.pay = annualSalary * (data.iwc / 9.0); // 9.0 IWC is a 100% year.
+			data.benefits = data.pay * benefitRate;
+			data.totalCost = data.pay + data.benefits;
+			totalIWC += data.iwc;
+			totalPay += data.pay;
+			totalBenefits += data.benefits;
+			
+			const row = document.createElement('tr');
+			row.innerHTML = `
+				<td>${quarter}</td>
+				<td class="text-right">${data.iwc.toFixed(2)}</td>
+				<td class="text-right">${(data.fte * 100).toFixed(2)}%</td>
+				<td class="text-right">${formatCurrency(data.pay)}</td>
+				<td class="text-right">${formatCurrency(data.benefits)}</td>
+				<td class="text-right">${formatCurrency(data.totalCost)}</td>
+			`;
+			summaryTableBody.appendChild(row);
+		});
+		
+		quarterlySummaryData = quarterlyData; // Save for the CSV export.
+		const totalAnnualFTE = totalIWC / 9.0;
+		const totalCost = totalPay + totalBenefits;
+
+		// Finally, update all the summary displays with the new totals.
+		document.getElementById('summary-total-iwc').textContent = totalIWC.toFixed(2);
+		document.getElementById('summary-academic-year-fte').textContent = `${(totalAnnualFTE * 100).toFixed(2)}%`;
+		document.getElementById('summary-total-pay').textContent = formatCurrency(totalPay);
+		document.getElementById('summary-total-cost').textContent = formatCurrency(totalCost);
+		document.getElementById('summary-table-total-iwc').textContent = totalIWC.toFixed(2);
+		document.getElementById('summary-table-total-pay').textContent = formatCurrency(totalPay);
+		document.getElementById('summary-table-total-benefits').textContent = formatCurrency(totalBenefits);
+		document.getElementById('summary-table-total-cost').textContent = formatCurrency(totalCost);
+
+		updateWarnings(quarterlyData, totalIWC);
+	}
+
+	// This function checks for over-commitment and shows the appropriate error/warning message.
+	function updateWarnings(quarterlyData, totalIWC) {
+		let messages = [];
+		let isError = false;
+
+		// Check if any single quarter is over 100% FTE (3.0 IWC).
+		Object.values(quarterlyData).forEach((data, index) => {
+			if (data.fte > 1) {
+				const quarterName = Object.keys(quarterlyData)[index];
+				messages.push(`<p><strong class="font-bold">Caution:</strong> The ${quarterName} quarter FTE exceeds 100%. Total FTE for other quarters may need to be reduced.</p>`);
+			}
+		});
+		
+		// Check if the whole year is over 100% FTE (9.0 IWC).
+		if (totalIWC > 9) {
+			messages.push(`<p><strong class="font-bold">Error:</strong> Total IWC of ${totalIWC.toFixed(2)} exceeds a standard 100% annual workload of 9.0. This may represent overemployment; proceed with caution.</p>`);
+			isError = true;
+		}
+
+		// Show or hide the warning box based on whether there are messages.
+		if (messages.length > 0) {
+			warningsCard.innerHTML = messages.join('');
+			warningsCard.classList.remove('hidden');
+			warningsCard.className = isError 
+				? 'card bg-red-100 border-red-400 text-red-700'
+				: 'card bg-yellow-100 border-yellow-400 text-yellow-800';
+		} else {
+			warningsCard.classList.add('hidden');
+		}
+	}
+	
+	// Builds and triggers the download for the CSV file. A bit of a pain to format strings for CSV, but it works.
+	function exportToCsv() {
+		let csvContent = "data:text/csv;charset=utf-8,";
+		csvContent += "Instructional Workload\n";
+		csvContent += "Quarter,Description,IWC\n";
+		duties.forEach(duty => {
+			const description = `"${String(duty.description).replace(/"/g, '""')}"`;
+			csvContent += `${duty.quarter},${description},${duty.iwc}\n`;
+		});
+		csvContent += "\nSummary\n";
+		csvContent += "Quarter,IWC,Quarter FTE (%),Salary,Benefits,Total Cost\n";
+		let total = { iwc: 0, pay: 0, benefits: 0, cost: 0 };
+		Object.keys(quarterlySummaryData).forEach(quarter => {
+			const data = quarterlySummaryData[quarter];
+			total.iwc += data.iwc;
+			total.pay += data.pay;
+			total.benefits += data.benefits;
+			total.cost += data.totalCost;
+			csvContent += `${quarter},${data.iwc.toFixed(2)},${(data.fte * 100).toFixed(2)},${data.pay.toFixed(2)},${data.benefits.toFixed(2)},${data.totalCost.toFixed(2)}\n`;
+		});
+		csvContent += `Total,${total.iwc.toFixed(2)},,${total.pay.toFixed(2)},${total.benefits.toFixed(2)},${total.cost.toFixed(2)}\n`;
+		
+		const link = document.createElement("a");
+		link.setAttribute("href", encodeURI(csvContent));
+		link.setAttribute("download", "lecturer-pay-summary.csv");
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+	}
+
+	// --- EVENT HANDLERS ---
+
+	// This is where I wire up all the buttons and inputs to their functions.
+
+	function handleSalaryMethodChange() {
+		const isManual = salaryMethodSelect.value === 'manual';
+		salaryScaleControls.style.display = isManual ? 'none' : 'block';
+		annualSalaryInput.readOnly = !isManual;
+		runAllCalculations();
+	}
+	
+	function handleDutyTableInput(e) {
+		const target = e.target;
+		const row = target.closest('tr');
+		if (!row) return;
+		const duty = duties.find(d => d.id === parseInt(row.dataset.id, 10));
+		if (duty) {
+			duty[target.dataset.field] = target.type === 'number' ? parseFloat(target.value) : target.value;
+			updateSummaryAndPay(); // Recalculate summary without redrawing the whole duty table.
+		}
+	}
+	
+	function handleDutyTableClick(e) {
+		if (e.target.dataset.action === 'delete') {
+			const row = e.target.closest('tr');
+			duties = duties.filter(d => d.id !== parseInt(row.dataset.id, 10));
+			renderDuties(); // Need to redraw the table when a row is removed.
+			updateSummaryAndPay();
+		}
+	}
+	
+	// The function that kicks everything off when the page loads.
+	function initialize() {
+		salaryMethodSelect.addEventListener('change', handleSalaryMethodChange);
+		lecturerTitleSelect.addEventListener('change', () => { populateStepDropdown(); runAllCalculations(); });
+		lecturerStepSelect.addEventListener('change', runAllCalculations);
+		annualSalaryInput.addEventListener('input', runAllCalculations);
+		benefitRateInput.addEventListener('input', runAllCalculations);
+		addDutyBtn.addEventListener('click', () => {
+			duties.push({ id: ++dutyCounter, quarter: 'Fall', description: 'New Course', iwc: 1.5 });
+			renderDuties(); // Redraw table when a new row is added.
+			updateSummaryAndPay();
+		});
+		toggleCostsBtn.addEventListener('click', () => {
+			baseCostsContainer.classList.toggle('hidden');
+			toggleCostsBtn.classList.toggle('is-open');
+		});
+		saveCsvBtn.addEventListener('click', exportToCsv);
+		iwcContainer.addEventListener('input', handleDutyTableInput); // For text/number fields.
+		iwcContainer.addEventListener('change', handleDutyTableInput); // For select dropdown.
+		iwcContainer.addEventListener('click', handleDutyTableClick); // For the delete button.
+		baseCostsContainer.addEventListener('input', (e) => {
+			const { title, step } = e.target.dataset;
+			const newSalary = getCleanNumber(e.target.value);
+			if (title && step && !isNaN(newSalary)) {
+				SALARY_DATA[title].salaries[parseInt(step, 10) - 1] = newSalary;
+				runAllCalculations(); // If the underlying data changes, refresh everything.
+			}
+		});
+
+		populateStepDropdown();
+		renderBaseCosts();
+		handleSalaryMethodChange(); // Sets the initial state based on default dropdown values.
+	}
+
+	initialize();
+});
+</script>
+</body>
+</html>
