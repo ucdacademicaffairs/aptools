@@ -133,6 +133,9 @@
         .card.card-span-2 { grid-column: span 1; }
         @media (min-width: 1024px) { .card.card-span-2 { grid-column: span 2; } }
         
+        .card.card-span-3 { grid-column: span 1; }
+        @media (min-width: 1024px) { .card.card-span-3 { grid-column: span 3; } }
+        
         .card-title { font-family: 'Space Grotesk', sans-serif; font-size: 1.6rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem; }
         .card-description { color: var(--text-secondary); line-height: 1.6; margin-bottom: 1rem; }
         .update-info { font-size: 0.875rem; color: var(--cyber-blue); margin-bottom: 0.25rem; }
@@ -174,7 +177,21 @@
               <br>
             <h2 class="section-heading">Mini-Apps</h2>
             <div class="tools-grid">
-            <div class="card card-span-2 animate-on-load" style="animation-delay: 200ms;">
+            
+            <div class="card card-span-3 animate-on-load" style="animation-delay: 200ms;">
+                <div class="card-content">
+                    <h3 class="card-title">BlueIS 🧊</h3>
+                    <p class="card-description">A prototype faculty information system, featuring service credit ledgering, approval chains, etc. etc.</p>
+                </div>
+                <div class="card-footer">
+                    <p class="update-info">Last updated: November 5th, 2025</p>
+                    <p class="update-note">Improvements to sabbatical proposals.</p>
+                    <a href="https://bombandgrapnel.com/blueis/index.php" class="btn btn-primary">Launch Tool &rarr;</a>
+                </div>
+                <div class="card-hover-overlay"></div>
+            </div>
+
+            <div class="card animate-on-load" style="animation-delay: 300ms;">
                 <div class="card-content">
                     <h3 class="card-title">Summer Compensation Calculator</h3>
                     <p class="card-description">Derives a maximum available summer compensation from an annual salary. Users can then explore summer-research scenarios by activating months and adjusting FTE. Built for faculty on 9/12 ("academic year") appointments (for now), and optimized for inclusion in SiteFarm via iFrame.</p>
@@ -186,7 +203,21 @@
                 </div>
                 <div class="card-hover-overlay"></div>
             </div>
-            <div class="card animate-on-load" style="animation-delay: 300ms;">
+
+            <div class="card animate-on-load" style="animation-delay: 400ms;">
+                <div class="card-content">
+                    <h3 class="card-title">Leave Date Conversion Tool</h3>
+                    <p class="card-description">A web-based tool for calculating service and pay period dates, because I found it really annoying to keep tracking down the Excel file and make sure it was the right one.</p>
+                </div>
+                <div class="card-footer">
+                     <p class="update-info">Last updated: November 5th, 2025</p>
+                     <p class="update-note">First Version</p>
+                    <a href="leavedates.html" class="btn btn-primary">Launch Tool &rarr;</a>
+                </div>
+                <div class="card-hover-overlay"></div>
+            </div>
+
+            <div class="card animate-on-load" style="animation-delay: 500ms;">
                 <div class="card-content">
                     <h3 class="card-title">Sabbatical Planning Calculator</h3>
                     <p class="card-description">Enter a sabbatical credit total and annual salary, then activate quarters, play with salary level and residency, and see the impact on sabbatical credit usage and total salary. Optimized for inclusion in SiteFarm via iFrame.</p>
@@ -198,7 +229,8 @@
                 </div>
                 <div class="card-hover-overlay"></div>
             </div>
-            <div class="card card-span-2 animate-on-load" style="animation-delay: 400ms;">
+
+            <div class="card card-span-2 animate-on-load" style="animation-delay: 600ms;">
                 <div class="card-content">
                     <h3 class="card-title">Lecturer Pay Calculator</h3>
                     <p class="card-description">Focuses on the creation of an employment plan for Unit 18 / Continuing Lecturers. Create an employment schedule, with IWC, then receive salary and benefit information and a CSV export.</p>
@@ -210,7 +242,7 @@
                 </div>
                 <div class="card-hover-overlay"></div>
             </div>
-            <div class="card animate-on-load" style="animation-delay: 500ms;">
+            <div class="card animate-on-load" style="animation-delay: 700ms;">
                 <div class="card-content">
                     <h3 class="card-title">Roster Parser</h3>
                     <p class="card-description">Upload a roster export from SIS (XLS, XLSX, CSV) to return a simple list of "course code / course number / instructor name (or blank) / CRN". Handles "untrusted" and "trusted" exports.</p>
@@ -222,7 +254,7 @@
                 </div>
                 <div class="card-hover-overlay"></div>
             </div>
-            <div class="card card-span-2 animate-on-load" style="animation-delay: 600ms;">
+            <div class="card card-span-2 animate-on-load" style="animation-delay: 800ms;">
                 <div class="card-content">
                     <h3 class="card-title">Student Employment Cost Calculator</h3>
                     <p class="card-description">Create an "employment schedule" for graduate student employees and display the costs associated. Features proper proration of same-quarter multiple-appointment benefits and work-study.</p>
@@ -242,7 +274,7 @@
                 </div>
                 <div class="card-hover-overlay"></div>
             </div>
-            <div class="card animate-on-load" style="animation-delay: 700ms;">
+            <div class="card animate-on-load" style="animation-delay: 900ms;">
                 <div class="card-content">
                     <h3 class="card-title">IPA-Disclosure Double Checker</h3>
                     <p class="card-description">This tool takes a Support Assignments XLSX exported from IPA and quickly pulls out name, email, and title. Its purpose is to streamline the process of double-checking whether or not an employee has completed the Disclosure Process.</p>
@@ -256,12 +288,12 @@
             </div>
         </div>
 
-        <div class="resources-section animate-on-load" style="animation-delay: 800ms;">
+        <div class="resources-section animate-on-load" style="animation-delay: 1000ms;">
             <h2 class="section-heading">AGS Resources</h2>
             </div>
 
         <div class="tools-grid">
-            <div class="card animate-on-load" style="animation-delay: 900ms;">
+            <div class="card animate-on-load" style="animation-delay: 1100ms;">
                 <div class="card-content">
                     <h3 class="card-title">Employee Disclosure Workflow</h3>
                     <p class="card-description">This ZIP folder contains each piece of the Employee Disclosure workflow. Please email me to be added as a user to the "read the form" AI model, or I'd be glad to Zoom with you to help you build your own!</p>
@@ -272,7 +304,7 @@
                 </div>
                 <div class="card-hover-overlay"></div>
             </div>
-            <div class="card animate-on-load" style="animation-delay: 1000ms;">
+            <div class="card animate-on-load" style="animation-delay: 1200ms;">
                 <div class="card-content">
                     <h3 class="card-title">Docusign "eForms" Example</h3>
                     <p class="card-description">Contains Docusign templates to create Powerforms for Grad Studies Legacy Forms and example HTML for a SiteFarm page.</p>

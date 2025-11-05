@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Faculty Leave Pay Period Calculator</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+	
+	<style>
+		:root {
+			--ucd-blue: #002855;
+			--ucd-gold: #FFBF00;
+			--ucd-light-gray: #f2f2f2;
+		}
+		body {
+			font-family: 'Public Sans', sans-serif; // "approxima nova" I STILL THINK IT'S FUNNY AND WILL DIE ON THIS HILL
+			background-color: var(--ucd-light-gray);
+		}
+		.ucd-header {
+			background-color: var(--ucd-blue);
+			color: white;
+			padding: 1rem 2rem;
+			display: flex;
+			align-items: center;
+		}
+		.ucd-logo-text {
+			font-weight: 700;
+			font-size: 1.5rem;
+			letter-spacing: 0.5px;
+		}
+		.card {
+			background-color: white;
+			border-radius: 0;
+			border: 1px solid #ddd;
+			padding: 2rem;
+		}
+		
+		.btn {
+			background-color: #6bca98; 
+			color: white;
+			padding: 0.5rem 1rem;
+			border-radius: 0.25rem;
+			font-weight: 500;
+			transition: background-color 0.2s;
+			border: none;
+			cursor: pointer;
+		}
+		.btn:hover:not(:disabled) {
+			background-color: #266040;
+		}
+
+		.btn-gray {
+			background-color: #6b7280;
+		}
+		.btn-gray:hover {
+			background-color: #4b5563;
+		}
+	</style>
+</head>
+<body>
+
+	<header class="ucd-header shadow-md">
+		<h1 class="ucd-logo-text">Blue Cluster Heavy Industries</h1>
+	</header>
+
+	<main class="w-full max-w-4xl mx-auto p-4 md:p-8 space-y-6">
+
+		<div class="relative text-center mb-8">
+			<div class="absolute inset-0 flex items-center justify-center -z-10 opacity-20">
+				<div class="w-16 h-16 bg-[#FFBF00] -rotate-12"></div>
+				<div class="w-20 h-20 bg-[#002855] rotate-6 -ml-8"></div>
+			</div>
+			<h2 class="text-4xl font-bold text-[#002855]">Faculty Leave Pay Period Calculator</h2>
+		</div>
+
+		<div class="card space-y-10 divide-y divide-gray-200">
+			
+			<section class="space-y-6 pt-0">
+				<h2 class="text-2xl font-semibold text-[#002855] border-b-2 border-gray-200 pb-2 mb-6">
+					Full Quarter Leave Calculator
+				</h2>
+				<p class="text-sm text-gray-700 -mt-2 mb-4">Use this tool when a leave lasts for one or more full quarters (e.g., all of Fall, or all of Fall and Winter).</p>
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<div>
+						<label for="quarter-start" class="block text-sm font-medium text-gray-700 mb-1">Quarter Leave Begins</label>
+						<select id="quarter-start" class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-[#002855] focus:border-[#002855]">
+							</select>
+					</div>
+					<div>
+						<label for="quarter-end" class="block text-sm font-medium text-gray-700 mb-1">Quarter Leave Ends</label>
+						<select id="quarter-end" class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-[#002855] focus:border-[#002855]">
+							</select>
+					</div>
+				</div>
+
+				<div>
+					<button id="calculate-btn-full" class="btn">
+						Calculate Full Quarter Period
+					</button>
+				</div>
+
+				<div id="results-section-full" class="hidden pt-6 space-y-6">
+					<h3 class="text-xl font-semibold text-[#002855]">Calculated Full Quarter Period</h3>
+					
+					<div class="bg-blue-50 border-l-4 border-[#002855] text-[#002855] p-4 rounded-r-lg" role="alert">
+						<p class="text-sm uppercase font-semibold">Your total pay period for this leave is:</p>
+						<p class="text-2xl md:text-3xl font-bold mt-1">
+							<span id="pay-start-date-full"></span> &mdash; <span id="pay-end-date-full"></span>
+						</p>
+					</div>
+
+					<div class="bg-gray-50 border-l-4 border-gray-500 text-gray-800 p-4 rounded-r-lg">
+						<p class="text-sm uppercase font-semibold">Corresponding total service period:</p>
+						<p class="text-2xl md:text-3xl font-bold mt-1">
+							<span id="service-start-date-full"></span> &mdash; <span id="service-end-date-full"></span>
+						</p>
+					</div>
+
+					<div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+						<h4 class="text-lg font-semibold text-gray-700 mb-3">Show Your Work</h4>
+						<div id="work-explanation-full" class="text-gray-700 space-y-2 text-sm">
+							</div>
+					</div>
+				</div>
+			</section>
+
+			<section class="space-y-6 pt-10">
+				<h2 class="text-2xl font-semibold text-[#002855] border-b-2 border-gray-200 pb-2 mb-6">
+					Shorter-than-Quarter Leave Calculator
+				</h2>
+				<p class="text-sm text-gray-700 -mt-2 mb-4">Use this tool for a leave that occurs *within* a single quarter (e.g., from 9/22 to 10/21). This prorates the pay period based on the service days.</p>
+				<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+					<div>
+						<label for="quarter-partial" class="block text-sm font-medium text-gray-700 mb-1">Select Quarter</label>
+						<select id="quarter-partial" class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-[#002855] focus:border-[#002855]">
+							</select>
+					</div>
+					<div>
+						<label for="leave-start-date" class="block text-sm font-medium text-gray-700 mb-1">Leave Start Date (Service)</label>
+						<input type="date" id="leave-start-date" class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-[#002855] focus:border-[#002855]" placeholder="yyyy-mm-dd">
+					</div>
+					<div>
+						<label for="leave-end-date" class="block text-sm font-medium text-gray-700 mb-1">Leave End Date (Service)</label>
+						<input type="date" id="leave-end-date" class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-[#002855] focus:border-[#002855]" placeholder="yyyy-mm-dd">
+					</div>
+				</div>
+				<p id="quarter-dates-info" class="text-sm text-gray-500 mt-3 hidden"></p>
+				
+				<div>
+					<button id="calculate-btn-partial" class="btn">
+						Calculate Prorated Pay Period
+					</button>
+				</div>
+
+				<div id="results-section-partial" class="hidden pt-6">
+					<h3 class="text-xl font-semibold text-[#002855] mb-4">Calculated Prorated Leave</h3>
+					
+					<div class="bg-blue-50 border-l-4 border-[#002855] text-[#002855] p-4 rounded-r-lg mb-6" role="alert">
+						<p class="text-sm uppercase font-semibold">Your prorated pay period for this leave is:</p>
+						<p class="text-2xl md:text-3xl font-bold mt-1">
+							<span id="pay-start-date-partial"></span> &mdash; <span id="pay-end-date-partial"></span>
+						</p>
+					</div>
+					
+					<div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+						<h4 class="text-lg font-semibold text-gray-700 mb-3">Show Your Work</h4>
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm">
+							<div>
+								<span class="font-medium text-gray-800">Total Days in Service Period:</span>
+								<span id="total-service-days" class="ml-2 text-gray-700"></span>
+							</div>
+							<div>
+								<span class="font-medium text-gray-800">Total Days in Pay Period:</span>
+								<span id="total-pay-days" class="ml-2 text-gray-700"></span>
+							</div>
+							<div>
+								<span class="font-medium text-gray-800"># Service Days on Leave:</span>
+								<span id="service-days-on-leave" class="ml-2 text-gray-700 font-bold"></span>
+							</div>
+							<div>
+								<span class="font-medium text-gray-800">% of Quarter on Leave:</span>
+								<span id="percent-on-leave" class="ml-2 text-gray-700 font-bold"></span>
+							</div>
+							<div>
+								<span class="font-medium text-gray-800"># Pay Period Days on Leave:</span>
+								<span id="pay-days-on-leave" class="ml-2 text-gray-700 font-bold"></span>
+							</div>
+							<div class="col-span-1 md:col-span-2 border-t pt-4 mt-2">
+								<span class="font-medium text-gray-800"># Service Days *Prior* to Leave:</span>
+								<span id="service-days-prior" class="ml-2 text-gray-700"></span>
+							</div>
+							<div>
+								<span class="font-medium text-gray-800"># Pay Period Days *Prior* to Leave:</span>
+								<span id="pay-days-prior" class="ml-2 text-gray-700"></span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+			
+			</div>
+
+		<div class="card">
+			<section>
+				<h2 class="text-2xl font-semibold text-[#002855] mb-6">
+					Base Dates & Definitions
+				</h2>
+				<p class="text-sm text-gray-700 mb-4">This tool uses the following official mappings of service periods to pay periods. Pay periods are staggered and do not align directly with service dates.</p>
+				
+				<div class="overflow-x-auto rounded-lg border border-gray-200">
+					<table class="min-w-full divide-y divide-gray-200">
+						<thead class="bg-gray-50">
+							<tr>
+								<th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-[#002855] uppercase tracking-wider">Quarter Name</th>
+								<th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-[#002855] uppercase tracking-wider">Service Period</th>
+								<th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-[#002855] uppercase tracking-wider">Pay Period</th>
+							</tr>
+						</thead>
+						<tbody id="base-dates-table" class="bg-white divide-y divide-gray-200">
+							</tbody>
+					</table>
+				</div>
+			</section>
+		</div>
+	</main>
+
+	<div id="error-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center p-4 z-50">
+		<div class="bg-white rounded-lg shadow-xl max-w-sm w-full">
+			<div class="p-6">
+				<div class="flex items-start">
+					<div class="flex-shrink-0 h-12 w-12 flex items-center justify-center rounded-full bg-red-100">
+						<svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+						</svg>
+					</div>
+					<div class="ml-4">
+						<h3 class="text-lg font-medium text-gray-900" id="error-modal-title">Input Error</h3>
+						<p class="text-sm text-gray-600 mt-2" id="error-modal-message">Please check your inputs.</p>
+					</div>
+				</div>
+			</div>
+			<div class="bg-gray-50 px-6 py-4 rounded-b-lg text-right">
+				<button id="error-modal-close" class="btn">
+					OK
+				</button>
+			</div>
+		</div>
+	</div>
+
+
+	<script>
+		// The quarter data lives here.
+		const quarterDateMap = {
+			"Spring 2027": {
+				serviceStart: "2027-03-25", 
+				serviceEnd: "2027-06-10",  
+				payStart: "2027-03-01",
+				payEnd: "2027-06-30"
+			},
+			"Winter 2027": {
+				serviceStart: "2027-01-04", 
+				serviceEnd: "2027-03-19",
+				payStart: "2026-11-01",
+				payEnd: "2027-02-28"
+			},
+			"Fall 2026": {
+				serviceStart: "2026-09-21",
+				serviceEnd: "2026-12-11",
+				payStart: "2026-07-01",
+				payEnd: "2026-10-31"
+			},
+			"Spring 2026": {
+				serviceStart: "2026-03-26",
+				serviceEnd: "2026-06-11",
+				payStart: "2026-03-01",
+				payEnd: "2026-06-30"
+			},
+			"Winter 2026": {
+				serviceStart: "2026-01-02",
+				serviceEnd: "2026-03-20",
+				payStart: "2025-11-01",
+				payEnd: "2026-02-28"
+			},
+			"Fall 2025": {
+				serviceStart: "2025-09-22",
+				serviceEnd: "2025-12-12",
+				payStart: "2025-07-01",
+				payEnd: "2025-10-31"
+			},
+			"Spring 2025": {
+				serviceStart: "2025-03-27",
+				serviceEnd: "2025-06-12",
+				payStart: "2025-03-01",
+				payEnd: "2025-06-30"
+			},
+			"Winter 2025": {
+				serviceStart: "2025-01-03",
+				serviceEnd: "2025-03-21",
+				payStart: "2024-11-01",
+				payEnd: "2025-02-28"
+			},
+			"Fall 2024": {
+				serviceStart: "2024-09-23",
+				serviceEnd: "2024-12-13",
+				payStart: "2024-07-01",
+				payEnd: "2024-10-31"
+			},
+			"Spring 2024": {
+				serviceStart: "2024-03-28",
+				serviceEnd: "2024-06-13",
+				payStart: "2024-03-01",
+				payEnd: "2024-06-30"
+			},
+			"Winter 2024": {
+				serviceStart: "2024-01-05",
+				serviceEnd: "2024-03-22",
+				payStart: "2023-11-01",
+				payEnd: "2024-02-29" // 2024 was a leap year
+			}
+		};
+
+		// --- UTILITY FUNCTIONS ---
+		// We need this to calculate date differences. 1000ms * 60s * 60m * 24h
+		const ONE_DAY_MS = 1000 * 60 * 60 * 24;
+
+		const errorModal = document.getElementById('error-modal');
+		const errorModalTitle = document.getElementById('error-modal-title');
+		const errorModalMessage = document.getElementById('error-modal-message');
+		const errorModalClose = document.getElementById('error-modal-close');
+
+		function showModal(title, message) {
+			errorModalTitle.textContent = title;
+			errorModalMessage.textContent = message;
+			errorModal.classList.remove('hidden');
+		}
+		errorModalClose.addEventListener('click', () => {
+			errorModal.classList.add('hidden');
+		});
+
+
+		/**
+		 * This one makes the YYYY-MM-DD dates look like normal MM/DD/YYYY dates.
+		 * Using UTC to make sure I don't accidentally skip a day due to timezones like I did with Pika's Path
+		 */
+		function formatDate(dateString) {
+			if (!dateString) return "N/A";
+			const date = new Date(dateString + 'T00:00:00Z'); // Force UTC
+			return date.toLocaleDateString('en-US', {
+				month: '2-digit',
+				day: '2-digit',
+				year: 'numeric',
+				timeZone: 'UTC'
+			});
+		}
+		
+		/**
+		 * Grabs a date string (YYYY-MM-DD) and turns it into a real Date object.
+		 * Again, forcing UTC
+		 */
+		function getUTCDate(dateString) {
+			return new Date(dateString + 'T00:00:00Z');
+		}
+
+		/**
+		 * This guy calculates the *inclusive* number of days.
+		 * (e.g., 10/1 to 10/2 is 2 days, not 1)
+		 */
+		function inclusiveDateDiff(dateStrEnd, dateStrStart) {
+			const dateEnd = getUTCDate(dateStrEnd);
+			const dateStart = getUTCDate(dateStrStart);
+			const diffTime = dateEnd.getTime() - dateStart.getTime();
+			// Handle any daylight saving shenanigans, just in case.
+			const diffDays = Math.round(diffTime / ONE_DAY_MS);
+			return diffDays + 1; // Add 1 to make it inclusive
+		}
+
+		/**
+		 * Simple function to add X days to a date.
+		 * Takes a 'YYYY-MM-DD' string, returns a 'YYYY-MM-DD' string.
+		 */
+		function addDays(dateStr, days) {
+			const date = getUTCDate(dateStr);
+			date.setUTCDate(date.getUTCDate() + days);
+			return date.toISOString().split('T')[0];
+		}
+
+
+		// --- APPLICATION LOGIC ---
+		document.addEventListener('DOMContentLoaded', () => {
+			
+			// --- Common Elements ---
+			// Get the quarter names directly from our data object.
+			// No .reverse() needed since I fixed the data source order. Sorry mom.
+			const quarterKeys = Object.keys(quarterDateMap);
+			const baseDatesTableBody = document.getElementById('base-dates-table');
+
+			// --- 1. Populate Base Dates Table ---
+			// Let's fill up that big table at the bottom with all our data.
+			if (baseDatesTableBody) {
+				quarterKeys.forEach(quarterName => {
+					const data = quarterDateMap[quarterName];
+					const row = baseDatesTableBody.insertRow();
+					row.className = "text-sm";
+					
+					row.insertCell(0).textContent = quarterName;
+					row.cells[0].className = "px-4 py-3 font-medium text-gray-900 whitespace-nowrap";
+					
+					row.insertCell(1).textContent = `${formatDate(data.serviceStart)} - ${formatDate(data.serviceEnd)}`;
+					row.cells[1].className = "px-4 py-3 text-gray-600 whitespace-nowrap";
+
+					row.insertCell(2).textContent = `${formatDate(data.payStart)} - ${formatDate(data.payEnd)}`;
+					row.cells[2].className = "px-4 py-3 text-gray-600 whitespace-nowrap";
+				});
+			} else {
+				// Just in case I messed up the ID again.
+				console.error("Could not find 'base-dates-table' element.");
+			}
+
+			
+			// --- 2. Setup Calculator 1: Full Quarter ---
+			const startSelect = document.getElementById('quarter-start');
+			const endSelect = document.getElementById('quarter-end');
+			const calculateBtnFull = document.getElementById('calculate-btn-full');
+			const resultsSectionFull = document.getElementById('results-section-full');
+			const payStartDateElFull = document.getElementById('pay-start-date-full');
+			const payEndDateElFull = document.getElementById('pay-end-date-full');
+			const serviceStartDateElFull = document.getElementById('service-start-date-full');
+			const serviceEndDateElFull = document.getElementById('service-end-date-full');
+			const workExplanationElFull = document.getElementById('work-explanation-full');
+
+			// --- 3. Setup Calculator 2: Partial Quarter ---
+			const partialSelect = document.getElementById('quarter-partial');
+			const leaveStartDateInput = document.getElementById('leave-start-date');
+			const leaveEndDateInput = document.getElementById('leave-end-date');
+			const quarterDatesInfo = document.getElementById('quarter-dates-info');
+			const calculateBtnPartial = document.getElementById('calculate-btn-partial');
+			const resultsSectionPartial = document.getElementById('results-section-partial');
+
+			// --- 4. Populate All the Dropdown Menus ---
+			
+			const defaultOption = "<option value='' selected disabled>Please select a quarter</option>";
+			startSelect.innerHTML = defaultOption;
+			endSelect.innerHTML = defaultOption;
+			partialSelect.innerHTML = defaultOption;
+
+			quarterKeys.forEach(quarterName => {
+				startSelect.add(new Option(quarterName, quarterName));
+				endSelect.add(new Option(quarterName, quarterName));
+				partialSelect.add(new Option(quarterName, quarterName));
+			});
+			
+			// --- REMOVED: QoL feature to auto-select end date ---
+			// startSelect.addEventListener('change', () => {
+			//     endSelect.value = startSelect.value;
+			// });
+
+			// --- 5. Event Listener: Full Quarter Calculator Button ---
+			calculateBtnFull.addEventListener('click', () => {
+				const startQuarterName = startSelect.value;
+				const endQuarterName = endSelect.value;
+
+				// --- Validation for blank dropdowns ---
+				if (!startQuarterName || !endQuarterName) {
+					showModal("Input Error", "Please select both a 'Begins' and 'Ends' quarter.");
+					resultsSectionFull.classList.add('hidden');
+					return;
+				}
+
+				const startIndex = quarterKeys.indexOf(startQuarterName);
+				const endIndex = quarterKeys.indexOf(endQuarterName);
+
+				if (startIndex < endIndex) {
+					showModal("Input Error", "'Quarter Leave Ends' must be the same as or *after* 'Quarter Leave Begins'. (Quarters are listed newest to oldest).");
+					resultsSectionFull.classList.add('hidden');
+					return;
+				}
+
+				// Grab ze data
+
+				const actualStartQuarterData = quarterDateMap[startQuarterName]; // e.g., Fall 2026
+				const actualEndQuarterData = quarterDateMap[endQuarterName];     // e.g., Winter 2027
+				
+				// Pay period = start of the start quarter, end of the *end* quarter
+				const finalPayStart = actualStartQuarterData.payStart;
+				const finalPayEnd = actualEndQuarterData.payEnd;
+				
+				// Service period = start of the start quarter, end of the *end* quarter
+				const finalServiceStart = actualStartQuarterData.serviceStart;
+				const finalServiceEnd = actualEndQuarterData.serviceEnd;
+				
+				// Calculate total service days for the entire period
+				const totalServiceDays = inclusiveDateDiff(finalServiceEnd, finalServiceStart);
+
+				// --- Populate Results ---
+				payStartDateElFull.textContent = formatDate(finalPayStart);
+				payEndDateElFull.textContent = formatDate(finalPayEnd);
+				
+				serviceStartDateElFull.textContent = formatDate(finalServiceStart);
+				serviceEndDateElFull.textContent = formatDate(finalServiceEnd);
+
+				resultsSectionFull.classList.remove('hidden');
+
+				// --- Populate "Show Your Work" ---
+				workExplanationElFull.innerHTML = `
+					<p>1. The pay period for your selected <strong>start quarter</strong> (${startQuarterName}) is 
+					   <strong>${formatDate(actualStartQuarterData.payStart)} - ${formatDate(actualStartQuarterData.payEnd)}</strong>.
+					</p>
+					<p>2. The pay period for your selected <strong>end quarter</strong> (${endQuarterName}) is
+					   <strong>${formatDate(actualEndQuarterData.payStart)} - ${formatDate(actualEndQuarterData.payEnd)}</strong>.
+					</p>
+					<p>3. The total service period for this leave is 
+					   <strong>${formatDate(finalServiceStart)} - ${formatDate(finalServiceEnd)}</strong>, which is
+					   <strong>${totalServiceDays} days</strong>.
+					</p>
+					<p class="font-semibold text-gray-800 pt-2">
+					   Therefore, the total pay period combines the <strong>start date</strong> of the first quarter's pay period with the <strong>end date</strong> of the last quarter's pay period.
+					</p>
+				`;
+			});
+
+			// --- 6. Event Listener: Partial Quarter Select Dropdown --- and it now sets placeholders, not values
+			partialSelect.addEventListener('change', () => {
+				const quarterName = partialSelect.value;
+				// Handle the "Please select" option
+				if (!quarterName) { 
+					quarterDatesInfo.classList.add('hidden');
+					leaveStartDateInput.value = "";
+					leaveEndDateInput.value = "";
+					leaveStartDateInput.placeholder = "yyyy-mm-dd";
+					leaveEndDateInput.placeholder = "yyyy-mm-dd";
+					return;
+				}
+
+				const data = quarterDateMap[quarterName];
+				quarterDatesInfo.textContent = `Service period for ${quarterName} is ${formatDate(data.serviceStart)} to ${formatDate(data.serviceEnd)}. Please enter leave dates within this range.`;
+				quarterDatesInfo.classList.remove('hidden');
+				
+				leaveStartDateInput.value = "";
+				leaveEndDateInput.value = "";
+				leaveStartDateInput.placeholder = `e.g., ${data.serviceStart}`;
+				leaveEndDateInput.placeholder = `e.g., ${data.serviceEnd}`;
+				
+				resultsSectionPartial.classList.add('hidden');
+			});
+
+			// --- 7. Event Listener: Partial Quarter Calculator Button ---
+			calculateBtnPartial.addEventListener('click', () => {
+				const quarterName = partialSelect.value;
+				const leaveStartDate = leaveStartDateInput.value;
+				const leaveEndDate = leaveEndDateInput.value;
+
+				// --- Validation ---
+				// Check for blank quarter
+				if (!quarterName) {
+					showModal("Input Error", "Please select a quarter.");
+					return;
+				}
+
+				const data = quarterDateMap[quarterName];
+				
+				// Lots of checks to make sure the user doesn't break things.
+				if (!leaveStartDate || !leaveEndDate) {
+					showModal("Input Error", "Please enter both a start and end date for the leave.");
+					return;
+				}
+				const leaveStartDateTime = getUTCDate(leaveStartDate).getTime();
+				const leaveEndDateTime = getUTCDate(leaveEndDate).getTime();
+				const serviceStartDateTime = getUTCDate(data.serviceStart).getTime();
+				const serviceEndDateTime = getUTCDate(data.serviceEnd).getTime();
+
+				if (leaveEndDateTime < leaveStartDateTime) {
+					showModal("Input Error", "Leave End Date cannot be before Leave Start Date.");
+					return;
+				}
+				// Check if the leave is *within* the selected quarter's service period
+				if (leaveStartDateTime < serviceStartDateTime || leaveEndDateTime > serviceEndDateTime) {
+					showModal("Date Range Error", `Leave dates must be within the quarter's service period (${formatDate(data.serviceStart)} - ${formatDate(data.serviceEnd)}).`);
+					return;
+				}
+				
+				// --- The Fun Math Part (Proration) ---
+				// 1. Get total days for both periods
+				const totalServiceDays = inclusiveDateDiff(data.serviceEnd, data.serviceStart);
+				const totalPayDays = inclusiveDateDiff(data.payEnd, data.payStart);
+				
+				// 2. Figure out the leave days
+				const serviceDaysOnLeave = inclusiveDateDiff(leaveEndDate, leaveStartDate);
+				// Days *before* the leave starts (e.g., 0 if leave starts on day 1)
+				const serviceDaysPrior = inclusiveDateDiff(leaveStartDate, data.serviceStart) - 1; 
+				
+				// 3. Get percentages
+				const percentOnLeave = serviceDaysOnLeave / totalServiceDays;
+				const percentPrior = serviceDaysPrior / totalServiceDays;
+				
+				// 4. Apply percentages to the *pay* period
+				// avoid partial days
+				const payDaysOnLeave = Math.round(totalPayDays * percentOnLeave);
+				const payDaysPrior = Math.round(totalPayDays * percentPrior);
+				
+				// 5. Calculate the final pay dates
+				const finalPayStartDate = addDays(data.payStart, payDaysPrior);
+				const finalPayEndDate = addDays(finalPayStartDate, payDaysOnLeave - 1); // -1 because it's inclusive
+
+				// --- Display Results ---
+				document.getElementById('pay-start-date-partial').textContent = formatDate(finalPayStartDate);
+				document.getElementById('pay-end-date-partial').textContent = formatDate(finalPayEndDate);
+				
+				// --- ...and "Show Your Work" ---
+				document.getElementById('total-service-days').textContent = `${totalServiceDays} days`;
+				document.getElementById('total-pay-days').textContent = `${totalPayDays} days`;
+				document.getElementById('service-days-on-leave').textContent = `${serviceDaysOnLeave} days`;
+				document.getElementById('percent-on-leave').textContent = `${(percentOnLeave * 100).toFixed(2)}%`;
+				document.getElementById('pay-days-on-leave').textContent = `${payDaysOnLeave} days`;
+				document.getElementById('service-days-prior').textContent = `${serviceDaysPrior} days`;
+				document.getElementById('pay-days-prior').textContent = `${payDaysPrior} days`;
+
+				resultsSectionPartial.classList.remove('hidden');
+			});
+
+		});
+	</script>
+</body>
+</html>
