@@ -28,6 +28,21 @@ This allows users to upload a roster export from SIS, from which point it will r
 
 Last updated: August 28th, 2025 (Added a hybrid XLS handler.)
 
+## [Leave Date Conversion Tool](https://github.com/ucdavis/ls-bluecluster-apgrad-tools/blob/main/leavedates.html)
+This allows for quick conversions between service and pay dates for AY faculty. Academic Affairs maintains an Excel version of this but I hate Excel calculators. 
+
+Last updated: November 5th, 2025 (First version)
+
+## [Lecturer Pay Calculator](https://blueclustertools.ucdavis.edu/lecturerpay.html)
+This is a fork-ish of the Student Employment Cost Calculator that lets you figure out costs for lecturer compensation, and build quick IWC sheets. 
+
+Last updated: October 23rd, 2025 (First version)
+
+## [IPA-Disclosure Double Checker](https://blueclustertools.ucdavis.edu/ipaparser.html)
+This is super specific! This tool takes a Support Assignments XLSX exported from IPA and quickly pulls out name, email, and title. Its purpose is to streamline the process of double-checking whether or not an employee has completed the Disclosure Process.
+
+Last updated: September 2nd, 2025 (First version)
+
 ## Employee Disclosure Workflow Example
 
 For folks who attended AGS Mini, [this ZIP folder](https://bombandgrapnel.com/disclosurehandler.zip) contains each piece of the Employee Disclosure workflow :) Please [email me](mailto:woangel@ucdavis.edu) to be added as a user to my "read the form" AI model, or I would be glad to Zoom with you to help you set up your own!
