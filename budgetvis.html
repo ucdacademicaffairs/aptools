@@ -21,6 +21,7 @@
 			--ucd-gold: #FFBF00;
 			--ucd-teal: #6bca98;
 			--ucd-light-gray: #f2f2f2;
+			--ucd-cyan: #00b2e3; /* New requested color */
 		}
 		body {
 			font-family: 'Public Sans', sans-serif;
@@ -89,25 +90,35 @@
 			background-color: #cbd5e1;
 			border-radius: 4px;
 		}
-		/* Metric Box styles */
+		
+		/* --- Updated Metric Box styles --- */
 		.metric-box {
 			background: white;
-			padding: 1rem;
 			border-radius: 0.5rem;
 			border: 1px solid #e5e7eb;
-			text-align: center;
+			overflow: hidden; /* Keeps children inside the border radius */
+			display: flex;
+			flex-direction: column;
 		}
-		.metric-box h4 {
+		.metric-header {
 			color: #002855;
 			font-weight: bold;
 			font-size: 0.9rem;
-			margin-bottom: 0.5rem;
+			text-align: center;
+			/* Symmetric padding to ensure whitespace over title matches under title */
+			padding-top: 1rem;
+			padding-bottom: 1rem;
 			border-bottom: 1px solid #f3f4f6;
-			padding-bottom: 0.25rem;
-			height: 2.5rem; /* fixed height for alignment */
-			display: flex;
-			align-items: center;
-			justify-content: center;
+			margin: 0;
+			width: 100%;
+		}
+		.metric-body {
+			padding: 1rem;
+		}
+		
+		/* Custom utility for the cyan color */
+		.text-ucd-cyan {
+			color: var(--ucd-cyan);
 		}
 	</style>
 </head>
@@ -126,7 +137,7 @@
 		
 		<div id="upload-section" class="card p-8 rounded-lg shadow-sm mb-8 text-center">
 			<h2 class="text-2xl font-bold text-[#002855] mb-2">Comparison Setup</h2>
-			<p class="text-gray-600 mb-8">Upload your two files. These should be exports from IPA's Budget panel in Excel format.</p>
+			<p class="text-gray-600 mb-8">Upload your two budget Excel files.</p>
 			
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
 				<div class="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50">
@@ -491,7 +502,7 @@
 			// METRIC_MAP defines the layout ID. 
 			// We iterate over the map to populate the DOM.
 			
-			// Formatters - UPDATED: Removed Math.round, enabled up to 1 decimal place
+			// Formatters - UPDATED: Enabled up to 1 decimal place
 			const fmt = (n) => n.toLocaleString('en-US', { maximumFractionDigits: 1 });
 
 			for (const [key, domId] of Object.entries(METRIC_MAP)) {
@@ -508,13 +519,15 @@
 				const title = key.toLowerCase().replace(/\b\w/g, s => s.toUpperCase())
 							  .replace('Sch', 'SCH').replace('Ta', 'TA');
 
-				const diffColor = diff > 0 ? "text-green-600" : (diff < 0 ? "text-red-500" : "text-gray-400");
+				// UPDATED COLOR LOGIC: Negatives are now cyan (#00b2e3)
+				const diffColor = diff > 0 ? "text-green-600" : (diff < 0 ? "text-ucd-cyan" : "text-gray-400");
 				const sign = diff > 0 ? "+" : "";
 
+				// UPDATED HTML STRUCTURE: Using metric-header class for symmetric whitespace
 				container.innerHTML = `
 					<div class="metric-box">
-						<h4>${title}</h4>
-						<div class="grid grid-cols-3 gap-1 text-center text-sm">
+						<h4 class="metric-header">${title}</h4>
+						<div class="metric-body grid grid-cols-3 gap-1 text-center text-sm">
 							<div>
 								<div class="text-[10px] text-gray-400 uppercase">Old</div>
 								<div class="font-bold text-gray-600">${fmt(valOld)}</div>
