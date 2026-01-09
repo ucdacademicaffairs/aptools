@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>BC BudgetVis</title>
+	
+	<script src="https://cdn.tailwindcss.com"></script>
+	
+	<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+	
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+
+	<style>
+		:root {
+			--ucd-blue: #002855;
+			--ucd-gold: #FFBF00;
+			--ucd-teal: #6bca98;
+			--ucd-light-gray: #f2f2f2;
+		}
+		body {
+			font-family: 'Public Sans', sans-serif;
+			background-color: var(--ucd-light-gray);
+			color: #333;
+		}
+		.ucd-header {
+			background-color: var(--ucd-blue);
+			color: white;
+			padding: 1rem 2rem;
+			display: flex;
+			align-items: center;
+			box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+		}
+		.ucd-logo-text {
+			font-weight: 700;
+			font-size: 1.5rem;
+			letter-spacing: 0.5px;
+		}
+		.btn-action {
+			background-color: var(--ucd-gold);
+			color: var(--ucd-blue);
+			font-weight: 700;
+			transition: opacity 0.2s;
+		}
+		.btn-action:hover {
+			opacity: 0.9;
+		}
+		.card {
+			background-color: white;
+			border: 1px solid #e5e7eb;
+			border-radius: 0.5rem;
+		}
+		/* The specific "Big Card" look */
+		.card-stat {
+			padding: 1.5rem;
+			border-left-width: 4px;
+		}
+		.metric-label {
+			font-size: 0.75rem;
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+			color: #6b7280;
+			font-weight: 600;
+			margin-bottom: 0.25rem;
+		}
+		.metric-value {
+			font-size: 1.75rem;
+			font-weight: 700;
+			color: var(--ucd-blue);
+		}
+		.section-title {
+			color: var(--ucd-blue);
+			font-weight: 700;
+			font-size: 1.25rem;
+			margin-bottom: 1rem;
+			margin-top: 2rem;
+			border-bottom: 2px solid #e5e7eb;
+			padding-bottom: 0.5rem;
+		}
+		/* Custom scrollbar for table */
+		.table-container::-webkit-scrollbar {
+			height: 8px;
+		}
+		.table-container::-webkit-scrollbar-thumb {
+			background-color: #cbd5e1;
+			border-radius: 4px;
+		}
+		/* Metric Box styles */
+		.metric-box {
+			background: white;
+			padding: 1rem;
+			border-radius: 0.5rem;
+			border: 1px solid #e5e7eb;
+			text-align: center;
+		}
+		.metric-box h4 {
+			color: #002855;
+			font-weight: bold;
+			font-size: 0.9rem;
+			margin-bottom: 0.5rem;
+			border-bottom: 1px solid #f3f4f6;
+			padding-bottom: 0.25rem;
+			height: 2.5rem; /* fixed height for alignment */
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+	</style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+	<header class="ucd-header">
+		<div class="flex items-center gap-4">
+			<svg class="w-8 h-8 text-[#FFBF00]" fill="currentColor" viewBox="0 0 24 24">
+				<path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z"/>
+			</svg>
+			<span class="ucd-logo-text">Blue Cluster BudgetVis</span>
+		</div>
+	</header>
+
+	<main class="flex-grow p-6 max-w-7xl mx-auto w-full">
+		
+		<div id="upload-section" class="card p-8 rounded-lg shadow-sm mb-8 text-center">
+			<h2 class="text-2xl font-bold text-[#002855] mb-2">Comparison Setup</h2>
+			<p class="text-gray-600 mb-8">Upload your two budget Excel files.</p>
+			
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+				<div class="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50">
+					<h3 class="font-bold text-lg mb-2 text-gray-700">1. Base Year (Old)</h3>
+					<input type="file" id="file-old" accept=".xlsx, .xls" class="block w-full text-sm text-slate-500
+						file:mr-4 file:py-2 file:px-4
+						file:rounded-full file:border-0
+						file:text-sm file:font-semibold
+						file:bg-[#6bca98] file:text-white
+						hover:file:opacity-90 cursor-pointer
+					"/>
+				</div>
+				<div class="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50">
+					<h3 class="font-bold text-lg mb-2 text-gray-700">2. Comparison Year (New)</h3>
+					<input type="file" id="file-new" accept=".xlsx, .xls" class="block w-full text-sm text-slate-500
+						file:mr-4 file:py-2 file:px-4
+						file:rounded-full file:border-0
+						file:text-sm file:font-semibold
+						file:bg-[#6bca98] file:text-white
+						hover:file:opacity-90 cursor-pointer
+					"/>
+				</div>
+			</div>
+			<button id="btn-compare" class="mt-8 btn-action py-3 px-8 rounded-lg shadow-md opacity-50 cursor-not-allowed" disabled>
+				Generate Comparison
+			</button>
+			<p id="error-msg" class="text-red-600 mt-4 hidden"></p>
+		</div>
+
+		<div id="dashboard" class="hidden pb-12">
+			
+			<h2 class="section-title mt-0">Financial Overview</h2>
+			
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+				<div class="card card-stat border-[#002855]">
+					<p class="metric-label">Old Budget (Allocated)</p>
+					<h3 class="metric-value text-gray-600" id="budget-old">$0</h3>
+				</div>
+				<div class="card card-stat border-[#FFBF00]">
+					<p class="metric-label">New Budget (Allocated)</p>
+					<h3 class="metric-value" id="budget-new">$0</h3>
+				</div>
+				<div class="card card-stat" id="card-budget-diff">
+					<p class="metric-label">Budget Variance</p>
+					<div class="flex items-baseline gap-2">
+						<h3 class="text-2xl font-bold" id="budget-diff">$0</h3>
+						<span class="text-sm font-bold py-1 px-2 rounded-full" id="budget-pct">0%</span>
+					</div>
+				</div>
+			</div>
+
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+				<div class="card card-stat border-[#002855]">
+					<p class="metric-label">Old Expenditures</p>
+					<h3 class="metric-value text-gray-600" id="exp-old">$0</h3>
+				</div>
+				<div class="card card-stat border-[#FFBF00]">
+					<p class="metric-label">New Expenditures</p>
+					<h3 class="metric-value" id="exp-new">$0</h3>
+				</div>
+				<div class="card card-stat" id="card-exp-diff">
+					<p class="metric-label">Expenditure Variance</p>
+					<div class="flex items-baseline gap-2">
+						<h3 class="text-2xl font-bold" id="exp-diff">$0</h3>
+						<span class="text-sm font-bold py-1 px-2 rounded-full" id="exp-pct">0%</span>
+					</div>
+				</div>
+			</div>
+
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+				<div class="card card-stat border-[#002855]">
+					<p class="metric-label">Old Balance</p>
+					<h3 class="metric-value text-gray-600" id="bal-old">$0</h3>
+				</div>
+				<div class="card card-stat border-[#FFBF00]">
+					<p class="metric-label">New Balance</p>
+					<h3 class="metric-value" id="bal-new">$0</h3>
+				</div>
+				<div class="hidden md:block"></div> 
+			</div>
+
+
+			<h2 class="section-title">Operational Metrics</h2>
+			
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+				<div id="metric-ta-count"></div>
+				<div id="metric-reader-count"></div>
+			</div>
+
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+				<div id="metric-units"></div>
+				<div id="metric-sch-ug"></div>
+				<div id="metric-sch-gr"></div>
+			</div>
+
+			<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+				<div id="metric-off-low"></div>
+				<div id="metric-off-up"></div>
+				<div id="metric-off-grad"></div>
+				<div id="metric-off-total"></div>
+			</div>
+
+
+			<h2 class="section-title">Spending Breakdown</h2>
+			<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+				<div class="card p-6 shadow-sm">
+					<h3 class="font-bold text-lg mb-4 text-[#002855]">Expenditures by Category</h3>
+					<div class="relative h-64 w-full">
+						<canvas id="chart-bar"></canvas>
+					</div>
+				</div>
+				<div class="card p-6 shadow-sm">
+					<h3 class="font-bold text-lg mb-4 text-[#002855]">Variance Drivers</h3>
+					<div class="relative h-64 w-full">
+						<canvas id="chart-diff"></canvas>
+					</div>
+				</div>
+			</div>
+
+			<div class="card rounded-lg shadow-sm overflow-hidden mt-8">
+				<div class="p-6 border-b border-gray-100 flex justify-between items-center bg-[#002855] text-white">
+					<h3 class="font-bold text-lg">Detailed Line Items</h3>
+					<button onclick="exportTableToCSV()" class="text-xs bg-[#FFBF00] text-[#002855] font-bold py-2 px-4 rounded hover:bg-yellow-400">
+						Download CSV
+					</button>
+				</div>
+				<div class="table-container overflow-x-auto">
+					<table class="w-full text-sm text-left">
+						<thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b">
+							<tr>
+								<th class="px-6 py-4 font-bold">Category</th>
+								<th class="px-6 py-4 text-right">Old ($)</th>
+								<th class="px-6 py-4 text-right">New ($)</th>
+								<th class="px-6 py-4 text-right">Difference ($)</th>
+								<th class="px-6 py-4 text-right">Change (%)</th>
+							</tr>
+						</thead>
+						<tbody id="detail-table-body" class="divide-y divide-gray-100">
+							</tbody>
+					</table>
+				</div>
+			</div>
+
+		</div>
+	</main>
+
+	<script>
+		// config
+		// 1. TOTAL EXPENDITURES KEYS (To find H22)
+		const KEYS_TOTAL_EXP = ['TOTAL TEACHING COSTS'];
+		
+		// 2. TOTAL BUDGET KEYS (To find H23)
+		const KEYS_TOTAL_BUDGET = ['FUNDS COST'];
+
+		// 3. METRIC KEYS MAP (Maps Excel Names to DOM IDs)
+		const METRIC_MAP = {
+			'TA COUNT': 'metric-ta-count',
+			'READER COUNT': 'metric-reader-count',
+			'UNITS OFFERED': 'metric-units',
+			'STUDENT CREDIT HOURS (UNDERGRAD)': 'metric-sch-ug',
+			'STUDENT CREDIT HOURS (GRADUATE)': 'metric-sch-gr',
+			'LOWER DIV OFFERINGS': 'metric-off-low',
+			'UPPER DIV OFFERINGS': 'metric-off-up',
+			'GRADUATE OFFERINGS': 'metric-off-grad',
+			'TOTAL OFFERINGS': 'metric-off-total'
+		};
+
+		// 4. IGNORE LIST (For Charts/Table)
+		// exclude metrics, totals, and balances from the line items
+		const KEYS_IGNORE_CHART = [
+			'BALANCE', 'SURPLUS', 'DEFICIT', 'NET POSITION', 
+			'TOTAL TEACHING', 'SUPPORT COST', 'REPLACEMENT COST', 
+			'SCH', 'CREDIT HOURS', 'OFFERINGS', 'COUNT', 'UNITS', 'ENROLLMENT',
+			...KEYS_TOTAL_EXP, ...KEYS_TOTAL_BUDGET
+		];
+
+		let charts = {};
+
+		// inputs
+		const btnCompare = document.getElementById('btn-compare');
+		const inputOld = document.getElementById('file-old');
+		const inputNew = document.getElementById('file-new');
+
+		function checkInputs() {
+			if (inputOld.files.length > 0 && inputNew.files.length > 0) {
+				btnCompare.disabled = false;
+				btnCompare.classList.remove('opacity-50', 'cursor-not-allowed');
+			}
+		}
+
+		inputOld.addEventListener('change', checkInputs);
+		inputNew.addEventListener('change', checkInputs);
+
+		btnCompare.addEventListener('click', async () => {
+			const errorMsg = document.getElementById('error-msg');
+			errorMsg.classList.add('hidden');
+			btnCompare.textContent = 'Processing...';
+			
+			try {
+				const [resultOld, resultNew] = await Promise.all([
+					parseExcel(inputOld.files[0]),
+					parseExcel(inputNew.files[0])
+				]);
+
+				processAndRender(resultOld, resultNew);
+				
+				document.getElementById('upload-section').classList.add('hidden');
+				document.getElementById('dashboard').classList.remove('hidden');
+
+			} catch (err) {
+				console.error(err);
+				errorMsg.textContent = "Error reading files. Ensure they match the standard Budget Summary format.";
+				errorMsg.classList.remove('hidden');
+				btnCompare.textContent = 'Generate Comparison';
+			}
+		});
+
+		function parseExcel(file) {
+			return new Promise((resolve, reject) => {
+				const reader = new FileReader();
+				reader.onload = (e) => {
+					const data = new Uint8Array(e.target.result);
+					const workbook = XLSX.read(data, { type: 'array' });
+					const sheet = workbook.Sheets[workbook.SheetNames[0]];
+					const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+					resolve(json);
+				};
+				reader.onerror = reject;
+				reader.readAsArrayBuffer(file);
+			});
+		}
+
+		function processAndRender(rawOld, rawNew) {
+			const oldData = extractData(rawOld);
+			const newData = extractData(rawNew);
+
+			// 1. Render Top Financials
+			renderTopLevelFinancials(oldData, newData);
+
+			// 2. Render Operational Metrics (Grid)
+			renderMetrics(oldData.metrics, newData.metrics);
+
+			// 3. Process Line Items (Exclude metrics/totals)
+			const allKeys = new Set([...Object.keys(oldData.lineItems), ...Object.keys(newData.lineItems)]);
+			const comparison = [];
+
+			allKeys.forEach(key => {
+				const o = oldData.lineItems[key] || 0;
+				const n = newData.lineItems[key] || 0;
+				if(Math.abs(o) < 0.1 && Math.abs(n) < 0.1) return;
+
+				comparison.push({
+					category: key,
+					old: o,
+					new: n,
+					diff: n - o,
+					pct: o !== 0 ? ((n - o) / o) * 100 : (n > 0 ? 100 : 0)
+				});
+			});
+
+			renderCharts(comparison);
+			renderTable(comparison);
+		}
+
+		function extractData(rows) {
+			let totalExp = 0;
+			let totalBudget = 0;
+			const lineItems = {};
+			const metrics = {};
+
+			rows.forEach((row, index) => {
+				if(index < 1) return; 
+
+				// Adjust these if columns shift (Col 3=Name, Col 7=Total)
+				const category = row[3]; 
+				const total = row[7];
+
+				if (!category) return;
+				
+				const catUpper = category.toString().toUpperCase().trim();
+				
+				let val = 0;
+				if (typeof total === 'number') val = total;
+				else if (typeof total === 'string') val = parseFloat(total.replace(/,/g, ''));
+				if (isNaN(val)) val = 0;
+
+				// A. Check for Grand Totals
+				if (KEYS_TOTAL_EXP.some(k => catUpper === k)) {
+					totalExp = val;
+					return; 
+				}
+				if (KEYS_TOTAL_BUDGET.some(k => catUpper === k)) {
+					totalBudget = val;
+					return; 
+				}
+
+				// B. Check for Specific Metrics (Layout specific)
+				// We check against the keys in METRIC_MAP
+				let foundMetric = false;
+				for (const [key, id] of Object.entries(METRIC_MAP)) {
+					if (catUpper.includes(key)) {
+						// Store it using the standardized Map Key for easier matching later
+						metrics[key] = val; 
+						foundMetric = true;
+						// Don't break immediately, in case of overlaps, but usually unique
+					}
+				}
+				if (foundMetric) return;
+
+				// C. Check Ignore List (Subtotals, Headers)
+				if (KEYS_IGNORE_CHART.some(k => catUpper.includes(k))) return;
+
+				// D. Line Items
+				lineItems[category] = val;
+			});
+
+			return { totalExp, totalBudget, lineItems, metrics };
+		}
+
+		function renderTopLevelFinancials(oldD, newD) {
+			const format = (n) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+
+			// Budget
+			document.getElementById('budget-old').textContent = format(oldD.totalBudget);
+			document.getElementById('budget-new').textContent = format(newD.totalBudget);
+			updateDiffCard('budget', newD.totalBudget - oldD.totalBudget, oldD.totalBudget);
+
+			// Expenditures
+			document.getElementById('exp-old').textContent = format(oldD.totalExp);
+			document.getElementById('exp-new').textContent = format(newD.totalExp);
+			updateDiffCard('exp', newD.totalExp - oldD.totalExp, oldD.totalExp);
+
+			// Balance
+			const oldBal = oldD.totalBudget - oldD.totalExp;
+			const newBal = newD.totalBudget - newD.totalExp;
+			document.getElementById('bal-old').textContent = format(oldBal);
+			document.getElementById('bal-new').textContent = format(newBal);
+		}
+
+		function updateDiffCard(idPrefix, diff, base) {
+			const elDiff = document.getElementById(`${idPrefix}-diff`);
+			const elPct = document.getElementById(`${idPrefix}-pct`);
+			const card = document.getElementById(`card-${idPrefix}-diff`);
+			
+			const format = (n) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+			
+			elDiff.textContent = (diff > 0 ? "+" : "") + format(diff);
+			const pct = base !== 0 ? (diff / base) * 100 : 0;
+			elPct.textContent = (diff > 0 ? "+" : "") + pct.toFixed(1) + "%";
+
+			// Colors
+			if (diff > 0) {
+				card.className = "card card-stat border-yellow-500";
+				elPct.className = "text-sm font-bold py-1 px-2 rounded-full bg-yellow-100 text-yellow-800";
+			} else {
+				card.className = "card card-stat border-green-500"; 
+				elPct.className = "text-sm font-bold py-1 px-2 rounded-full bg-green-100 text-green-800";
+			}
+		}
+
+		function renderMetrics(oldM, newM) {
+			// METRIC_MAP defines the layout ID. 
+			// We iterate over the map to populate the DOM.
+			
+			// Formatters - UPDATED: Removed Math.round, enabled up to 1 decimal place
+			const fmt = (n) => n.toLocaleString('en-US', { maximumFractionDigits: 1 });
+
+			for (const [key, domId] of Object.entries(METRIC_MAP)) {
+				const container = document.getElementById(domId);
+				if(!container) continue;
+
+				// Find value in data (trying to match the key loosely)
+				// The extraction stored them by the METRIC_MAP key.
+				const valOld = oldM[key] || 0;
+				const valNew = newM[key] || 0;
+				const diff = valNew - valOld;
+
+				// Pretty Title (Title Case)
+				const title = key.toLowerCase().replace(/\b\w/g, s => s.toUpperCase())
+							  .replace('Sch', 'SCH').replace('Ta', 'TA');
+
+				const diffColor = diff > 0 ? "text-green-600" : (diff < 0 ? "text-red-500" : "text-gray-400");
+				const sign = diff > 0 ? "+" : "";
+
+				container.innerHTML = `
+					<div class="metric-box">
+						<h4>${title}</h4>
+						<div class="grid grid-cols-3 gap-1 text-center text-sm">
+							<div>
+								<div class="text-[10px] text-gray-400 uppercase">Old</div>
+								<div class="font-bold text-gray-600">${fmt(valOld)}</div>
+							</div>
+							<div>
+								<div class="text-[10px] text-gray-400 uppercase">New</div>
+								<div class="font-bold text-[#002855]">${fmt(valNew)}</div>
+							</div>
+							<div>
+								<div class="text-[10px] text-gray-400 uppercase">Diff</div>
+								<div class="font-bold ${diffColor}">${sign}${fmt(diff)}</div>
+							</div>
+						</div>
+					</div>
+				`;
+			}
+		}
+
+		function renderCharts(data) {
+			// Sort by Value
+			const sortedByVal = [...data].sort((a, b) => b.new - a.new).slice(0, 10);
+			
+			if (charts.bar) charts.bar.destroy();
+			charts.bar = new Chart(document.getElementById('chart-bar'), {
+				type: 'bar',
+				data: {
+					labels: sortedByVal.map(d => d.category),
+					datasets: [
+						{ label: 'Old', data: sortedByVal.map(d => d.old), backgroundColor: '#cbd5e1', borderRadius: 4 },
+						{ label: 'New', data: sortedByVal.map(d => d.new), backgroundColor: '#002855', borderRadius: 4 }
+					]
+				},
+				options: {
+					responsive: true,
+					maintainAspectRatio: false,
+					scales: { y: { beginAtZero: true, grid: {display:false} }, x: { grid: {display:false} } },
+					plugins: { legend: { position: 'bottom' } }
+				}
+			});
+
+			if (charts.diff) charts.diff.destroy();
+			// Sort by magnitude of difference
+			const topMovers = [...data].sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff)).slice(0, 8);
+			
+			charts.diff = new Chart(document.getElementById('chart-diff'), {
+				type: 'bar',
+				data: {
+					labels: topMovers.map(d => d.category),
+					datasets: [{
+						label: 'Variance ($)',
+						data: topMovers.map(d => d.diff),
+						backgroundColor: topMovers.map(d => d.diff >= 0 ? '#FFBF00' : '#ef4444'), 
+						borderRadius: 4
+					}]
+				},
+				options: {
+					indexAxis: 'y',
+					responsive: true,
+					maintainAspectRatio: false,
+					scales: { x: { grid: { display: true, color: '#f3f4f6' } }, y: { grid: { display: false } } },
+					plugins: { legend: { display: false } }
+				}
+			});
+		}
+
+		function renderTable(data) {
+			const tbody = document.getElementById('detail-table-body');
+			tbody.innerHTML = '';
+			data.sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff));
+			const formatMoney = (n) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+
+			data.forEach(row => {
+				const tr = document.createElement('tr');
+				tr.className = "hover:bg-gray-50 transition-colors";
+				const pctClass = row.diff > 0 ? 'text-red-600' : (row.diff < 0 ? 'text-green-600' : 'text-gray-600');
+				const pctText = isFinite(row.pct) ? row.pct.toFixed(1) + "%" : "-";
+				
+				tr.innerHTML = `
+					<td class="px-6 py-4 font-medium text-[#002855]">${row.category}</td>
+					<td class="px-6 py-4 text-right text-gray-600">${formatMoney(row.old)}</td>
+					<td class="px-6 py-4 text-right text-gray-900 font-semibold">${formatMoney(row.new)}</td>
+					<td class="px-6 py-4 text-right ${pctClass} font-bold">${(row.diff>0?"+":"")+formatMoney(row.diff)}</td>
+					<td class="px-6 py-4 text-right text-xs text-gray-500">${pctText}</td>
+				`;
+				tbody.appendChild(tr);
+			});
+		}
+		
+		function exportTableToCSV() {
+			const rows = document.querySelectorAll("table tr");
+			let csv = [];
+			for (const row of rows) {
+				const cols = row.querySelectorAll("td, th");
+				const rowData = [];
+				for (const col of cols) rowData.push('"' + col.innerText + '"');
+				csv.push(rowData.join(","));
+			}
+			const blob = new Blob([csv.join("\n")], { type: "text/csv" });
+			const url = window.URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.setAttribute("href", url);
+			a.setAttribute("download", "budget_variance.csv");
+			a.click();
+		}
+	</script>
+</body>
+</html>
