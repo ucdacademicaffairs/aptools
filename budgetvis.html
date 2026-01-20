@@ -500,9 +500,9 @@
 
 		function renderMetrics(oldM, newM) {
 			// METRIC_MAP defines the layout ID. 
-			// We iterate over the map to populate the DOM.
+			// Iterated over the map to populate the DOM.
 			
-			// Formatters - UPDATED: Enabled up to 1 decimal place
+			// Formatters - Enabled up to 1 decimal place
 			const fmt = (n) => n.toLocaleString('en-US', { maximumFractionDigits: 1 });
 
 			for (const [key, domId] of Object.entries(METRIC_MAP)) {
@@ -519,11 +519,11 @@
 				const title = key.toLowerCase().replace(/\b\w/g, s => s.toUpperCase())
 							  .replace('Sch', 'SCH').replace('Ta', 'TA');
 
-				// UPDATED COLOR LOGIC: Negatives are now cyan (#00b2e3)
+				// Negatives are now cyan (#00b2e3)
 				const diffColor = diff > 0 ? "text-green-600" : (diff < 0 ? "text-ucd-cyan" : "text-gray-400");
 				const sign = diff > 0 ? "+" : "";
 
-				// UPDATED HTML STRUCTURE: Using metric-header class for symmetric whitespace
+				// Using metric-header class for symmetric whitespace
 				container.innerHTML = `
 					<div class="metric-box">
 						<h4 class="metric-header">${title}</h4>
