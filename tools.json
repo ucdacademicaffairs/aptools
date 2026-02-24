@@ -5,8 +5,8 @@
 	"title": "BlueIS",
 	"category": "Systems",
 	"description": "A prototype service ledger and resource planning system for academic personnel. It models faculty service as a temporal state machine, and tracks FTE, course loads, advancement history, leave status, etc. quarter-by-quarter.",
-	"lastUpdated": "December 22nd, 2025",
-	"lastChange": "All sorts of little updates in response to user feedback!",
+	"lastUpdated": "February 21st, 2026",
+	"lastChange": "All sorts of little updates in response to user feedback! Check out the live log.",
 	"gridSpan": "card-span-3",
 	"buttons": [
 	  { "label": "Launch Tool →", "url": "https://bombandgrapnel.com/blueis/index.php", "style": "primary" },
