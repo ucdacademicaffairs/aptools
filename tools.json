@@ -19,8 +19,8 @@
 	"title": "Summer Compensation Calculator",
 	"category": "Finance",
 	"description": "Derives a maximum available summer compensation from an annual salary. Users can then explore summer-research scenarios by activating months and adjusting FTE. Built for faculty on 9/12 appointments.",
-	"lastUpdated": "October 23rd, 2025",
-	"lastChange": "Added teaching calculations.",
+	"lastUpdated": "March 3rd, 2026",
+	"lastChange": "Removed the 95.46% thing for June – no longer necessary.",
 	"gridSpan": "",
 	"buttons": [
 	  { "label": "Launch Tool →", "url": "summercomp.html", "style": "primary" }
