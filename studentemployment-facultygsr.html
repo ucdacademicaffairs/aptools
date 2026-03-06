@@ -100,8 +100,15 @@
 		</div>
 	</main>
 	<script>
-		document.addEventListener('DOMContentLoaded', function () {
-			const COST_DATA = { BENEFIT_RATES: { cbr: 0.017, gael: 0.0, addOn: 0.0022, ucrp: 0.0 }, GSR_SCALE: { 1: 71895, 2: 77467, 3: 83471, 4: 89941, 5: 96912, 6: 104423 }, TUITION_FEES: { quarterly_tuition: 5196.53, quarterly_ship: 2664.00, quarterly_non_resident: 5034.00 }, HOURS_PER_FTE_PERCENT: 4.4 };
+		document.addEventListener('DOMContentLoaded', async function () {
+			let COST_DATA = {};
+			try {
+				const response = await fetch('annual-config.json');
+				COST_DATA = await response.json();
+			} catch (error) {
+				console.error("Failed to load annual config:", error);
+				return;
+			}
 			let calculationDetails = {};
 			let currentAppointment = { type: 'gsr', values: { step: '1', percentTime: '25', nonResident: false }, costs: {} };
 

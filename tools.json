@@ -1,150 +1,214 @@
 [
-  {
-	"id": "blueis",
-	"section": "apps",
-	"title": "BlueIS",
-	"category": "Systems",
-	"description": "A prototype service ledger and resource planning system for academic personnel. It models faculty service as a temporal state machine, and tracks FTE, course loads, advancement history, leave status, etc. quarter-by-quarter.",
-	"lastUpdated": "February 21st, 2026",
-	"lastChange": "All sorts of little updates in response to user feedback! Check out the live log.",
-	"gridSpan": "card-span-3",
-	"buttons": [
-	  { "label": "Launch Tool →", "url": "https://bombandgrapnel.com/blueis/index.php", "style": "primary" },
-	  { "label": "Live Log", "url": "https://docs.google.com/spreadsheets/d/1KEhnElhyMuo2HCMmfPeJ3-SZqAjFy8cMX-s9LwDEY3I/edit?usp=sharing", "style": "text" }
-	]
-  },
-  {
-	"id": "summer-comp",
-	"section": "apps",
-	"title": "Summer Compensation Calculator",
-	"category": "Finance",
-	"description": "Derives a maximum available summer compensation from an annual salary. Users can then explore summer-research scenarios by activating months and adjusting FTE. Built for faculty on 9/12 appointments.",
-	"lastUpdated": "March 3rd, 2026",
-	"lastChange": "Removed the 95.46% thing for June – no longer necessary!",
-	"gridSpan": "",
-	"buttons": [
-	  { "label": "Launch Tool →", "url": "summercomp.html", "style": "primary" }
-	]
-  },
-  {
-	  "id": "budgetvis",
-	  "section": "apps",
-	  "title": "BudgetVis",
-	  "category": "Finance",
-	  "description": "Lets you upload two IPA Budget Exports in Excel format to create a quick 'before and after' picture of the year-over-year change.",
-	  "lastUpdated": "February 24th, 2026",
-	  "lastChange": "A couple of little look and feel updates.",
-	  "gridSpan": "card-span-2",
-	  "buttons": [
-		{ "label": "Launch Tool →", "url": "budgetvis.html", "style": "primary" }
-	  ]
-  },
-  {
-	"id": "leave-dates",
-	"section": "apps",
-	"title": "Leave Date Conversion Tool",
-	"category": "HR",
-	"description": "A web-based tool for calculating service and pay period dates, replacing the need to track down the manual Excel lookup files.",
-	"lastUpdated": "November 5th, 2025",
-	"lastChange": "First Version",
-	"gridSpan": "",
-	"buttons": [
-	  { "label": "Launch Tool →", "url": "leavedates.html", "style": "primary" }
-	]
-  },
-  {
-	"id": "sabbatical",
-	"section": "apps",
-	"title": "Sabbatical Planning Calculator",
-	"category": "HR",
-	"description": "Enter a sabbatical credit total and annual salary, then activate quarters, play with salary level and residency, and see the impact on sabbatical credit usage and total salary.",
-	"lastUpdated": "October 23rd, 2025",
-	"lastChange": "Added graceful handling of commas in salaries.",
-	"gridSpan": "",
-	"buttons": [
-	  { "label": "Launch Tool →", "url": "sabbatical.html", "style": "primary" }
-	]
-  },
-  {
-	"id": "lecturer-pay",
-	"section": "apps",
-	"title": "Lecturer Pay Calculator",
-	"category": "Finance",
-	"description": "Focuses on the creation of an employment plan for Unit 18 / Continuing Lecturers. Create an employment schedule, with IWC, then receive salary and benefit information and a CSV export.",
-	"lastUpdated": "October 23rd, 2025",
-	"lastChange": "First version.",
-	"gridSpan": "card-span-2",
-	"buttons": [
-	  { "label": "Launch Tool →", "url": "lecturerpay.html", "style": "primary" }
-	]
-  },
-  {
-	"id": "roster-parser",
-	"section": "apps",
-	"title": "Roster Parser",
-	"category": "Utilities",
-	"description": "Upload a roster export from SIS (XLS, XLSX, CSV) to return a simple list of 'course code / course number / instructor name / CRN'. Handles untrusted and trusted exports.",
-	"lastUpdated": "August 28th, 2025",
-	"lastChange": "Added a hybrid XLS handler.",
-	"gridSpan": "",
-	"buttons": [
-	  { "label": "Launch Tool →", "url": "rosterparser.html", "style": "primary" }
-	]
-  },
-  {
-	"id": "student-emp",
-	"section": "apps",
-	"title": "Student Employment Cost Calculator",
-	"category": "Finance",
-	"description": "Create an 'employment schedule' for graduate student employees and display the costs associated. Features proper proration of same-quarter multiple-appointment benefits and work-study.",
-	"lastUpdated": "August 28th, 2025",
-	"lastChange": "Further improvements to work-study handling.",
-	"gridSpan": "card-span-2",
-	"buttons": [
-	  { "label": "Launch Full Tool →", "url": "studentemployment.html", "style": "primary" },
-	  { "label": "GSR Version", "url": "studentemployment-facultygsr.html", "style": "secondary" },
-	  { "label": "STDT Version", "url": "studentemployment-facultystdt.html", "style": "secondary" }
-	]
-  },
-  {
-	"id": "ipa-check",
-	"section": "apps",
-	"title": "IPA-Disclosure Double Checker",
-	"category": "Utilities",
-	"description": "Takes a Support Assignments XLSX exported from IPA and quickly pulls out name, email, and title to streamline the Disclosure Process check.",
-	"lastUpdated": "September 2nd, 2025",
-	"lastChange": "First version.",
-	"gridSpan": "",
-	"buttons": [
-	  { "label": "Launch Tool →", "url": "ipaparser.html", "style": "primary" }
-	]
-  },
-  {
-	"id": "disclosure-flow",
-	"section": "resources",
-	"title": "Employee Disclosure Workflow",
-	"category": "Resources",
-	"description": "This ZIP folder contains each piece of the Employee Disclosure workflow. Email to be added to the AI model, or request a Zoom for help.",
-	"lastUpdated": "N/A",
-	"lastChange": "",
-	"gridSpan": "",
-	"buttons": [
-	  { "label": "Download .ZIP", "url": "https://bombandgrapnel.com/disclosurehandler.zip", "style": "secondary" },
-	  { "label": "Request Access", "url": "mailto:woangel@ucdavis.edu", "style": "secondary" }
-	]
-  },
-  {
-	"id": "docusign-templates",
-	"section": "resources",
-	"title": "Docusign 'eForms' Example",
-	"category": "Resources",
-	"description": "Contains Docusign templates to create Powerforms for Grad Studies Legacy Forms and example HTML for a SiteFarm page.",
-	"lastUpdated": "N/A",
-	"lastChange": "",
-	"gridSpan": "",
-	"buttons": [
-	  { "label": "Download Templates", "url": "https://bombandgrapnel.com/eformstemplates.zip", "style": "secondary" },
-	  { "label": "Download HTML", "url": "https://bombandgrapnel.com/eformswebsite.html", "style": "secondary" }
-	]
-  }
+	{
+		"id": "blueis",
+		"section": "apps",
+		"title": "BlueIS",
+		"category": "Systems",
+		"description": "A prototype service ledger and resource planning system for academic personnel. It models faculty service as a temporal state machine, and tracks FTE, course loads, advancement history, leave status, etc. quarter-by-quarter.",
+		"lastUpdated": "February 21st, 2026",
+		"lastChange": "All sorts of little updates in response to user feedback! Check out the live log.",
+		"gridSpan": "card-span-3",
+		"buttons": [
+			{
+				"label": "Launch Tool →",
+				"url": "https://bombandgrapnel.com/blueis/index.php",
+				"style": "primary"
+			},
+			{
+				"label": "Live Log",
+				"url": "https://docs.google.com/spreadsheets/d/1KEhnElhyMuo2HCMmfPeJ3-SZqAjFy8cMX-s9LwDEY3I/edit?usp=sharing",
+				"style": "text"
+			}
+		]
+	},
+	{
+		"id": "summer-comp",
+		"section": "apps",
+		"title": "Summer Compensation Calculator",
+		"category": "Finance",
+		"description": "Derives a maximum available summer compensation from an annual salary. Users can then explore summer-research scenarios by activating months and adjusting FTE. Built for faculty on 9/12 appointments.",
+		"lastUpdated": "March 3rd, 2026",
+		"lastChange": "Removed the 95.46% thing for June – no longer necessary!",
+		"gridSpan": "",
+		"buttons": [
+			{
+				"label": "Launch Tool →",
+				"url": "summercomp.html",
+				"style": "primary"
+			}
+		]
+	},
+	{
+		"id": "budgetvis",
+		"section": "apps",
+		"title": "BudgetVis",
+		"category": "Finance",
+		"description": "Lets you upload two IPA Budget Exports in Excel format to create a quick 'before and after' picture of the year-over-year change.",
+		"lastUpdated": "February 24th, 2026",
+		"lastChange": "A couple of little look and feel updates.",
+		"gridSpan": "card-span-2",
+		"buttons": [
+			{
+				"label": "Launch Tool →",
+				"url": "budgetvis.html",
+				"style": "primary"
+			}
+		]
+	},
+	{
+		"id": "leave-dates",
+		"section": "apps",
+		"title": "Leave Date Conversion Tool",
+		"category": "HR",
+		"description": "A web-based tool for calculating service and pay period dates, replacing the need to track down the manual Excel lookup files.",
+		"lastUpdated": "March 5th, 2026",
+		"lastChange": "Updated to use a central JSON file for base dates.",
+		"gridSpan": "",
+		"buttons": [
+			{
+				"label": "Launch Tool →",
+				"url": "leavedates.html",
+				"style": "primary"
+			}
+		]
+	},
+	{
+		"id": "sabbatical",
+		"section": "apps",
+		"title": "Sabbatical Planning Calculator",
+		"category": "HR",
+		"description": "Enter a sabbatical credit total and annual salary, then activate quarters, play with salary level and residency, and see the impact on sabbatical credit usage and total salary.",
+		"lastUpdated": "October 23rd, 2025",
+		"lastChange": "Added graceful handling of commas in salaries.",
+		"gridSpan": "",
+		"buttons": [
+			{
+				"label": "Launch Tool →",
+				"url": "sabbatical.html",
+				"style": "primary"
+			}
+		]
+	},
+	{
+		"id": "lecturer-pay",
+		"section": "apps",
+		"title": "Lecturer Pay Calculator",
+		"category": "Finance",
+		"description": "Focuses on the creation of an employment plan for Unit 18 / Continuing Lecturers. Create an employment schedule, with IWC, then receive salary and benefit information and a CSV export.",
+		"lastUpdated": "October 23rd, 2025",
+		"lastChange": "First version.",
+		"gridSpan": "card-span-2",
+		"buttons": [
+			{
+				"label": "Launch Tool →",
+				"url": "lecturerpay.html",
+				"style": "primary"
+			}
+		]
+	},
+	{
+		"id": "roster-parser",
+		"section": "apps",
+		"title": "Roster Parser",
+		"category": "Utilities",
+		"description": "Upload a roster export from SIS (XLS, XLSX, CSV) to return a simple list of 'course code / course number / instructor name / CRN'. Handles untrusted and trusted exports.",
+		"lastUpdated": "August 28th, 2025",
+		"lastChange": "Added a hybrid XLS handler.",
+		"gridSpan": "",
+		"buttons": [
+			{
+				"label": "Launch Tool →",
+				"url": "rosterparser.html",
+				"style": "primary"
+			}
+		]
+	},
+	{
+		"id": "student-emp",
+		"section": "apps",
+		"title": "Student Employment Cost Calculator",
+		"category": "Finance",
+		"description": "Create an 'employment schedule' for graduate student employees and display the costs associated. Features proper proration of same-quarter multiple-appointment benefits and work-study.",
+		"lastUpdated": "March 5th, 2026",
+		"lastChange": "Updated to use a central JSON file for base rates.",
+		"gridSpan": "card-span-2",
+		"buttons": [
+			{
+				"label": "Launch Full Tool →",
+				"url": "studentemployment.html",
+				"style": "primary"
+			},
+			{
+				"label": "GSR Version",
+				"url": "studentemployment-facultygsr.html",
+				"style": "secondary"
+			},
+			{
+				"label": "STDT Version",
+				"url": "studentemployment-facultystdt.html",
+				"style": "secondary"
+			}
+		]
+	},
+	{
+		"id": "ipa-check",
+		"section": "apps",
+		"title": "IPA-Disclosure Double Checker",
+		"category": "Utilities",
+		"description": "Takes a Support Assignments XLSX exported from IPA and quickly pulls out name, email, and title to streamline the Disclosure Process check.",
+		"lastUpdated": "September 2nd, 2025",
+		"lastChange": "First version.",
+		"gridSpan": "",
+		"buttons": [
+			{
+				"label": "Launch Tool →",
+				"url": "ipaparser.html",
+				"style": "primary"
+			}
+		]
+	},
+	{
+		"id": "disclosure-flow",
+		"section": "resources",
+		"title": "Employee Disclosure Workflow",
+		"category": "Resources",
+		"description": "This ZIP folder contains each piece of the Employee Disclosure workflow. Email to be added to the AI model, or request a Zoom for help.",
+		"lastUpdated": "N/A",
+		"lastChange": "",
+		"gridSpan": "",
+		"buttons": [
+			{
+				"label": "Download .ZIP",
+				"url": "https://bombandgrapnel.com/disclosurehandler.zip",
+				"style": "secondary"
+			},
+			{
+				"label": "Request Access",
+				"url": "mailto:woangel@ucdavis.edu",
+				"style": "secondary"
+			}
+		]
+	},
+	{
+		"id": "docusign-templates",
+		"section": "resources",
+		"title": "Docusign 'eForms' Example",
+		"category": "Resources",
+		"description": "Contains Docusign templates to create Powerforms for Grad Studies Legacy Forms and example HTML for a SiteFarm page.",
+		"lastUpdated": "N/A",
+		"lastChange": "",
+		"gridSpan": "",
+		"buttons": [
+			{
+				"label": "Download Templates",
+				"url": "https://bombandgrapnel.com/eformstemplates.zip",
+				"style": "secondary"
+			},
+			{
+				"label": "Download HTML",
+				"url": "https://bombandgrapnel.com/eformswebsite.html",
+				"style": "secondary"
+			}
+		]
+	}
 ]

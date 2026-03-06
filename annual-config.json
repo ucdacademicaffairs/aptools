@@ -1,0 +1,100 @@
+{
+	"BENEFIT_RATES": {
+		"cbr": 0.017,
+		"gael": 0.0,
+		"addOn": 0.0022,
+		"ucrp": 0.0
+	},
+	"GSR_SCALE": {
+		"1": 71895,
+		"2": 77467,
+		"3": 83471,
+		"4": 89941,
+		"5": 96912,
+		"6": 104423
+	},
+	"TA_SCALE": {
+		"1": 70720,
+		"2": 72842,
+		"3": 75027
+	},
+	"TUITION_FEES": {
+		"quarterly_tuition": 5196.53,
+		"quarterly_ship": 2664.00,
+		"quarterly_non_resident": 5034.00
+	},
+	"READER_TUTOR_RATE": 22.14,
+	"HOURS_PER_FTE_PERCENT": 4.4,
+	"WORK_STUDY": {
+		"UNIT_SALARY_EQUIVALENT": 6526,
+		"SAVINGS_RATE": 0.75
+	},
+	"QUARTER_DATES": {
+		"Spring 2027": {
+			"serviceStart": "2027-03-25",
+			"serviceEnd": "2027-06-10",
+			"payStart": "2027-03-01",
+			"payEnd": "2027-06-30"
+		},
+		"Winter 2027": {
+			"serviceStart": "2027-01-04",
+			"serviceEnd": "2027-03-19",
+			"payStart": "2026-11-01",
+			"payEnd": "2027-02-28"
+		},
+		"Fall 2026": {
+			"serviceStart": "2026-09-21",
+			"serviceEnd": "2026-12-11",
+			"payStart": "2026-07-01",
+			"payEnd": "2026-10-31"
+		},
+		"Spring 2026": {
+			"serviceStart": "2026-03-26",
+			"serviceEnd": "2026-06-11",
+			"payStart": "2026-03-01",
+			"payEnd": "2026-06-30"
+		},
+		"Winter 2026": {
+			"serviceStart": "2026-01-02",
+			"serviceEnd": "2026-03-20",
+			"payStart": "2025-11-01",
+			"payEnd": "2026-02-28"
+		},
+		"Fall 2025": {
+			"serviceStart": "2025-09-22",
+			"serviceEnd": "2025-12-12",
+			"payStart": "2025-07-01",
+			"payEnd": "2025-10-31"
+		},
+		"Spring 2025": {
+			"serviceStart": "2025-03-27",
+			"serviceEnd": "2025-06-12",
+			"payStart": "2025-03-01",
+			"payEnd": "2025-06-30"
+		},
+		"Winter 2025": {
+			"serviceStart": "2025-01-03",
+			"serviceEnd": "2025-03-21",
+			"payStart": "2024-11-01",
+			"payEnd": "2025-02-28"
+		},
+		"Fall 2024": {
+			"serviceStart": "2024-09-23",
+			"serviceEnd": "2024-12-13",
+			"payStart": "2024-07-01",
+			"payEnd": "2024-10-31"
+		},
+		"Spring 2024": {
+			"serviceStart": "2024-03-28",
+			"serviceEnd": "2024-06-13",
+			"payStart": "2024-03-01",
+			"payEnd": "2024-06-30"
+		},
+		"Winter 2024": {
+			"serviceStart": "2024-01-05",
+			"serviceEnd": "2024-03-22",
+			"payStart": "2023-11-01",
+			"payEnd": "2024-02-29"
+		}
+	}
+}

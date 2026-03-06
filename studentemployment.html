@@ -162,18 +162,9 @@
 		document.addEventListener('DOMContentLoaded', function () {
 			// --- State and Data Management ---
 			// We'll start off with default rates and salary scales. Can be edited by the user in the UI. This information changes annually, so notionally this should be updated by "me" on 7/1.
-			const COST_DATA = {
-				BENEFIT_RATES: { cbr: 0.017, gael: 0.0, addOn: 0.0022, ucrp: 0.0 }, // GAEL's out; I'm too old. On my head be it if the General Overhead Assessment is a thing. Leaving it in in case we need it in future, though.
-				GSR_SCALE: { 1: 71895, 2: 77467, 3: 83471, 4: 89941, 5: 96912, 6: 104423 },
-				TA_SCALE: { 1: 70720, 2: 72842, 3: 75027 },
-				TUITION_FEES: { quarterly_tuition: 5196.53, quarterly_ship: 2664.00, quarterly_non_resident: 5034.00 },
-				READER_TUTOR_RATE: 22.14,
-				HOURS_PER_FTE_PERCENT: 4.4, // That is, this number times FTE equals est. total hours per quarter. E.g., 50% * 4.4 = 220 hours per quarter. 
-				WORK_STUDY: {
-					UNIT_SALARY_EQUIVALENT: 6526, // The "cap salary" for work-study.
-					SAVINGS_RATE: 0.75,
-				}
-			};
+			// We'll fetch the configuration dynamically
+			let COST_DATA = {};
+
 			// The main array for the calculator, holding all appointment objects.
 			let appointments = [];
 			// A lil' counter to ensure each new appointment has a unique ID.
@@ -181,6 +172,27 @@
 			// I'd also like to store the step-by-step calculation details for the "Show Your Work" section.
 			let calculationDetails = {};
 
+			// First, define our initialization wrapper that fetches config
+			async function initialize() {
+				try {
+					const configResponse = await fetch('annual-config.json');
+					const configJson = await configResponse.json();
+					COST_DATA = configJson;
+				} catch (error) {
+					console.error("Could not load annual configuration:", error);
+					alert("There was an error loading the configuration for this page. Please refresh.");
+					return;
+				}
+
+				// Apply base costs to UI
+				renderBaseCostsUI();
+
+				// Any initial UI setup that needs COST_DATA happens here...
+				// Initial render after data is loaded
+				fullRender();
+			}
+
+			initialize();
 
 			// --- DOM element caching ---
 			const addButtonsContainer = document.getElementById('add-buttons');

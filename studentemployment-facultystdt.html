@@ -75,10 +75,17 @@
 		</div>
 	</main>
 	<script>
-		document.addEventListener('DOMContentLoaded', function () {
-			const COST_DATA = { BENEFIT_RATES: { cbr: 0.017, gael: 0.0, addOn: 0.0022, ucrp: 0.0 }, STUDENT_ASST_DEFAULT_RATE: 18.00 };
+		document.addEventListener('DOMContentLoaded', async function () {
+			let COST_DATA = {};
+			try {
+				const response = await fetch('annual-config.json');
+				COST_DATA = await response.json();
+			} catch (error) {
+				console.error("Failed to load annual config:", error);
+				return;
+			}
 			let calculationDetails = {};
-			let currentAppointment = { type: 'student-assistant', values: { hours: '100', hourlyRate: COST_DATA.STUDENT_ASST_DEFAULT_RATE }, costs: {} };
+			let currentAppointment = { type: 'student-assistant', values: { hours: '100', hourlyRate: COST_DATA.READER_TUTOR_RATE }, costs: {} };
 
 			const calculatorCard = document.getElementById('calculator-card');
 			const showWorkContainer = document.getElementById('show-work-container');

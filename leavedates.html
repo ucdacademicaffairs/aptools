@@ -238,7 +238,8 @@
 						<svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none"
 							viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
 							<path stroke-linecap="round" stroke-linejoin="round"
-								d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+								d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+							</path>
 						</svg>
 					</div>
 					<div class="ml-4">
@@ -257,76 +258,6 @@
 
 
 	<script>
-		// The quarter data lives here.
-		const quarterDateMap = {
-			"Spring 2027": {
-				serviceStart: "2027-03-25",
-				serviceEnd: "2027-06-10",
-				payStart: "2027-03-01",
-				payEnd: "2027-06-30"
-			},
-			"Winter 2027": {
-				serviceStart: "2027-01-04",
-				serviceEnd: "2027-03-19",
-				payStart: "2026-11-01",
-				payEnd: "2027-02-28"
-			},
-			"Fall 2026": {
-				serviceStart: "2026-09-21",
-				serviceEnd: "2026-12-11",
-				payStart: "2026-07-01",
-				payEnd: "2026-10-31"
-			},
-			"Spring 2026": {
-				serviceStart: "2026-03-26",
-				serviceEnd: "2026-06-11",
-				payStart: "2026-03-01",
-				payEnd: "2026-06-30"
-			},
-			"Winter 2026": {
-				serviceStart: "2026-01-02",
-				serviceEnd: "2026-03-20",
-				payStart: "2025-11-01",
-				payEnd: "2026-02-28"
-			},
-			"Fall 2025": {
-				serviceStart: "2025-09-22",
-				serviceEnd: "2025-12-12",
-				payStart: "2025-07-01",
-				payEnd: "2025-10-31"
-			},
-			"Spring 2025": {
-				serviceStart: "2025-03-27",
-				serviceEnd: "2025-06-12",
-				payStart: "2025-03-01",
-				payEnd: "2025-06-30"
-			},
-			"Winter 2025": {
-				serviceStart: "2025-01-03",
-				serviceEnd: "2025-03-21",
-				payStart: "2024-11-01",
-				payEnd: "2025-02-28"
-			},
-			"Fall 2024": {
-				serviceStart: "2024-09-23",
-				serviceEnd: "2024-12-13",
-				payStart: "2024-07-01",
-				payEnd: "2024-10-31"
-			},
-			"Spring 2024": {
-				serviceStart: "2024-03-28",
-				serviceEnd: "2024-06-13",
-				payStart: "2024-03-01",
-				payEnd: "2024-06-30"
-			},
-			"Winter 2024": {
-				serviceStart: "2024-01-05",
-				serviceEnd: "2024-03-22",
-				payStart: "2023-11-01",
-				payEnd: "2024-02-29" // 2024 was a leap year
-			}
-		};
-
 		// --- UTILITY FUNCTIONS ---
 		// We need this to calculate date differences. 1000ms * 60s * 60m * 24h
 		const ONE_DAY_MS = 1000 * 60 * 60 * 24;
@@ -394,34 +325,50 @@
 
 
 		// --- APPLICATION LOGIC ---
-		document.addEventListener('DOMContentLoaded', () => {
+		document.addEventListener('DOMContentLoaded', async function () {
+			let QUARTER_DATES = {};
+			let quarterKeys = []; // Declare quarterKeys here to be accessible globally within DOMContentLoaded
+
+			try {
+				const response = await fetch('annual-config.json');
+				const config = await response.json();
+				QUARTER_DATES = config.QUARTER_DATES;
+				quarterKeys = Object.keys(QUARTER_DATES); // Populate quarterKeys after fetching data
+
+				// Initialize dropdowns and table
+				populateBaseDatesTable();
+				populateQuarterDropdowns(); // Renamed from updateQuarterDropdowns for initial population
+			} catch (error) {
+				console.error("Failed to load annual config:", error);
+				showModal("Configuration Error", "Failed to load quarter date configuration. Please try again later.");
+				return;
+			}
+
 
 			// --- Common Elements ---
-			// Get the quarter names directly from our data object.
-			// No .reverse() needed since I fixed the data source order. Sorry mom.
-			const quarterKeys = Object.keys(quarterDateMap);
 			const baseDatesTableBody = document.getElementById('base-dates-table');
 
 			// --- 1. Populate Base Dates Table ---
-			// Let's fill up that big table at the bottom with all our data.
-			if (baseDatesTableBody) {
-				quarterKeys.forEach(quarterName => {
-					const data = quarterDateMap[quarterName];
-					const row = baseDatesTableBody.insertRow();
-					row.className = "text-sm";
+			function populateBaseDatesTable() {
+				if (baseDatesTableBody) {
+					baseDatesTableBody.innerHTML = ''; // Clear existing rows
+					quarterKeys.forEach(quarterName => {
+						const data = QUARTER_DATES[quarterName];
+						const row = baseDatesTableBody.insertRow();
+						row.className = "text-sm";
 
-					row.insertCell(0).textContent = quarterName;
-					row.cells[0].className = "px-4 py-3 font-medium text-gray-900 whitespace-nowrap";
+						row.insertCell(0).textContent = quarterName;
+						row.cells[0].className = "px-4 py-3 font-medium text-gray-900 whitespace-nowrap";
 
-					row.insertCell(1).textContent = `${formatDate(data.serviceStart)} - ${formatDate(data.serviceEnd)}`;
-					row.cells[1].className = "px-4 py-3 text-gray-600 whitespace-nowrap";
+						row.insertCell(1).textContent = `${formatDate(data.serviceStart)} - ${formatDate(data.serviceEnd)}`;
+						row.cells[1].className = "px-4 py-3 text-gray-600 whitespace-nowrap";
 
-					row.insertCell(2).textContent = `${formatDate(data.payStart)} - ${formatDate(data.payEnd)}`;
-					row.cells[2].className = "px-4 py-3 text-gray-600 whitespace-nowrap";
-				});
-			} else {
-				// Just in case I messed up the ID again.
-				console.error("Could not find 'base-dates-table' element.");
+						row.insertCell(2).textContent = `${formatDate(data.payStart)} - ${formatDate(data.payEnd)}`;
+						row.cells[2].className = "px-4 py-3 text-gray-600 whitespace-nowrap";
+					});
+				} else {
+					console.error("Could not find 'base-dates-table' element.");
+				}
 			}
 
 
@@ -445,17 +392,18 @@
 			const resultsSectionPartial = document.getElementById('results-section-partial');
 
 			// --- 4. Populate All the Dropdown Menus ---
+			function populateQuarterDropdowns() {
+				const defaultOption = "<option value='' selected disabled>Please select a quarter</option>";
+				startSelect.innerHTML = defaultOption;
+				endSelect.innerHTML = defaultOption;
+				partialSelect.innerHTML = defaultOption;
 
-			const defaultOption = "<option value='' selected disabled>Please select a quarter</option>";
-			startSelect.innerHTML = defaultOption;
-			endSelect.innerHTML = defaultOption;
-			partialSelect.innerHTML = defaultOption;
-
-			quarterKeys.forEach(quarterName => {
-				startSelect.add(new Option(quarterName, quarterName));
-				endSelect.add(new Option(quarterName, quarterName));
-				partialSelect.add(new Option(quarterName, quarterName));
-			});
+				quarterKeys.forEach(quarterName => {
+					startSelect.add(new Option(quarterName, quarterName));
+					endSelect.add(new Option(quarterName, quarterName));
+					partialSelect.add(new Option(quarterName, quarterName));
+				});
+			}
 
 			// --- REMOVED: QoL feature to auto-select end date ---
 			// startSelect.addEventListener('change', () => {
@@ -485,8 +433,8 @@
 
 				// Grab ze data
 
-				const actualStartQuarterData = quarterDateMap[startQuarterName]; // e.g., Fall 2026
-				const actualEndQuarterData = quarterDateMap[endQuarterName];     // e.g., Winter 2027
+				const actualStartQuarterData = QUARTER_DATES[startQuarterName]; // e.g., Fall 2026
+				const actualEndQuarterData = QUARTER_DATES[endQuarterName];     // e.g., Winter 2027
 
 				// Pay period = start of the start quarter, end of the *end* quarter
 				const finalPayStart = actualStartQuarterData.payStart;
@@ -539,7 +487,7 @@
 					return;
 				}
 
-				const data = quarterDateMap[quarterName];
+				const data = QUARTER_DATES[quarterName];
 				quarterDatesInfo.textContent = `Service period for ${quarterName} is ${formatDate(data.serviceStart)} to ${formatDate(data.serviceEnd)}. Please enter leave dates within this range.`;
 				quarterDatesInfo.classList.remove('hidden');
 
@@ -564,7 +512,7 @@
 					return;
 				}
 
-				const data = quarterDateMap[quarterName];
+				const data = QUARTER_DATES[quarterName];
 
 				// Lots of checks to make sure the user doesn't break things.
 				if (!leaveStartDate || !leaveEndDate) {
