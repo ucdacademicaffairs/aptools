@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Summer Salary Scratchpad</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Proxima+Nova:wght@400;500;700&family=Public+Sans:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="shared-tools.css">
+</head>
+
+<body>
+    <header class="ucd-header">
+        <div class="ucd-logo-text">Blue Cluster Heavy Industries</div>
+        <a href="index.php" class="header-back-btn">Back to Tools ➔</a>
+    </header>
+
+    <div class="relative text-center mb-6 py-4 mt-8">
+        <div class="absolute inset-0 flex items-center justify-center -z-10 opacity-10">
+            <!-- gear -->
+            <svg class="w-24 h-24 text-[#002855] -rotate-12" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                viewBox="0 0 16 16">
+                <path
+                    d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z" />
+                <path
+                    d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319z" />
+            </svg>
+            <!-- coin -->
+            <svg class="w-20 h-20 text-[#FFBF00] rotate-12 -ml-8" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                viewBox="0 0 16 16">
+                <path
+                    d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm1.558-6.914c-1.025.23-1.85.748-2.454 1.362-.606.615-.958 1.441-.958 2.422 0 1.01.374 1.837.989 2.458.615.62 1.455.963 2.454.963 1.026 0 1.872-.37 2.488-.973.615-.602.96-1.448.96-2.464 0-1.01-.373-1.834-.988-2.457a3.413 3.413 0 0 0-2.488-.973zm-1.006-4.56c0 .69.28 1.25.775 1.672.497.42.992.63 1.663.63h.053c.69 0 1.27-.244 1.745-.685.472-.443.712-1.04.712-1.798 0-.78-.29-1.424-.81-1.897-.523-.475-1.22-.72-2.03-.72-1.14 0-1.95.43-2.44 1.23-.49.803-.53 1.853-.13 2.825z" />
+                <path
+                    d="M4 5.587c0 .69.28 1.25.775 1.672.497.42.992.63 1.663.63h.053c.69 0 1.27-.244 1.745-.685C9.17 6.76 9.41 6.16 9.41 5.413c0-.78-.29-1.424-.81-1.897-.523-.475-1.22-.72-2.03-.72-1.14 0-1.95.43-2.44 1.23-.49.803-.53 1.853-.13 2.825z" />
+            </svg>
+        </div>
+        <h2 class="text-4xl font-bold text-[#002855]">Summer Salary Scratchpad</h2>
+        <p class="text-lg text-gray-600 mt-1 font-medium">For Academic Year 2025-26</p>
+    </div>
+
+    <div class="space-y-6 py-4 md:py-8 w-full max-w-5xl mx-auto px-4 md:px-0" id="app-container" style="display: none;">
+
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- TA SCRATCHPAD -->
+            <div class="card p-6 flex flex-col h-full shadow-lg border-t-8 border-t-[#00b2e3]">
+                <h2 class="text-2xl font-bold text-[#002855] mb-4">Teaching Assistants (TAs)</h2>
+
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Step</label>
+                        <select id="ta-step"
+                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#002855] focus:border-[#002855] sm:text-sm rounded-md shadow-sm border"></select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">% Time <span
+                                class="text-gray-400 font-normal">(Hours)</span></label>
+                        <select id="ta-percent"
+                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#002855] focus:border-[#002855] sm:text-sm rounded-md shadow-sm border">
+                            <option value="25">25% (60 hrs)</option>
+                            <option value="50" selected>50% (120 hrs)</option>
+                            <option value="75">75% (180 hrs)</option>
+                            <option value="100">100% (240 hrs)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div
+                    class="bg-gray-50 rounded p-4 font-mono text-sm text-gray-800 space-y-2 flex-grow mb-6 border border-gray-200 shadow-inner">
+                    <div class="flex justify-between"><span>Annual Base Salary:</span><span id="out-ta-base"
+                            class="font-bold"></span></div>
+                    <div class="pl-4 text-gray-500 text-xs">÷ 9 = <span id="out-ta-mo"></span>/mo</div>
+                    <div class="flex justify-between"><span>Divided by FTE (<span
+                                id="out-ta-fte-lbl"></span>%):</span><span id="out-ta-mo-fte"></span></div>
+                    <div class="flex justify-between"><span>Quarterly Rate (x 3):</span><span id="out-ta-qtr"></span>
+                    </div>
+                    <div class="pl-4 text-gray-500 text-xs text-right mt-2 mb-2">Hourly Rate ÷ 220 = <span
+                            id="out-ta-hr" class="font-bold text-[#002855] bg-white px-2 py-1 rounded shadow-sm"></span>
+                    </div>
+
+                    <div class="border-t border-gray-300 my-2 pt-2"></div>
+                    <div class="flex justify-between items-end">
+                        <span>Total Salary (Rate x <span id="out-ta-hrs-lbl"></span> hrs):</span>
+                        <span id="out-ta-salary" class="font-bold text-lg text-[#002855]"></span>
+                    </div>
+                    <div class="flex justify-between text-gray-600 border-b border-gray-300 pb-2 mb-2">
+                        <span>Plus ASE Benefits (<span id="out-ta-ben-pct"></span>):</span>
+                        <span id="out-ta-ben"></span>
+                    </div>
+                    <div class="flex justify-between text-[#002855]">
+                        <span class="font-bold text-lg">Total Cost:</span>
+                        <span id="out-ta-total" class="font-bold text-xl"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INSTRUCTOR SCRATCHPAD -->
+            <div class="card p-6 flex flex-col h-full shadow-lg border-t-8 border-t-[#6bca98]">
+                <h2 class="text-xl font-bold text-[#002855] mb-4">Professors, Lecturers, and AIs / IOR</h2>
+
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Title</label>
+                        <select id="inst-title"
+                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#002855] focus:border-[#002855] sm:text-sm rounded-md shadow-sm border">
+                            <option value="prof">Professor (Any Type)</option>
+                            <option value="ai">Associate Instructor</option>
+                            <option value="lec_pre">Lecturer (Pre-Six)</option>
+                            <option value="lec_con">Lecturer (Continuing)</option>
+                        </select>
+                    </div>
+                    <div id="inst-step-container">
+                        <label class="block text-sm font-medium text-gray-700">Step</label>
+                        <select id="inst-step"
+                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#002855] focus:border-[#002855] sm:text-sm rounded-md shadow-sm border"></select>
+                    </div>
+                    <div id="inst-salary-container" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700">Annual Base</label>
+                        <div
+                            class="relative mt-1 border-gray-300 border rounded-md shadow-sm overflow-hidden focus-within:ring-1 focus-within:ring-[#002855] focus-within:border-[#002855]">
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                <span class="text-gray-500 sm:text-sm">$</span>
+                            </div>
+                            <input type="text" id="inst-salary-input" value="100,000"
+                                class="block w-full border-0 pl-7 pr-3 py-2 text-base focus:outline-none sm:text-sm">
+                        </div>
+                    </div>
+                    <div class="col-span-2 grid grid-cols-2 gap-4">
+                        <div class="col-span-1">
+                            <label class="block text-sm font-medium text-gray-700">Units</label>
+                            <input type="number" id="inst-units" value="4"
+                                class="mt-1 block w-full pl-3 pr-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#002855] focus:border-[#002855] sm:text-sm rounded-md shadow-sm border">
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="bg-gray-50 rounded p-4 font-mono text-sm text-gray-800 space-y-2 flex-grow mb-6 border border-gray-200 shadow-inner relative">
+                    <div class="flex justify-between"><span>Annual Base Salary:</span><span id="out-inst-base"
+                            class="font-bold"></span></div>
+                    <div class="flex justify-between text-gray-600"><span>By-Agreement
+                            Multiplier:</span><span>2.75%</span></div>
+                    <div class="flex justify-between"><span>Multiplied by Units (<span
+                                id="out-inst-units-lbl"></span>):</span><span id="out-inst-raw"></span></div>
+
+                    <div class="border-t border-gray-300 my-2 pt-2"></div>
+                    <div class="flex justify-between items-end relative">
+                        <span>Total Salary:</span>
+                        <div class="text-right">
+                            <span id="out-inst-salary" class="font-bold text-lg text-[#002855]"></span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between text-gray-600 border-b border-gray-300 pb-2 mb-2">
+                        <span>Plus Benefits (<span id="out-inst-ben-pct"></span>):</span>
+                        <span id="out-inst-ben"></span>
+                    </div>
+                    <div class="flex justify-between text-[#002855]">
+                        <span class="font-bold text-lg">Total Cost:</span>
+                        <span id="out-inst-total" class="font-bold text-xl"></span>
+                    </div>
+
+                    <!-- Warning Badge for Cap -->
+                    <div id="inst-cap-warning"
+                        class="hidden mt-4 p-3 bg-[#FFBF00]/20 border border-[#FFBF00] text-[#002855] rounded-md text-xs text-center shadow-sm font-sans flex flex-col gap-1">
+                        <span class="font-bold">Please note that, for the time being, Senate faculty salaries for Summer
+                            teaching are capped at $10,400 per L&S policy.</span>
+                        <span class="font-medium text-gray-700">The amount over the cap is: <span id="inst-cap-diff"
+                                class="font-bold text-[#002855]"></span></span>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay"
+        class="fixed inset-0 bg-white bg-opacity-90 z-50 flex flex-col justify-center items-center backdrop-blur-sm">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#002855] mb-4"></div>
+        <p class="text-lg font-bold text-[#002855]">Loading Config Data...</p>
+    </div>
+
+    <script>
+        // --- CONFIG DATA ---
+        let CONFIG = null;
+
+        // Utility to format numbers as currency without forcing cents if zero, but keeping alignment
+        const formatCurrency = (amount) => {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(amount);
+        };
+
+        // Utility to ensure clean numbers
+        const getCleanNumber = (val) => parseFloat(String(val).replace(/[^0-9.-]/g, '')) || 0;
+
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // Load external config
+            fetch('annual-config.json')
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    CONFIG = data;
+                    initializeTool();
+                })
+                .catch(error => {
+                    console.error('Error fetching annual-config.json:', error);
+                    alert("Failed to load configuration. Please ensure annual-config.json is present.");
+                });
+
+            function initializeTool() {
+                // Hide loading, show app
+                document.getElementById('loading-overlay').style.display = 'none';
+                document.getElementById('app-container').style.display = 'block';
+
+                // Set up event listeners and populate selects
+                setupTA();
+                setupInst();
+            }
+
+            // --- TA LOGIC ---
+            function setupTA() {
+                const taStepSelect = document.getElementById('ta-step');
+                const taPercentSelect = document.getElementById('ta-percent');
+
+                // Populate TA Steps from config
+                const taSteps = Object.keys(CONFIG.TA_SCALE);
+                taSteps.forEach(step => {
+                    taStepSelect.appendChild(new Option(`Step ${step}`, step));
+                });
+
+                // Set initial benefit rate text
+                document.getElementById('out-ta-ben-pct').textContent = `${(CONFIG.SUMMER_BENEFIT_RATES.ase * 100).toFixed(1)}%`;
+
+                function calcTA() {
+                    const step = taStepSelect.value;
+                    const percent = parseFloat(taPercentSelect.value) / 100;
+                    const hours = percent * 240; // 100% is 240 hours
+
+                    const annualSalary = getCleanNumber(CONFIG.TA_SCALE[step]);
+                    const monthly = annualSalary / 9;
+                    const monthlyFTE = monthly * percent;
+                    const quarterly = monthlyFTE * 3;
+                    const hourlyRate = quarterly / 220;
+
+                    const totalSalary = hourlyRate * hours;
+                    const benefits = totalSalary * CONFIG.SUMMER_BENEFIT_RATES.ase;
+                    const totalCost = totalSalary + benefits;
+
+                    // Write out to UI
+                    document.getElementById('out-ta-base').textContent = formatCurrency(annualSalary);
+                    document.getElementById('out-ta-mo').textContent = formatCurrency(monthly);
+                    document.getElementById('out-ta-fte-lbl').textContent = (percent * 100).toFixed(0);
+                    document.getElementById('out-ta-mo-fte').textContent = formatCurrency(monthlyFTE);
+                    document.getElementById('out-ta-qtr').textContent = formatCurrency(quarterly);
+                    document.getElementById('out-ta-hr').textContent = formatCurrency(hourlyRate);
+
+                    document.getElementById('out-ta-hrs-lbl').textContent = hours;
+                    document.getElementById('out-ta-salary').textContent = formatCurrency(totalSalary);
+                    document.getElementById('out-ta-ben').textContent = formatCurrency(benefits);
+                    document.getElementById('out-ta-total').textContent = formatCurrency(totalCost);
+                }
+
+                taStepSelect.addEventListener('change', calcTA);
+                taPercentSelect.addEventListener('change', calcTA);
+                calcTA(); // Initial run
+            }
+
+            // --- INSTRUCTOR/AI LOGIC ---
+            function setupInst() {
+                const instTitleSelect = document.getElementById('inst-title');
+                const instStepSelect = document.getElementById('inst-step');
+                const instUnitsInput = document.getElementById('inst-units');
+
+                function populateInstSteps() {
+                    const titleKey = instTitleSelect.value;
+
+                    if (titleKey === 'prof') {
+                        document.getElementById('inst-step-container').style.display = 'none';
+                        document.getElementById('inst-salary-container').style.display = 'block';
+                    } else {
+                        document.getElementById('inst-step-container').style.display = 'block';
+                        document.getElementById('inst-salary-container').style.display = 'none';
+
+                        instStepSelect.innerHTML = '';
+                        let stepCount = 0;
+                        if (titleKey === 'ai') {
+                            stepCount = Object.keys(CONFIG.AI_SCALE).length;
+                        } else if (titleKey === 'lec_pre') {
+                            stepCount = CONFIG.LECTURER_SALARY_DATA.preSix.salaries.length;
+                        } else if (titleKey === 'lec_con') {
+                            stepCount = CONFIG.LECTURER_SALARY_DATA.continuing.salaries.length;
+                        }
+
+                        for (let i = 1; i <= stepCount; i++) {
+                            instStepSelect.appendChild(new Option(`Step ${i}`, i));
+                        }
+                    }
+                    calcInst(); // Recalculate anytime steps drop down repopulates
+                }
+
+                function calcInst() {
+                    const titleKey = instTitleSelect.value;
+                    const step = instStepSelect.value || 1;
+                    const units = getCleanNumber(instUnitsInput.value);
+
+                    let annualSalary = 0;
+                    let benefitRate = 0;
+
+                    // Grab appropriate salary and benefit rate
+                    if (titleKey === 'prof') {
+                        annualSalary = getCleanNumber(document.getElementById('inst-salary-input').value);
+                        benefitRate = CONFIG.SUMMER_BENEFIT_RATES.senate_lecturer;
+                    } else if (titleKey === 'ai') {
+                        annualSalary = getCleanNumber(CONFIG.AI_SCALE[step]);
+                        benefitRate = CONFIG.SUMMER_BENEFIT_RATES.ase;
+                    } else if (titleKey === 'lec_pre') {
+                        annualSalary = getCleanNumber(CONFIG.LECTURER_SALARY_DATA.preSix.salaries[step - 1]);
+                        benefitRate = CONFIG.SUMMER_BENEFIT_RATES.senate_lecturer;
+                    } else if (titleKey === 'lec_con') {
+                        annualSalary = getCleanNumber(CONFIG.LECTURER_SALARY_DATA.continuing.salaries[step - 1]);
+                        benefitRate = CONFIG.SUMMER_BENEFIT_RATES.senate_lecturer;
+                    }
+
+                    // Update UI fixed tags
+                    document.getElementById('out-inst-ben-pct').textContent = `${(benefitRate * 100).toFixed(1)}%`;
+                    document.getElementById('out-inst-units-lbl').textContent = units;
+
+                    const rawSalary = annualSalary * 0.0275 * units;
+
+                    // CAP LOGIC: Do NOT cap the calculation, but display a warning if rawSalary > 10400
+                    let cappedSalary = rawSalary;
+                    const CAP_AMOUNT = 10400; // As per user
+                    const warningEl = document.getElementById('inst-cap-warning');
+
+                    if (titleKey === 'prof' && rawSalary > CAP_AMOUNT) {
+                        warningEl.classList.remove('hidden');
+                        document.getElementById('inst-cap-diff').textContent = formatCurrency(rawSalary - CAP_AMOUNT);
+                    } else {
+                        warningEl.classList.add('hidden');
+                    }
+
+                    const benefits = cappedSalary * benefitRate;
+                    const totalCost = cappedSalary + benefits;
+
+                    // Write out to UI
+                    document.getElementById('out-inst-base').textContent = formatCurrency(annualSalary);
+                    document.getElementById('out-inst-raw').textContent = formatCurrency(rawSalary);
+                    document.getElementById('out-inst-salary').textContent = formatCurrency(cappedSalary);
+                    document.getElementById('out-inst-ben').textContent = formatCurrency(benefits);
+                    document.getElementById('out-inst-total').textContent = formatCurrency(totalCost);
+                }
+
+                instTitleSelect.addEventListener('change', populateInstSteps);
+                instStepSelect.addEventListener('change', calcInst);
+                instUnitsInput.addEventListener('input', calcInst);
+                document.getElementById('inst-salary-input').addEventListener('input', calcInst);
+
+                populateInstSteps(); // Initial setup
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -18,6 +18,15 @@
 		"2": 72842,
 		"3": 75027
 	},
+	"AI_SCALE": {
+		"1": 74096,
+		"2": 76319,
+		"3": 78609,
+		"4": 80967,
+		"5": 83396,
+		"6": 85898,
+		"7": 88475
+	},
 	"LECTURER_SALARY_DATA": {
 		"preSix": {
 			"name": "Lecturer (Pre-Six Year)",
@@ -147,6 +156,10 @@
 	"WORK_STUDY": {
 		"UNIT_SALARY_EQUIVALENT": 6526,
 		"SAVINGS_RATE": 0.75
+	},
+	"SUMMER_BENEFIT_RATES": {
+		"ase": 0.022,
+		"senate_lecturer": 0.088
 	},
 	"QUARTER_DATES": {
 		"Spring 2027": {

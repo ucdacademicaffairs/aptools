@@ -151,6 +151,23 @@
 		]
 	},
 	{
+		"id": "summer-scratchpad",
+		"section": "apps",
+		"title": "Summer Salary Scratchpad",
+		"category": "Finance",
+		"description": "Calculates detailed summer session compensation for TAs, AIs, and Lecturers based on annual salary rates and units, including benefit costs and maximum salary caps.",
+		"lastUpdated": "March 6th, 2026",
+		"lastChange": "New tool added.",
+		"gridSpan": "",
+		"buttons": [
+			{
+				"label": "Launch Tool →",
+				"url": "summerscratchpad.html",
+				"style": "primary"
+			}
+		]
+	},
+	{
 		"id": "ipa-check",
 		"section": "apps",
 		"title": "IPA-Disclosure Double Checker",
