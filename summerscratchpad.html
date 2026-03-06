@@ -17,7 +17,7 @@
 <body>
     <header class="ucd-header">
         <div class="ucd-logo-text">Blue Cluster Heavy Industries</div>
-        <a href="index.php" class="header-back-btn">Back to Tools ➔</a>
+        <a href="index.html" class="header-back-btn">Back to Tools ➔</a>
     </header>
 
     <div class="relative text-center mb-6 py-4 mt-8">
@@ -188,7 +188,6 @@
     </div>
 
     <script>
-        // --- CONFIG DATA ---
         let CONFIG = null;
 
         // Utility to format numbers as currency without forcing cents if zero, but keeping alignment
@@ -231,7 +230,7 @@
                 setupInst();
             }
 
-            // --- TA LOGIC ---
+            // TA logic
             function setupTA() {
                 const taStepSelect = document.getElementById('ta-step');
                 const taPercentSelect = document.getElementById('ta-percent');
@@ -279,7 +278,7 @@
                 calcTA(); // Initial run
             }
 
-            // --- INSTRUCTOR/AI LOGIC ---
+            // IOR logic
             function setupInst() {
                 const instTitleSelect = document.getElementById('inst-title');
                 const instStepSelect = document.getElementById('inst-step');
@@ -341,7 +340,7 @@
 
                     const rawSalary = annualSalary * 0.0275 * units;
 
-                    // CAP LOGIC: Do NOT cap the calculation, but display a warning if rawSalary > 10400
+                    // Cap logic: Do NOT cap the calculation, but display a warning if rawSalary > 10400
                     let cappedSalary = rawSalary;
                     const CAP_AMOUNT = 10400; // As per user
                     const warningEl = document.getElementById('inst-cap-warning');
