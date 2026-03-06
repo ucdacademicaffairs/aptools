@@ -59,10 +59,13 @@ body {
 
 .btn-delete {
 	background-color: #d9534f;
+	display: inline-flex;
+	justify-content: center;
+	align-items: center;
 }
 
-.btn-delete:hover {
-	background-color: #c9302c;
+.btn.btn-delete:hover:not(:disabled) {
+	background-color: #b02a26;
 }
 
 .header-back-btn {

@@ -209,7 +209,7 @@
 	<script>
 		document.addEventListener('DOMContentLoaded', async () => {
 
-			// --- STATE AND DATA MANAGEMENT ---
+			// State and data management
 
 			let SALARY_DATA = {};
 
@@ -243,13 +243,13 @@
 			const warningsCard = document.getElementById('warnings-card');
 			const saveCsvBtn = document.getElementById('saveCsvBtn');
 
-			// --- HELPER FUNCTIONS ---
+			// Helper functions
 
 			// My trusty helper functions to format money and clean up user input.
 			const formatCurrency = (value) => (value || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 			const getCleanNumber = (value) => parseFloat(String(value).replace(/[^0-9.]/g, '')) || 0;
 
-			// --- CORE LOGIC & DOM UPDATES ---
+			// Core logic and updates
 
 			// This is my main 'do everything' function. When something important changes, I call this to recalculate and redraw the summary.
 			function runAllCalculations() {
@@ -297,7 +297,7 @@
 				</td>
 				<td><input type="text" data-field="description" value="${duty.description}" class="w-full rounded-md border-gray-300 shadow-sm"></td>
 				<td><input type="number" step="0.1" data-field="iwc" value="${duty.iwc}" class="w-full rounded-md border-gray-300 shadow-sm"></td>
-				<td><button class="btn btn-delete w-full" data-action="delete">X</button></td>
+				<td><button class="btn btn-delete w-full text-lg p-0 h-10" data-action="delete">&#x2715;</button></td>
 			`;
 					iwcContainer.appendChild(row);
 				});
@@ -438,7 +438,7 @@
 				document.body.removeChild(link);
 			}
 
-			// --- EVENT HANDLERS ---
+			// Event handlers
 
 			// This is where I wire up all the buttons and inputs to their functions.
 

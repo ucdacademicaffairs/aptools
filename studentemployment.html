@@ -383,15 +383,13 @@
 					let inputsHtml = '';
 					switch (appt.type) {
 						case 'gsr':
-							inputsHtml = `<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mt-2">
+							inputsHtml = `<div class="grid grid-cols-2 lg:grid-cols-7 gap-4 mt-2">
 								<div><label class="block text-xs">Quarter</label><select id="input-${appt.id}-quarter" data-calc="quarter" class="w-full p-1 border rounded">${quarterOptions}</select></div>
 								<div><label class="block text-xs">Step</label><select id="input-${appt.id}-step" data-calc="step" class="w-full p-1 border rounded">${Object.keys(COST_DATA.GSR_SCALE).map(step => `<option value="${step}" ${step === appt.values.step ? 'selected' : ''}>${step}</option>`).join('')}</select></div>
 								${percentTimeDropdown}
 								<div><label class="block text-xs">Total Hours</label><input type="number" class="w-full p-1 border rounded" value="${displayHours.toFixed(0)}" readonly></div>
 								<div class="text-center"><label class="block text-xs">Include NRST?</label><input type="checkbox" id="input-${appt.id}-nonResident" data-calc="nonResident" class="h-6 w-6 mt-1" ${appt.values.nonResident ? 'checked' : ''}></div>
-							</div>
-							<div class="flex items-center gap-4 mt-2">
-								<div class="text-center"><label class="block text-xs">Work Study?</label><input type="checkbox" id="input-${appt.id}-workStudy" data-calc="workStudy" class="h-6 w-6" ${appt.values.workStudy ? 'checked' : ''}></div>
+								<div class="text-center"><label class="block text-xs">Work Study?</label><input type="checkbox" id="input-${appt.id}-workStudy" data-calc="workStudy" class="h-6 w-6 mt-1" ${appt.values.workStudy ? 'checked' : ''}></div>
 								${appt.values.workStudy ? `<div><label class="block text-xs">WS Units</label><select id="input-${appt.id}-workStudyUnits" data-calc="workStudyUnits" class="w-full p-1 border rounded"><option value="1" ${appt.values.workStudyUnits == 1 ? 'selected' : ''}>1</option><option value="2" ${appt.values.workStudyUnits == 2 ? 'selected' : ''}>2</option></select></div>` : ''}
 							</div>`;
 							break;
@@ -426,7 +424,7 @@
 					return `<div class="appointment-row" id="appointment-${appt.id}" data-id="${appt.id}" data-type="${appt.type}">
 						<div class="flex justify-between items-start">
 							<div><h4 class="font-bold text-lg">${typeName}</h4>${inputsHtml}</div>
-							<button class="btn btn-delete mt-2" data-id="${appt.id}">X</button>
+							<button class="btn btn-delete mt-2 w-10 h-10 p-0 text-lg flex-shrink-0 rounded-md shadow-sm" data-id="${appt.id}">&#x2715;</button>
 						</div>
 						<div class="grid grid-cols-2 ${gridColsClass} gap-4 mt-4 bg-gray-50 p-2 text-center rounded">
 							<div><p class="text-xs">Salary</p><p class="font-bold" data-output="salary">${formatCurrency(appt.costs.salary || 0)}</p></div>

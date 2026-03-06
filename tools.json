@@ -95,8 +95,8 @@
 		"title": "Lecturer Pay Calculator",
 		"category": "Finance",
 		"description": "Focuses on the creation of an employment plan for Unit 18 / Continuing Lecturers. Create an employment schedule, with IWC, then receive salary and benefit information and a CSV export.",
-		"lastUpdated": "October 23rd, 2025",
-		"lastChange": "First version.",
+		"lastUpdated": "March 6th, 2026",
+		"lastChange": "Updated to use a central JSON file for base rates for easier updating.",
 		"gridSpan": "card-span-2",
 		"buttons": [
 			{
