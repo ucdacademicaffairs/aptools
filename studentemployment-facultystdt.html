@@ -37,7 +37,7 @@
 						<div><label class="block text-xs">Total Hours / Qtr</label><input type="number"
 								data-calc="hours" class="w-full p-1 border rounded" value="100"></div>
 						<div><label class="block text-xs">Hourly Rate ($)</label><input type="number" step="0.01"
-								data-calc="hourlyRate" class="w-full p-1 border rounded" value="18.00"></div>
+								data-calc="hourlyRate" class="w-full p-1 border rounded"></div>
 					</div>
 				</div>
 				<div class="mt-6" id="calculator-results">
@@ -77,32 +77,12 @@
 	<script>
 		document.addEventListener('DOMContentLoaded', async function () {
 			let COST_DATA = {};
-			try {
-				const response = await fetch('annual-config.json');
-				COST_DATA = await response.json();
-			} catch (error) {
-				console.error("Failed to load annual config:", error);
-				return;
-			}
 			let calculationDetails = {};
-			let currentAppointment = { type: 'student-assistant', values: { hours: '100', hourlyRate: COST_DATA.READER_TUTOR_RATE }, costs: {} };
+			let currentAppointment = { type: 'student-assistant', values: { hours: '100', hourlyRate: 18.00 }, costs: {} };
 
 			const calculatorCard = document.getElementById('calculator-card');
 			const showWorkContainer = document.getElementById('show-work-container');
 			const toggleWorkBtn = document.getElementById('toggle-work-btn');
-
-			calculatorCard.addEventListener('input', e => {
-				if (!e.target.dataset.calc) return;
-				const key = e.target.dataset.calc;
-				currentAppointment.values[key] = e.target.value;
-				calculateAllCosts();
-				updateDOMValues();
-			});
-
-			toggleWorkBtn.addEventListener('click', () => {
-				showWorkContainer.classList.toggle('hidden');
-				toggleWorkBtn.classList.toggle('is-open');
-			});
 
 			function updateDOMValues() {
 				const costs = currentAppointment.costs;
@@ -111,6 +91,38 @@
 				calculatorCard.querySelector('[data-output="total"]').textContent = formatCurrency(costs.total);
 				renderCalculationBreakdown();
 			}
+
+			// Initialize
+			async function initialize() {
+				try {
+					const response = await fetch('annual-config.json');
+					COST_DATA = await response.json();
+					currentAppointment.values.hourlyRate = COST_DATA.READER_TUTOR_RATE;
+					calculatorCard.querySelector('[data-calc="hourlyRate"]').value = COST_DATA.READER_TUTOR_RATE;
+				} catch (error) {
+					console.error("Failed to load annual config:", error);
+					alert("Failed to load configuration. Please try again later.");
+					return;
+				}
+
+				calculatorCard.addEventListener('input', e => {
+					if (!e.target.dataset.calc) return;
+					const key = e.target.dataset.calc;
+					currentAppointment.values[key] = e.target.value;
+					calculateAllCosts();
+					updateDOMValues();
+				});
+
+				toggleWorkBtn.addEventListener('click', () => {
+					showWorkContainer.classList.toggle('hidden');
+					toggleWorkBtn.classList.toggle('is-open');
+				});
+
+				calculateAllCosts();
+				updateDOMValues();
+			}
+
+			initialize();
 
 			function calculateAllCosts() {
 				calculationDetails = { log: [`<h4 class="font-bold text-lg">Calculation Details</h4>`, `<p class="text-xs text-gray-500 italic mt-1 mb-3">Rates are for the 2025-2026 academic year. Last updated: 8/11/2025.</p>`] };
@@ -133,8 +145,6 @@
 			function renderCalculationBreakdown() { showWorkContainer.innerHTML = calculationDetails.log.join(''); }
 			function formatCurrency(value) { return (value || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' }); }
 
-			calculateAllCosts();
-			updateDOMValues();
 		});
 	</script>
 </body>

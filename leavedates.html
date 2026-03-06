@@ -324,10 +324,32 @@
 		}
 
 
-		// --- APPLICATION LOGIC ---
+		// Application logic goes brr. Or blehhh
 		document.addEventListener('DOMContentLoaded', async function () {
 			let QUARTER_DATES = {};
 			let quarterKeys = []; // Declare quarterKeys here to be accessible globally within DOMContentLoaded
+
+			// Common Elements
+			const baseDatesTableBody = document.getElementById('base-dates-table');
+
+			// Full Quarter Calculator
+			const startSelect = document.getElementById('quarter-start');
+			const endSelect = document.getElementById('quarter-end');
+			const calculateBtnFull = document.getElementById('calculate-btn-full');
+			const resultsSectionFull = document.getElementById('results-section-full');
+			const payStartDateElFull = document.getElementById('pay-start-date-full');
+			const payEndDateElFull = document.getElementById('pay-end-date-full');
+			const serviceStartDateElFull = document.getElementById('service-start-date-full');
+			const serviceEndDateElFull = document.getElementById('service-end-date-full');
+			const workExplanationElFull = document.getElementById('work-explanation-full');
+
+			// Partial Quarter Calculator
+			const partialSelect = document.getElementById('quarter-partial');
+			const leaveStartDateInput = document.getElementById('leave-start-date');
+			const leaveEndDateInput = document.getElementById('leave-end-date');
+			const quarterDatesInfo = document.getElementById('quarter-dates-info');
+			const calculateBtnPartial = document.getElementById('calculate-btn-partial');
+			const resultsSectionPartial = document.getElementById('results-section-partial');
 
 			try {
 				const response = await fetch('annual-config.json');
@@ -344,11 +366,7 @@
 				return;
 			}
 
-
-			// --- Common Elements ---
-			const baseDatesTableBody = document.getElementById('base-dates-table');
-
-			// --- 1. Populate Base Dates Table ---
+			// Populate Base Dates Table
 			function populateBaseDatesTable() {
 				if (baseDatesTableBody) {
 					baseDatesTableBody.innerHTML = ''; // Clear existing rows
@@ -371,27 +389,7 @@
 				}
 			}
 
-
-			// --- 2. Setup Calculator 1: Full Quarter ---
-			const startSelect = document.getElementById('quarter-start');
-			const endSelect = document.getElementById('quarter-end');
-			const calculateBtnFull = document.getElementById('calculate-btn-full');
-			const resultsSectionFull = document.getElementById('results-section-full');
-			const payStartDateElFull = document.getElementById('pay-start-date-full');
-			const payEndDateElFull = document.getElementById('pay-end-date-full');
-			const serviceStartDateElFull = document.getElementById('service-start-date-full');
-			const serviceEndDateElFull = document.getElementById('service-end-date-full');
-			const workExplanationElFull = document.getElementById('work-explanation-full');
-
-			// --- 3. Setup Calculator 2: Partial Quarter ---
-			const partialSelect = document.getElementById('quarter-partial');
-			const leaveStartDateInput = document.getElementById('leave-start-date');
-			const leaveEndDateInput = document.getElementById('leave-end-date');
-			const quarterDatesInfo = document.getElementById('quarter-dates-info');
-			const calculateBtnPartial = document.getElementById('calculate-btn-partial');
-			const resultsSectionPartial = document.getElementById('results-section-partial');
-
-			// --- 4. Populate All the Dropdown Menus ---
+			// Populate All Dropdown Menus
 			function populateQuarterDropdowns() {
 				const defaultOption = "<option value='' selected disabled>Please select a quarter</option>";
 				startSelect.innerHTML = defaultOption;
@@ -405,17 +403,17 @@
 				});
 			}
 
-			// --- REMOVED: QoL feature to auto-select end date ---
+			// QoL feature to auto-select end date
 			// startSelect.addEventListener('change', () => {
 			//     endSelect.value = startSelect.value;
 			// });
 
-			// --- 5. Event Listener: Full Quarter Calculator Button ---
+			// Full Quarter Calculator Button
 			calculateBtnFull.addEventListener('click', () => {
 				const startQuarterName = startSelect.value;
 				const endQuarterName = endSelect.value;
 
-				// --- Validation for blank dropdowns ---
+				// Validation for blank dropdowns
 				if (!startQuarterName || !endQuarterName) {
 					showModal("Input Error", "Please select both a 'Begins' and 'Ends' quarter.");
 					resultsSectionFull.classList.add('hidden');
@@ -447,7 +445,7 @@
 				// Calculate total service days for the entire period
 				const totalServiceDays = inclusiveDateDiff(finalServiceEnd, finalServiceStart);
 
-				// --- Populate Results ---
+				// Populate Results
 				payStartDateElFull.textContent = formatDate(finalPayStart);
 				payEndDateElFull.textContent = formatDate(finalPayEnd);
 
@@ -456,7 +454,7 @@
 
 				resultsSectionFull.classList.remove('hidden');
 
-				// --- Populate "Show Your Work" ---
+				// Populate "Show Your Work"
 				workExplanationElFull.innerHTML = `
 					<p>1. The pay period for your selected <strong>start quarter</strong> (${startQuarterName}) is 
 					   <strong>${formatDate(actualStartQuarterData.payStart)} - ${formatDate(actualStartQuarterData.payEnd)}</strong>.
@@ -474,7 +472,7 @@
 				`;
 			});
 
-			// --- 6. Event Listener: Partial Quarter Select Dropdown --- and it now sets placeholders, not values
+			// Partial Quarter Select Dropdown (now selects placeholders, not values)
 			partialSelect.addEventListener('change', () => {
 				const quarterName = partialSelect.value;
 				// Handle the "Please select" option
@@ -499,13 +497,13 @@
 				resultsSectionPartial.classList.add('hidden');
 			});
 
-			// --- 7. Event Listener: Partial Quarter Calculator Button ---
+			// Partial Quarter Calculator Button
 			calculateBtnPartial.addEventListener('click', () => {
 				const quarterName = partialSelect.value;
 				const leaveStartDate = leaveStartDateInput.value;
 				const leaveEndDate = leaveEndDateInput.value;
 
-				// --- Validation ---
+				// Validation
 				// Check for blank quarter
 				if (!quarterName) {
 					showModal("Input Error", "Please select a quarter.");
@@ -534,7 +532,7 @@
 					return;
 				}
 
-				// --- The Fun Math Part (Proration) ---
+				// The Fun Math Part (Proration) (I wanna die)	
 				// 1. Get total days for both periods
 				const totalServiceDays = inclusiveDateDiff(data.serviceEnd, data.serviceStart);
 				const totalPayDays = inclusiveDateDiff(data.payEnd, data.payStart);
@@ -557,11 +555,11 @@
 				const finalPayStartDate = addDays(data.payStart, payDaysPrior);
 				const finalPayEndDate = addDays(finalPayStartDate, payDaysOnLeave - 1); // -1 because it's inclusive
 
-				// --- Display Results ---
+				// Display Results
 				document.getElementById('pay-start-date-partial').textContent = formatDate(finalPayStartDate);
 				document.getElementById('pay-end-date-partial').textContent = formatDate(finalPayEndDate);
 
-				// --- ...and "Show Your Work" ---
+				// ...and "Show Your Work"
 				document.getElementById('total-service-days').textContent = `${totalServiceDays} days`;
 				document.getElementById('total-pay-days').textContent = `${totalPayDays} days`;
 				document.getElementById('service-days-on-leave').textContent = `${serviceDaysOnLeave} days`;

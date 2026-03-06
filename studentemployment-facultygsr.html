@@ -102,13 +102,6 @@
 	<script>
 		document.addEventListener('DOMContentLoaded', async function () {
 			let COST_DATA = {};
-			try {
-				const response = await fetch('annual-config.json');
-				COST_DATA = await response.json();
-			} catch (error) {
-				console.error("Failed to load annual config:", error);
-				return;
-			}
 			let calculationDetails = {};
 			let currentAppointment = { type: 'gsr', values: { step: '1', percentTime: '25', nonResident: false }, costs: {} };
 
@@ -117,19 +110,6 @@
 			const toggleWorkBtn = document.getElementById('toggle-work-btn');
 			const nrstWarningCard = document.getElementById('nrst-warning-card');
 			const fteWarningCard = document.getElementById('fte-warning-card');
-
-			calculatorCard.addEventListener('input', e => {
-				if (!e.target.dataset.calc) return;
-				const key = e.target.dataset.calc;
-				currentAppointment.values[key] = (e.target.type === 'checkbox') ? e.target.checked : e.target.value;
-				calculateAllCosts();
-				updateDOMValues();
-			});
-
-			toggleWorkBtn.addEventListener('click', () => {
-				showWorkContainer.classList.toggle('hidden');
-				toggleWorkBtn.classList.toggle('is-open');
-			});
 
 			function updateDOMValues() {
 				const hoursInput = calculatorCard.querySelector('input[readonly]');
@@ -142,6 +122,36 @@
 				renderCalculationBreakdown();
 				updateWarningVisibility();
 			}
+
+			// Initialize
+			async function initialize() {
+				try {
+					const response = await fetch('annual-config.json');
+					COST_DATA = await response.json();
+				} catch (error) {
+					console.error("Failed to load annual config:", error);
+					alert("Failed to load configuration. Please try again later.");
+					return;
+				}
+
+				calculatorCard.addEventListener('input', e => {
+					if (!e.target.dataset.calc) return;
+					const key = e.target.dataset.calc;
+					currentAppointment.values[key] = (e.target.type === 'checkbox') ? e.target.checked : e.target.value;
+					calculateAllCosts();
+					updateDOMValues();
+				});
+
+				toggleWorkBtn.addEventListener('click', () => {
+					showWorkContainer.classList.toggle('hidden');
+					toggleWorkBtn.classList.toggle('is-open');
+				});
+
+				calculateAllCosts();
+				updateDOMValues();
+			}
+
+			initialize();
 
 			function calculateAllCosts() {
 				calculationDetails = { log: [`<h4 class="font-bold text-lg">Calculation Details</h4>`, `<p class="text-xs text-gray-500 italic mt-1 mb-3">Rates are for the 2025-2026 academic year. Last updated: 8/11/2025.</p>`] };

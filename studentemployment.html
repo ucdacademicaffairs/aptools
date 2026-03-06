@@ -160,9 +160,9 @@
 
 	<script>
 		document.addEventListener('DOMContentLoaded', function () {
-			// --- State and Data Management ---
-			// We'll start off with default rates and salary scales. Can be edited by the user in the UI. This information changes annually, so notionally this should be updated by "me" on 7/1.
-			// We'll fetch the configuration dynamically
+			// State and Data Management
+			// We provide default money stuff, but it can be edited by the user in the UI. This information changes annually, so notionally this should be updated by "me" on 7/1 in annual-config.json. Or whenever the union stuff shakes out.
+			// Fetch the configuration dynamically
 			let COST_DATA = {};
 
 			// The main array for the calculator, holding all appointment objects.
@@ -185,7 +185,7 @@
 				}
 
 				// Apply base costs to UI
-				renderBaseCostsUI();
+				populateBaseCosts();
 
 				// Any initial UI setup that needs COST_DATA happens here...
 				// Initial render after data is loaded
@@ -194,7 +194,7 @@
 
 			initialize();
 
-			// --- DOM element caching ---
+			// DOM element caching
 			const addButtonsContainer = document.getElementById('add-buttons');
 			const appointmentsContainer = document.getElementById('appointments-container');
 			const baseCostsContainer = document.getElementById('base-costs-container');
@@ -208,7 +208,7 @@
 			const copySummaryBtn = document.getElementById('copy-summary-btn');
 			const summaryTable = document.getElementById('summary-table');
 
-			// --- Event listeners ---
+			// Event listeners
 
 			// Handles clicks on "Add Appointment"
 			addButtonsContainer.addEventListener('click', e => {
@@ -304,7 +304,7 @@
 				fullRender();
 			});
 
-			// --- Core Function Zone ---
+			// Core Function Zone
 
 			// Populates the "Base Costs & Rates" section with editable input fields.
 			function populateBaseCosts() {
@@ -713,7 +713,7 @@
 				return (value || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 			}
 
-			// --- Initial Load ---
+			// Initial Load
 			populateBaseCosts();
 			fullRender();
 		});
