@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,15 +9,24 @@
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="shared-tools.css">
 	<style>
-		:root { --ucd-blue: #002855; --ucd-gold: #FFBF00; --ucd-light-gray: #f2f2f2; }
-		body { font-family: 'Proxima Nova', 'Public Sans', sans-serif; background-color: var(--ucd-light-gray); }
-		.card { background-color: white; border-radius: 0; border: 1px solid #ddd; padding: 1.5rem; }
-		.toggle-btn svg { transition: transform 0.3s ease-in-out; }
-		.toggle-btn.is-open svg { transform: rotate(90deg); }
-		#show-work-container p { margin-bottom: 0.5rem; font-family: monospace; font-size: 0.875rem; }
+		.toggle-btn svg {
+			transition: transform 0.3s ease-in-out;
+		}
+
+		.toggle-btn.is-open svg {
+			transform: rotate(90deg);
+		}
+
+		#show-work-container p {
+			margin-bottom: 0.5rem;
+			font-family: monospace;
+			font-size: 0.875rem;
+		}
 	</style>
 </head>
+
 <body>
 	<main class="w-full max-w-4xl mx-auto p-4 md:p-8">
 		<div class="space-y-6">
@@ -24,23 +34,40 @@
 				<div id="calculator-inputs">
 					<h4 class="text-lg font-semibold text-gray-800 mb-2">Enter Student Assistant Details</h4>
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-						<div><label class="block text-xs">Total Hours / Qtr</label><input type="number" data-calc="hours" class="w-full p-1 border rounded" value="100"></div>
-						<div><label class="block text-xs">Hourly Rate ($)</label><input type="number" step="0.01" data-calc="hourlyRate" class="w-full p-1 border rounded" value="18.00"></div>
+						<div><label class="block text-xs">Total Hours / Qtr</label><input type="number"
+								data-calc="hours" class="w-full p-1 border rounded" value="100"></div>
+						<div><label class="block text-xs">Hourly Rate ($)</label><input type="number" step="0.01"
+								data-calc="hourlyRate" class="w-full p-1 border rounded" value="18.00"></div>
 					</div>
 				</div>
 				<div class="mt-6" id="calculator-results">
 					<h4 class="text-lg font-semibold text-gray-800 mb-2">Estimated Quarterly Cost</h4>
 					<div class="grid grid-cols-2 md:grid-cols-3 gap-4 bg-gray-50 p-3 text-center rounded">
-						<div><p class="text-xs">Salary</p><p class="font-bold" data-output="salary">$0.00</p></div>
-						<div><p class="text-xs">Benefits</p><p class="font-bold" data-output="benefits">$0.00</p></div>
-						<div><p class="text-xs">Total Cost</p><p class="font-bold text-2xl text-[#002855]" data-output="total">$0.00</p></div>
+						<div>
+							<p class="text-xs">Salary</p>
+							<p class="font-bold" data-output="salary">$0.00</p>
+						</div>
+						<div>
+							<p class="text-xs">Benefits</p>
+							<p class="font-bold" data-output="benefits">$0.00</p>
+						</div>
+						<div>
+							<p class="text-xs">Total Cost</p>
+							<p class="font-bold text-2xl text-[#002855]" data-output="total">$0.00</p>
+						</div>
 					</div>
-					<p class="text-xs text-gray-500 italic mt-4">Remember, this cost estimate is just that. Your Program Coordinator will review the student's eligibility, look into any strategies to reduce costs which are available, and communicate a final cost for this hire to you.</p>
+					<p class="text-xs text-gray-500 italic mt-4">Remember, this cost estimate is just that. Your Program
+						Coordinator will review the student's eligibility, look into any strategies to reduce costs
+						which are available, and communicate a final cost for this hire to you.</p>
 				</div>
 			</div>
 			<div id="show-work-card" class="card">
-				<button id="toggle-work-btn" class="toggle-btn w-full text-left font-bold text-lg text-gray-800 flex items-center gap-2">
-					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+				<button id="toggle-work-btn"
+					class="toggle-btn w-full text-left font-bold text-lg text-gray-800 flex items-center gap-2">
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+						xmlns="http://www.w3.org/2000/svg">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+					</svg>
 					<span>Show Calculation Details</span>
 				</button>
 				<div id="show-work-container" class="hidden mt-4 space-y-4"></div>
@@ -48,60 +75,61 @@
 		</div>
 	</main>
 	<script>
-	document.addEventListener('DOMContentLoaded', function () {
-		const COST_DATA = { BENEFIT_RATES: { cbr: 0.017, gael: 0.0, addOn: 0.0022, ucrp: 0.0 }, STUDENT_ASST_DEFAULT_RATE: 18.00 };
-		let calculationDetails = {};
-		let currentAppointment = { type: 'student-assistant', values: { hours: '100', hourlyRate: COST_DATA.STUDENT_ASST_DEFAULT_RATE }, costs: {} };
-		
-		const calculatorCard = document.getElementById('calculator-card');
-		const showWorkContainer = document.getElementById('show-work-container');
-		const toggleWorkBtn = document.getElementById('toggle-work-btn');
+		document.addEventListener('DOMContentLoaded', function () {
+			const COST_DATA = { BENEFIT_RATES: { cbr: 0.017, gael: 0.0, addOn: 0.0022, ucrp: 0.0 }, STUDENT_ASST_DEFAULT_RATE: 18.00 };
+			let calculationDetails = {};
+			let currentAppointment = { type: 'student-assistant', values: { hours: '100', hourlyRate: COST_DATA.STUDENT_ASST_DEFAULT_RATE }, costs: {} };
 
-		calculatorCard.addEventListener('input', e => {
-			if (!e.target.dataset.calc) return;
-			const key = e.target.dataset.calc;
-			currentAppointment.values[key] = e.target.value;
+			const calculatorCard = document.getElementById('calculator-card');
+			const showWorkContainer = document.getElementById('show-work-container');
+			const toggleWorkBtn = document.getElementById('toggle-work-btn');
+
+			calculatorCard.addEventListener('input', e => {
+				if (!e.target.dataset.calc) return;
+				const key = e.target.dataset.calc;
+				currentAppointment.values[key] = e.target.value;
+				calculateAllCosts();
+				updateDOMValues();
+			});
+
+			toggleWorkBtn.addEventListener('click', () => {
+				showWorkContainer.classList.toggle('hidden');
+				toggleWorkBtn.classList.toggle('is-open');
+			});
+
+			function updateDOMValues() {
+				const costs = currentAppointment.costs;
+				calculatorCard.querySelector('[data-output="salary"]').textContent = formatCurrency(costs.salary);
+				calculatorCard.querySelector('[data-output="benefits"]').textContent = formatCurrency(costs.benefits);
+				calculatorCard.querySelector('[data-output="total"]').textContent = formatCurrency(costs.total);
+				renderCalculationBreakdown();
+			}
+
+			function calculateAllCosts() {
+				calculationDetails = { log: [`<h4 class="font-bold text-lg">Calculation Details</h4>`, `<p class="text-xs text-gray-500 italic mt-1 mb-3">Rates are for the 2025-2026 academic year. Last updated: 8/11/2025.</p>`] };
+				const log = calculationDetails.log;
+				const appt = currentAppointment;
+				const totalBenefitRate = Object.values(COST_DATA.BENEFIT_RATES).reduce((a, b) => a + b, 0);
+
+				const hours = parseFloat(appt.values.hours) || 0;
+				const rate = parseFloat(appt.values.hourlyRate) || 0;
+				const salary = hours * rate;
+				const salaryFormula = `${hours.toFixed(0)} hrs * ${formatCurrency(rate)}/hr = ${formatCurrency(salary)}`;
+				log.push(`<p class="font-semibold mt-2">1. Salary & Benefits Calculation:</p><p>&nbsp;&nbsp;- Salary: ${salaryFormula}</p>`);
+
+				const benefits = salary * totalBenefitRate;
+				log.push(`<p>&nbsp;&nbsp;- Benefits: ${formatCurrency(salary)} * ${totalBenefitRate.toFixed(4)} = ${formatCurrency(benefits)}</p>`);
+
+				appt.costs = { salary, benefits, total: salary + benefits };
+			}
+
+			function renderCalculationBreakdown() { showWorkContainer.innerHTML = calculationDetails.log.join(''); }
+			function formatCurrency(value) { return (value || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' }); }
+
 			calculateAllCosts();
 			updateDOMValues();
 		});
-		
-		toggleWorkBtn.addEventListener('click', () => {
-			showWorkContainer.classList.toggle('hidden');
-			toggleWorkBtn.classList.toggle('is-open');
-		});
-
-		function updateDOMValues() {
-			const costs = currentAppointment.costs;
-			calculatorCard.querySelector('[data-output="salary"]').textContent = formatCurrency(costs.salary);
-			calculatorCard.querySelector('[data-output="benefits"]').textContent = formatCurrency(costs.benefits);
-			calculatorCard.querySelector('[data-output="total"]').textContent = formatCurrency(costs.total);
-			renderCalculationBreakdown();
-		}
-
-		function calculateAllCosts() {
-			calculationDetails = { log: [`<h4 class="font-bold text-lg">Calculation Details</h4>`, `<p class="text-xs text-gray-500 italic mt-1 mb-3">Rates are for the 2025-2026 academic year. Last updated: 8/11/2025.</p>`] };
-			const log = calculationDetails.log;
-			const appt = currentAppointment;
-			const totalBenefitRate = Object.values(COST_DATA.BENEFIT_RATES).reduce((a, b) => a + b, 0);
-
-			const hours = parseFloat(appt.values.hours) || 0;
-			const rate = parseFloat(appt.values.hourlyRate) || 0;
-			const salary = hours * rate;
-			const salaryFormula = `${hours.toFixed(0)} hrs * ${formatCurrency(rate)}/hr = ${formatCurrency(salary)}`;
-			log.push(`<p class="font-semibold mt-2">1. Salary & Benefits Calculation:</p><p>&nbsp;&nbsp;- Salary: ${salaryFormula}</p>`);
-
-			const benefits = salary * totalBenefitRate;
-			log.push(`<p>&nbsp;&nbsp;- Benefits: ${formatCurrency(salary)} * ${totalBenefitRate.toFixed(4)} = ${formatCurrency(benefits)}</p>`);
-			
-			appt.costs = { salary, benefits, total: salary + benefits };
-		}
-
-		function renderCalculationBreakdown() { showWorkContainer.innerHTML = calculationDetails.log.join(''); }
-		function formatCurrency(value) { return (value || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' }); }
-		
-		calculateAllCosts();
-		updateDOMValues();
-	});
 	</script>
 </body>
+
 </html>

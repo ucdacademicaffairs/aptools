@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,54 +10,18 @@
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="shared-tools.css">
 	<style>
-		:root {
-			--ucd-blue: #002855;
-			--ucd-gold: #FFBF00;
-			--ucd-light-gray: #f2f2f2;
-		}
-		body {
-			font-family: 'Public Sans', sans-serif;
-			background-color: var(--ucd-light-gray);
-		}
-		.ucd-header {
-			background-color: var(--ucd-blue);
-			color: white;
-			padding: 1rem 2rem;
-			display: flex;
-			align-items: center;
-		}
-		.ucd-logo-text {
-			font-weight: 700;
-			font-size: 1.5rem;
-			letter-spacing: 0.5px;
-		}
-		.card {
-			background-color: white;
-			border-radius: 0;
-			border: 1px solid #ddd;
-			padding: 2rem;
-		}
-		.btn {
-			background-color: var(--ucd-blue);
-			color: white;
-			padding: 0.5rem 1rem;
-			border-radius: 0.25rem;
-			font-weight: 500;
-			transition: background-color 0.2s;
-			border: none;
-		}
-		.btn:hover:not(:disabled) {
-			background-color: #001e3e;
-		}
 		.btn-gray {
 			background-color: #6b7280;
 		}
+
 		.btn-gray:hover {
 			background-color: #4b5563;
 		}
 	</style>
 </head>
+
 <body>
 
 	<header class="ucd-header shadow-md">
@@ -64,7 +29,7 @@
 	</header>
 
 	<main class="w-full max-w-4xl mx-auto p-4 md:p-8">
-		
+
 		<!-- Title with decorative boxes -->
 		<div class="relative text-center mb-8">
 			<div class="absolute inset-0 flex items-center justify-center -z-10 opacity-20">
@@ -89,9 +54,11 @@
 
 			<!-- File Input -->
 			<div class="mb-6">
-				<label for="file-upload-label" class="block text-sm font-medium text-gray-700 mb-2">Upload your roster file:</label>
+				<label for="file-upload-label" class="block text-sm font-medium text-gray-700 mb-2">Upload your roster
+					file:</label>
 				<input id="file-upload" name="file-upload" type="file" accept=".csv, .xlsx, .xls" class="hidden">
-				<label for="file-upload" id="file-upload-label" class="cursor-pointer inline-block text-white font-bold py-2 px-4 rounded-md bg-[#6bca98] hover:bg-[#266040] transition-colors duration-200">
+				<label for="file-upload" id="file-upload-label"
+					class="cursor-pointer inline-block text-white font-bold py-2 px-4 rounded-md bg-[#6bca98] hover:bg-[#266040] transition-colors duration-200">
 					Choose File
 				</label>
 				<p id="file-name" class="mt-2 text-sm text-gray-500"></p>
@@ -99,8 +66,11 @@
 
 			<!-- Results Output -->
 			<div class="w-full">
-				<label for="results" class="block text-sm font-medium text-gray-700 mb-2">Parsed Results Preview:</label>
-				<textarea id="results" rows="15" class="w-full p-3 border border-gray-300 shadow-sm focus:ring-[#002855] focus:border-[#002855]" placeholder="Results preview will appear here..." readonly></textarea>
+				<label for="results" class="block text-sm font-medium text-gray-700 mb-2">Parsed Results
+					Preview:</label>
+				<textarea id="results" rows="15"
+					class="w-full p-3 border border-gray-300 shadow-sm focus:ring-[#002855] focus:border-[#002855]"
+					placeholder="Results preview will appear here..." readonly></textarea>
 			</div>
 
 			<!-- Action Buttons -->
@@ -112,7 +82,8 @@
 					Reset
 				</button>
 			</div>
-			 <div id="export-success-message" class="mt-2 text-right text-green-600 font-medium opacity-0 transition-opacity duration-300">
+			<div id="export-success-message"
+				class="mt-2 text-right text-green-600 font-medium opacity-0 transition-opacity duration-300">
 				CSV downloaded successfully!
 			</div>
 		</div>
@@ -158,11 +129,11 @@
 
 			// Show the name of the file they picked.
 			fileNameDisplay.textContent = `Selected file: ${file.name}`;
-			
+
 			// Now, I'll use the FileReader API to read the file's contents right here in the browser.
 			const reader = new FileReader();
 			const fileName = file.name.toLowerCase();
-			
+
 			// This function runs after the file has been successfully read.
 			reader.onload = (e) => {
 				let rows; // This will hold our data, structured as an array of rows.
@@ -178,7 +149,7 @@
 
 						if (isBinaryXLS) {
 							// If it's a "trusted" file, I'll use the binary parser.
-							const workbook = XLSX.read(fileContent, {type: 'array'});
+							const workbook = XLSX.read(fileContent, { type: 'array' });
 							const firstSheetName = workbook.SheetNames[0];
 							const worksheet = workbook.Sheets[firstSheetName];
 							rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
@@ -191,7 +162,7 @@
 						}
 					} else if (fileName.endsWith('.xlsx')) {
 						// Modern XLSX files are always binary, so this is straightforward.
-						const workbook = XLSX.read(fileContent, {type: 'array'});
+						const workbook = XLSX.read(fileContent, { type: 'array' });
 						const firstSheetName = workbook.SheetNames[0];
 						const worksheet = workbook.Sheets[firstSheetName];
 						rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
@@ -202,7 +173,7 @@
 						const lines = textContent.split(/\r?\n/);
 						rows = lines.map(line => parseCsvLine(line));
 					}
-					
+
 					// Once I have the data as an array of rows, no matter where it came from,
 					// I send it to my main parsing function.
 					parseRows(rows);
@@ -229,7 +200,7 @@
 
 		// The reset button just calls my reset function.
 		resetButton.addEventListener('click', resetApp);
-		
+
 		// A simple helper function to parse a single line of a CSV file.
 		function parseCsvLine(text) {
 			const result = [];
@@ -382,11 +353,11 @@
 				const instructorCell = `"${row.instructor.replace(/"/g, '""')}"`;
 				return [row.subj, row.crse, instructorCell, row.crn].join(',');
 			});
-			
+
 			const csvContent = [header, ...csvRows].join('\n');
 			// Here's the filename change we made!
 			const fileName = `${fileSubjectCode || 'course'}_parsed_roster.csv`;
-			
+
 			// This is the standard way to trigger a file download in the browser.
 			// I create a blob, create a hidden link to it,
 			// programmatically click the link, and then remove it.
@@ -411,4 +382,5 @@
 
 	</script>
 </body>
+
 </html>

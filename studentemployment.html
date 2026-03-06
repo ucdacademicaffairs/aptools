@@ -1,5 +1,6 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,71 +9,33 @@
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="shared-tools.css">
 	<style>
-		:root {
-			--ucd-blue: #002855;
-			--ucd-gold: #FFBF00;
-			--ucd-light-gray: #f2f2f2;
-		}
-		body {
-			font-family: 'Proxima Nova', 'Public Sans', sans-serif;
-			background-color: var(--ucd-light-gray);
-		}
-		.ucd-header {
-			background-color: var(--ucd-blue);
-			color: white;
-			padding: 1rem 2rem;
-			display: flex;
-			align-items: center;
-		}
-		.ucd-logo-text {
-			font-weight: 700;
-			font-size: 1.5rem;
-			letter-spacing: 0.5px;
-		}
-		.card {
-			background-color: white;
-			border-radius: 0;
-			border: 1px solid #ddd;
-			padding: 1.5rem;
-		}
-		.btn {
-			background-color: var(--ucd-blue);
-			color: white;
-			padding: 0.5rem 1rem;
-			border-radius: 0.25rem;
-			font-weight: 500;
-			transition: background-color 0.2s;
-		}
-		.btn:hover {
-			background-color: #001e3e;
-		}
-		.btn-delete {
-			background-color: #d9534f;
-		}
-		.btn-delete:hover {
-			background-color: #c9302c;
-		}
 		.appointment-row {
 			border-bottom: 1px solid #eee;
 			padding-bottom: 1rem;
 			margin-bottom: 1rem;
 		}
+
 		.toggle-btn svg {
 			transition: transform 0.3s ease-in-out;
 		}
+
 		.toggle-btn.is-open svg {
 			transform: rotate(90deg);
 		}
+
 		input[readonly] {
 			background-color: #f0f0f0;
 			cursor: not-allowed;
 		}
+
 		#show-work-container p {
 			margin-bottom: 0.5rem;
 			font-family: monospace;
 			font-size: 0.875rem;
 		}
+
 		/* Styles for hiding the WS Savings column */
 		.ws-hidden .ws-savings-col {
 			display: none;
@@ -90,19 +53,25 @@
 			<div class="relative text-center mb-6 py-4">
 				<div class="absolute inset-0 flex items-center justify-center -z-10 opacity-10">
 					<!-- gear -->
-					<svg class="w-24 h-24 text-[#002855] -rotate-12" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
-						<path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
-						<path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319z"/>
+					<svg class="w-24 h-24 text-[#002855] -rotate-12" xmlns="http://www.w3.org/2000/svg"
+						fill="currentColor" viewBox="0 0 16 16">
+						<path
+							d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z" />
+						<path
+							d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319z" />
 					</svg>
 					<!-- coin -->
-					<svg class="w-20 h-20 text-[#FFBF00] rotate-12 -ml-8" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
-						<path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm1.558-6.914c-1.025.23-1.85.748-2.454 1.362-.606.615-.958 1.441-.958 2.422 0 1.01.374 1.837.989 2.458.615.62 1.455.963 2.454.963 1.026 0 1.872-.37 2.488-.973.615-.602.96-1.448.96-2.464 0-1.01-.373-1.834-.988-2.457a3.413 3.413 0 0 0-2.488-.973zm-1.006-4.56c0 .69.28 1.25.775 1.672.497.42.992.63 1.663.63h.053c.69 0 1.27-.244 1.745-.685.472-.443.712-1.04.712-1.798 0-.78-.29-1.424-.81-1.897-.523-.475-1.22-.72-2.03-.72-1.14 0-1.95.43-2.44 1.23-.49.803-.53 1.853-.13 2.825z"/>
-						<path d="M4 5.587c0 .69.28 1.25.775 1.672.497.42.992.63 1.663.63h.053c.69 0 1.27-.244 1.745-.685C9.17 6.76 9.41 6.16 9.41 5.413c0-.78-.29-1.424-.81-1.897-.523-.475-1.22-.72-2.03-.72-1.14 0-1.95.43-2.44 1.23-.49.803-.53 1.853-.13 2.825z"/>
+					<svg class="w-20 h-20 text-[#FFBF00] rotate-12 -ml-8" xmlns="http://www.w3.org/2000/svg"
+						fill="currentColor" viewBox="0 0 16 16">
+						<path
+							d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm1.558-6.914c-1.025.23-1.85.748-2.454 1.362-.606.615-.958 1.441-.958 2.422 0 1.01.374 1.837.989 2.458.615.62 1.455.963 2.454.963 1.026 0 1.872-.37 2.488-.973.615-.602.96-1.448.96-2.464 0-1.01-.373-1.834-.988-2.457a3.413 3.413 0 0 0-2.488-.973zm-1.006-4.56c0 .69.28 1.25.775 1.672.497.42.992.63 1.663.63h.053c.69 0 1.27-.244 1.745-.685.472-.443.712-1.04.712-1.798 0-.78-.29-1.424-.81-1.897-.523-.475-1.22-.72-2.03-.72-1.14 0-1.95.43-2.44 1.23-.49.803-.53 1.853-.13 2.825z" />
+						<path
+							d="M4 5.587c0 .69.28 1.25.775 1.672.497.42.992.63 1.663.63h.053c.69 0 1.27-.244 1.745-.685C9.17 6.76 9.41 6.16 9.41 5.413c0-.78-.29-1.424-.81-1.897-.523-.475-1.22-.72-2.03-.72-1.14 0-1.95.43-2.44 1.23-.49.803-.53 1.853-.13 2.825z" />
 					</svg>
 				</div>
 				<h2 class="text-4xl font-bold text-[#002855]">Student Employment Cost Calculator</h2>
 			</div>
-			
+
 			<div class="card">
 				<div class="flex justify-between items-center mb-4">
 					<h3 class="text-xl font-bold text-gray-800">Add Appointment</h3>
@@ -151,7 +120,8 @@
 								<td class="p-2">Grand Total</td>
 								<td class="p-2 text-right" id="summary-total-salary">$0.00</td>
 								<td class="p-2 text-right" id="summary-total-benefits-fees">$0.00</td>
-								<td class="p-2 text-right text-green-600 ws-savings-col" id="summary-total-savings">$0.00</td>
+								<td class="p-2 text-right text-green-600 ws-savings-col" id="summary-total-savings">
+									$0.00</td>
 								<td class="p-2 text-right" id="summary-grand-total">$0.00</td>
 							</tr>
 						</tfoot>
@@ -160,164 +130,172 @@
 			</div>
 
 			<div class="card">
-				<button id="toggle-work-btn" class="toggle-btn w-full text-left font-bold text-lg text-gray-800 flex items-center gap-2">
-					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+				<button id="toggle-work-btn"
+					class="toggle-btn w-full text-left font-bold text-lg text-gray-800 flex items-center gap-2">
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+						xmlns="http://www.w3.org/2000/svg">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+					</svg>
 					<span>Show Your Work</span>
 				</button>
 				<div id="show-work-container" class="hidden mt-4 space-y-4">
-					</div>
+				</div>
 			</div>
 
 			<div class="card">
-				<button id="toggle-costs-btn" class="toggle-btn w-full text-left font-bold text-lg text-gray-800 flex items-center gap-2">
-					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+				<button id="toggle-costs-btn"
+					class="toggle-btn w-full text-left font-bold text-lg text-gray-800 flex items-center gap-2">
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+						xmlns="http://www.w3.org/2000/svg">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+					</svg>
 					<span>Base Costs & Rates</span>
 				</button>
 				<div id="base-costs-container" class="hidden mt-4 space-y-4">
-					</div>
+				</div>
 			</div>
 		</div>
 	</main>
 
-<script>
-	document.addEventListener('DOMContentLoaded', function () {
-		// --- State and Data Management ---
-		// We'll start off with default rates and salary scales. Can be edited by the user in the UI. This information changes annually, so notionally this should be updated by "me" on 7/1.
-		const COST_DATA = {
-			BENEFIT_RATES: { cbr: 0.017, gael: 0.0, addOn: 0.0022, ucrp: 0.0 }, // GAEL's out; I'm too old. On my head be it if the General Overhead Assessment is a thing. Leaving it in in case we need it in future, though.
-			GSR_SCALE: { 1: 71895, 2: 77467, 3: 83471, 4: 89941, 5: 96912, 6: 104423 },
-			TA_SCALE: { 1: 70720, 2: 72842, 3: 75027 },
-			TUITION_FEES: { quarterly_tuition: 5196.53, quarterly_ship: 2664.00, quarterly_non_resident: 5034.00 },
-			READER_TUTOR_RATE: 22.14,
-			HOURS_PER_FTE_PERCENT: 4.4, // That is, this number times FTE equals est. total hours per quarter. E.g., 50% * 4.4 = 220 hours per quarter. 
-			WORK_STUDY: {
-				UNIT_SALARY_EQUIVALENT: 6526, // The "cap salary" for work-study.
-				SAVINGS_RATE: 0.75,
-			}
-		};
-		// The main array for the calculator, holding all appointment objects.
-		let appointments = [];
-		// A lil' counter to ensure each new appointment has a unique ID.
-		let appointmentCounter = 0;
-		// I'd also like to store the step-by-step calculation details for the "Show Your Work" section.
-		let calculationDetails = {};
-	
-	
-		// --- DOM element caching ---
-		const addButtonsContainer = document.getElementById('add-buttons');
-		const appointmentsContainer = document.getElementById('appointments-container');
-		const baseCostsContainer = document.getElementById('base-costs-container');
-		const toggleCostsBtn = document.getElementById('toggle-costs-btn');
-		const showWorkContainer = document.getElementById('show-work-container');
-		const toggleWorkBtn = document.getElementById('toggle-work-btn');
-		const nrstWarningCard = document.getElementById('nrst-warning-card');
-		const fteWarningCard = document.getElementById('fte-warning-card');
-		const workStudySummaryCard = document.getElementById('work-study-summary-card');
-		const clearAllBtn = document.getElementById('clear-all-btn');
-		const copySummaryBtn = document.getElementById('copy-summary-btn');
-		const summaryTable = document.getElementById('summary-table');
-		
-		// --- Event listeners ---
-		
-		// Handles clicks on "Add Appointment"
-		addButtonsContainer.addEventListener('click', e => {
-			if (e.target.classList.contains('btn')) addAppointment(e.target.dataset.type);
-		});
-		
-		// Handles the "Clear All" button to reset the calculator.
-		clearAllBtn.addEventListener('click', () => {
-			appointments = [];
-			fullRender();
-		});
-		
-		// Handles the new "Copy to Clipboard"
-		copySummaryBtn.addEventListener('click', () => {
-			let text = '';
-			// Loop through rows and cells to build a tab-separated string.
-			for (const row of summaryTable.rows) {
-				const rowData = Array.from(row.cells)
-					.filter(cell => !cell.classList.contains('ws-savings-col') || !summaryTable.classList.contains('ws-hidden'))
-					.map(cell => cell.innerText.replace(/\$/g, '').replace(/,/g, ''));
-				text += rowData.join('\t') + '\n';
-			}
-			// Use a temporary text area to copy the text to the clipboard
-			const textArea = document.createElement('textarea');
-			textArea.value = text;
-			document.body.appendChild(textArea);
-			textArea.select();
-			try {
-				document.execCommand('copy');
-				copySummaryBtn.textContent = 'Copied!';
-				setTimeout(() => { copySummaryBtn.textContent = 'Copy to Clipboard'; }, 2000);
-			} catch (err) {
-				console.error('Failed to copy text: ', err);
-			}
-			document.body.removeChild(textArea);
-		});
-		
-		// Handles clicks within the appointment container, to delete them.
-		appointmentsContainer.addEventListener('click', e => {
-			if (e.target.classList.contains('btn-delete')) {
-				const id = parseInt(e.target.dataset.id, 10);
-				appointments = appointments.filter(appt => appt.id !== id);
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			// --- State and Data Management ---
+			// We'll start off with default rates and salary scales. Can be edited by the user in the UI. This information changes annually, so notionally this should be updated by "me" on 7/1.
+			const COST_DATA = {
+				BENEFIT_RATES: { cbr: 0.017, gael: 0.0, addOn: 0.0022, ucrp: 0.0 }, // GAEL's out; I'm too old. On my head be it if the General Overhead Assessment is a thing. Leaving it in in case we need it in future, though.
+				GSR_SCALE: { 1: 71895, 2: 77467, 3: 83471, 4: 89941, 5: 96912, 6: 104423 },
+				TA_SCALE: { 1: 70720, 2: 72842, 3: 75027 },
+				TUITION_FEES: { quarterly_tuition: 5196.53, quarterly_ship: 2664.00, quarterly_non_resident: 5034.00 },
+				READER_TUTOR_RATE: 22.14,
+				HOURS_PER_FTE_PERCENT: 4.4, // That is, this number times FTE equals est. total hours per quarter. E.g., 50% * 4.4 = 220 hours per quarter. 
+				WORK_STUDY: {
+					UNIT_SALARY_EQUIVALENT: 6526, // The "cap salary" for work-study.
+					SAVINGS_RATE: 0.75,
+				}
+			};
+			// The main array for the calculator, holding all appointment objects.
+			let appointments = [];
+			// A lil' counter to ensure each new appointment has a unique ID.
+			let appointmentCounter = 0;
+			// I'd also like to store the step-by-step calculation details for the "Show Your Work" section.
+			let calculationDetails = {};
+
+
+			// --- DOM element caching ---
+			const addButtonsContainer = document.getElementById('add-buttons');
+			const appointmentsContainer = document.getElementById('appointments-container');
+			const baseCostsContainer = document.getElementById('base-costs-container');
+			const toggleCostsBtn = document.getElementById('toggle-costs-btn');
+			const showWorkContainer = document.getElementById('show-work-container');
+			const toggleWorkBtn = document.getElementById('toggle-work-btn');
+			const nrstWarningCard = document.getElementById('nrst-warning-card');
+			const fteWarningCard = document.getElementById('fte-warning-card');
+			const workStudySummaryCard = document.getElementById('work-study-summary-card');
+			const clearAllBtn = document.getElementById('clear-all-btn');
+			const copySummaryBtn = document.getElementById('copy-summary-btn');
+			const summaryTable = document.getElementById('summary-table');
+
+			// --- Event listeners ---
+
+			// Handles clicks on "Add Appointment"
+			addButtonsContainer.addEventListener('click', e => {
+				if (e.target.classList.contains('btn')) addAppointment(e.target.dataset.type);
+			});
+
+			// Handles the "Clear All" button to reset the calculator.
+			clearAllBtn.addEventListener('click', () => {
+				appointments = [];
 				fullRender();
-			}
-		});
-		
-		// The main event handler for any input change within an appointment card. Updates the application state and triggers a wee DOM update.
-		appointmentsContainer.addEventListener('input', e => {
-			const target = e.target;
-			const row = target.closest('.appointment-row');
-			if (!row) return;
-			const id = parseInt(row.dataset.id, 10);
-			const appt = appointments.find(a => a.id === id);
-			if (!appt) return;
-			const key = target.dataset.calc;
-			if (target.type === 'checkbox') {
-				appt.values[key] = target.checked;
-			} else {
-				appt.values[key] = target.value;
-			}
-			if (key === 'percentTime') {
-				appt.values.hours = (parseFloat(appt.values.percentTime) || 0) * COST_DATA.HOURS_PER_FTE_PERCENT;
-			}
-			if (key === 'workStudy') {
-				fullRender(); 
-			} else {
-				calculateAllCosts();
-				updateDOMValues();
-			}
-		});
-		
-		// Toggles the visibility of the "Base Costs & Rates" section.
-		toggleCostsBtn.addEventListener('click', () => {
-			baseCostsContainer.classList.toggle('hidden');
-			toggleCostsBtn.classList.toggle('is-open');
-		});
-		
-		// Toggles the visibility of the "Show Your Work" section.
-		toggleWorkBtn.addEventListener('click', () => {
-			showWorkContainer.classList.toggle('hidden');
-			toggleWorkBtn.classList.toggle('is-open');
-		});
-		
-		// Handles input changes within the "Base Costs & Rates" section to allow live editing of the fundamental bits.
-		baseCostsContainer.addEventListener('input', e => {
-			const keys = e.target.dataset.key.split('.');
-			let obj = COST_DATA;
-			for(let i = 0; i < keys.length - 1; i++) {
-				obj = obj[keys[i]];
-			}
-			const value = parseFloat(e.target.value);
-			obj[keys[keys.length - 1]] = (e.target.dataset.isPercent ? value / 100 : value) || 0;
-			fullRender();
-		});
-	
-		// --- Core Function Zone ---
-		
-		// Populates the "Base Costs & Rates" section with editable input fields.
-		function populateBaseCosts() {
-			baseCostsContainer.innerHTML = `
+			});
+
+			// Handles the new "Copy to Clipboard"
+			copySummaryBtn.addEventListener('click', () => {
+				let text = '';
+				// Loop through rows and cells to build a tab-separated string.
+				for (const row of summaryTable.rows) {
+					const rowData = Array.from(row.cells)
+						.filter(cell => !cell.classList.contains('ws-savings-col') || !summaryTable.classList.contains('ws-hidden'))
+						.map(cell => cell.innerText.replace(/\$/g, '').replace(/,/g, ''));
+					text += rowData.join('\t') + '\n';
+				}
+				// Use a temporary text area to copy the text to the clipboard
+				const textArea = document.createElement('textarea');
+				textArea.value = text;
+				document.body.appendChild(textArea);
+				textArea.select();
+				try {
+					document.execCommand('copy');
+					copySummaryBtn.textContent = 'Copied!';
+					setTimeout(() => { copySummaryBtn.textContent = 'Copy to Clipboard'; }, 2000);
+				} catch (err) {
+					console.error('Failed to copy text: ', err);
+				}
+				document.body.removeChild(textArea);
+			});
+
+			// Handles clicks within the appointment container, to delete them.
+			appointmentsContainer.addEventListener('click', e => {
+				if (e.target.classList.contains('btn-delete')) {
+					const id = parseInt(e.target.dataset.id, 10);
+					appointments = appointments.filter(appt => appt.id !== id);
+					fullRender();
+				}
+			});
+
+			// The main event handler for any input change within an appointment card. Updates the application state and triggers a wee DOM update.
+			appointmentsContainer.addEventListener('input', e => {
+				const target = e.target;
+				const row = target.closest('.appointment-row');
+				if (!row) return;
+				const id = parseInt(row.dataset.id, 10);
+				const appt = appointments.find(a => a.id === id);
+				if (!appt) return;
+				const key = target.dataset.calc;
+				if (target.type === 'checkbox') {
+					appt.values[key] = target.checked;
+				} else {
+					appt.values[key] = target.value;
+				}
+				if (key === 'percentTime') {
+					appt.values.hours = (parseFloat(appt.values.percentTime) || 0) * COST_DATA.HOURS_PER_FTE_PERCENT;
+				}
+				if (key === 'workStudy') {
+					fullRender();
+				} else {
+					calculateAllCosts();
+					updateDOMValues();
+				}
+			});
+
+			// Toggles the visibility of the "Base Costs & Rates" section.
+			toggleCostsBtn.addEventListener('click', () => {
+				baseCostsContainer.classList.toggle('hidden');
+				toggleCostsBtn.classList.toggle('is-open');
+			});
+
+			// Toggles the visibility of the "Show Your Work" section.
+			toggleWorkBtn.addEventListener('click', () => {
+				showWorkContainer.classList.toggle('hidden');
+				toggleWorkBtn.classList.toggle('is-open');
+			});
+
+			// Handles input changes within the "Base Costs & Rates" section to allow live editing of the fundamental bits.
+			baseCostsContainer.addEventListener('input', e => {
+				const keys = e.target.dataset.key.split('.');
+				let obj = COST_DATA;
+				for (let i = 0; i < keys.length - 1; i++) {
+					obj = obj[keys[i]];
+				}
+				const value = parseFloat(e.target.value);
+				obj[keys[keys.length - 1]] = (e.target.dataset.isPercent ? value / 100 : value) || 0;
+				fullRender();
+			});
+
+			// --- Core Function Zone ---
+
+			// Populates the "Base Costs & Rates" section with editable input fields.
+			function populateBaseCosts() {
+				baseCostsContainer.innerHTML = `
 				<div>
 					<h4 class="font-bold">GSR Annual Salary Scale (2025-26)</h4>
 					<div class="grid grid-cols-2 md:grid-cols-6 gap-2 mt-1">${Object.entries(COST_DATA.GSR_SCALE).map(([step, val]) => `<div><label class="text-xs">Step ${step}</label><input type="number" class="w-full p-1 border rounded" data-key="GSR_SCALE.${step}" value="${val}"></div>`).join('')}</div>
@@ -351,48 +329,48 @@
 					</div>
 				</div>
 			`;
-		}
-		
-		//Creates a new appointment object, adds it to the state, and triggers a full re-render. As is maybe obvious, for type we're looking at gsr, ta, etc.
-		function addAppointment(type) {
-			appointmentCounter++;
-			const newAppt = {
-				id: appointmentCounter,
-				type: type,
-				values: {
-					quarter: 'Fall',
-					step: '1',
-					percentTime: '25',
-					hours: type === 'student-assistant' ? '100' : 25 * COST_DATA.HOURS_PER_FTE_PERCENT,
-					hourlyRate: (type === 'student-assistant') ? COST_DATA.READER_TUTOR_RATE : 0,
-					nonResident: false,
-					workStudy: false,
-					workStudyUnits: 1
-				},
-				costs: {}
-			};
-			if (type !== 'gsr') {
-				delete newAppt.values.workStudy;
-				delete newAppt.values.workStudyUnits;
 			}
-			if (type === 'student-assistant') {
-				delete newAppt.values.nonResident;
+
+			//Creates a new appointment object, adds it to the state, and triggers a full re-render. As is maybe obvious, for type we're looking at gsr, ta, etc.
+			function addAppointment(type) {
+				appointmentCounter++;
+				const newAppt = {
+					id: appointmentCounter,
+					type: type,
+					values: {
+						quarter: 'Fall',
+						step: '1',
+						percentTime: '25',
+						hours: type === 'student-assistant' ? '100' : 25 * COST_DATA.HOURS_PER_FTE_PERCENT,
+						hourlyRate: (type === 'student-assistant') ? COST_DATA.READER_TUTOR_RATE : 0,
+						nonResident: false,
+						workStudy: false,
+						workStudyUnits: 1
+					},
+					costs: {}
+				};
+				if (type !== 'gsr') {
+					delete newAppt.values.workStudy;
+					delete newAppt.values.workStudyUnits;
+				}
+				if (type === 'student-assistant') {
+					delete newAppt.values.nonResident;
+				}
+				appointments.push(newAppt);
+				fullRender();
 			}
-			appointments.push(newAppt);
-			fullRender();
-		}
-		
-		// Trigger a full, destructive re-render of the appointments list when adding, deleting, or clearing appointments.
-		function fullRender() {
-			calculateAllCosts();
-			appointmentsContainer.innerHTML = appointments.length === 0 ? '<p class="text-gray-500">No appointments added yet. Click a button above to begin.</p>' : appointments.map(appt => {
-				const displayHours = (parseFloat(appt.values.percentTime) || 0) * COST_DATA.HOURS_PER_FTE_PERCENT;
-				const quarterOptions = ['Fall', 'Winter', 'Spring'].map(q => `<option ${q === appt.values.quarter ? 'selected' : ''}>${q}</option>`).join('');
-				const percentTimeDropdown = `<div><label class="block text-xs">% Time</label><select id="input-${appt.id}-percentTime" data-calc="percentTime" class="w-full p-1 border rounded">${Array.from({length: 100}, (_, i) => i + 1).map(num => `<option value="${num}" ${num == appt.values.percentTime ? 'selected' : ''}>${num}%</option>`).join('')}</select></div>`;
-				let inputsHtml = '';
-				switch (appt.type) {
-					case 'gsr':
-						inputsHtml = `<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mt-2">
+
+			// Trigger a full, destructive re-render of the appointments list when adding, deleting, or clearing appointments.
+			function fullRender() {
+				calculateAllCosts();
+				appointmentsContainer.innerHTML = appointments.length === 0 ? '<p class="text-gray-500">No appointments added yet. Click a button above to begin.</p>' : appointments.map(appt => {
+					const displayHours = (parseFloat(appt.values.percentTime) || 0) * COST_DATA.HOURS_PER_FTE_PERCENT;
+					const quarterOptions = ['Fall', 'Winter', 'Spring'].map(q => `<option ${q === appt.values.quarter ? 'selected' : ''}>${q}</option>`).join('');
+					const percentTimeDropdown = `<div><label class="block text-xs">% Time</label><select id="input-${appt.id}-percentTime" data-calc="percentTime" class="w-full p-1 border rounded">${Array.from({ length: 100 }, (_, i) => i + 1).map(num => `<option value="${num}" ${num == appt.values.percentTime ? 'selected' : ''}>${num}%</option>`).join('')}</select></div>`;
+					let inputsHtml = '';
+					switch (appt.type) {
+						case 'gsr':
+							inputsHtml = `<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mt-2">
 								<div><label class="block text-xs">Quarter</label><select id="input-${appt.id}-quarter" data-calc="quarter" class="w-full p-1 border rounded">${quarterOptions}</select></div>
 								<div><label class="block text-xs">Step</label><select id="input-${appt.id}-step" data-calc="step" class="w-full p-1 border rounded">${Object.keys(COST_DATA.GSR_SCALE).map(step => `<option value="${step}" ${step === appt.values.step ? 'selected' : ''}>${step}</option>`).join('')}</select></div>
 								${percentTimeDropdown}
@@ -403,36 +381,36 @@
 								<div class="text-center"><label class="block text-xs">Work Study?</label><input type="checkbox" id="input-${appt.id}-workStudy" data-calc="workStudy" class="h-6 w-6" ${appt.values.workStudy ? 'checked' : ''}></div>
 								${appt.values.workStudy ? `<div><label class="block text-xs">WS Units</label><select id="input-${appt.id}-workStudyUnits" data-calc="workStudyUnits" class="w-full p-1 border rounded"><option value="1" ${appt.values.workStudyUnits == 1 ? 'selected' : ''}>1</option><option value="2" ${appt.values.workStudyUnits == 2 ? 'selected' : ''}>2</option></select></div>` : ''}
 							</div>`;
-						break;
-					case 'ta':
-						inputsHtml = `<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mt-2">
+							break;
+						case 'ta':
+							inputsHtml = `<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mt-2">
 								<div><label class="block text-xs">Quarter</label><select id="input-${appt.id}-quarter" data-calc="quarter" class="w-full p-1 border rounded">${quarterOptions}</select></div>
 								<div><label class="block text-xs">Step</label><select id="input-${appt.id}-step" data-calc="step" class="w-full p-1 border rounded">${Object.keys(COST_DATA.TA_SCALE).map(step => `<option value="${step}" ${step === appt.values.step ? 'selected' : ''}>${step}</option>`).join('')}</select></div>
 								${percentTimeDropdown}
 								<div><label class="block text-xs">Total Hours</label><input type="number" class="w-full p-1 border rounded" value="${displayHours.toFixed(0)}" readonly></div>
 								<div class="text-center"><label class="block text-xs">Include NRST?</label><input type="checkbox" id="input-${appt.id}-nonResident" data-calc="nonResident" class="h-6 w-6 mt-1" ${appt.values.nonResident ? 'checked' : ''}></div>
 							</div>`;
-						break;
-					case 'reader':
-						inputsHtml = `<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
+							break;
+						case 'reader':
+							inputsHtml = `<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
 								<div><label class="block text-xs">Quarter</label><select id="input-${appt.id}-quarter" data-calc="quarter" class="w-full p-1 border rounded">${quarterOptions}</select></div>
 								${percentTimeDropdown}
 								<div><label class="block text-xs">Total Hours</label><input type="number" class="w-full p-1 border rounded" value="${displayHours.toFixed(0)}" readonly></div>
 								<div class="text-center"><label class="block text-xs">Include NRST?</label><input type="checkbox" id="input-${appt.id}-nonResident" data-calc="nonResident" class="h-6 w-6 mt-1" ${appt.values.nonResident ? 'checked' : ''}></div>
 							</div>`;
-						break;
-					case 'student-assistant':
-						inputsHtml = `<div class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
+							break;
+						case 'student-assistant':
+							inputsHtml = `<div class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
 								<div><label class="block text-xs">Quarter</label><select id="input-${appt.id}-quarter" data-calc="quarter" class="w-full p-1 border rounded">${quarterOptions}</select></div>
 								<div><label class="block text-xs">Total Hours</label><input type="number" id="input-${appt.id}-hours" data-calc="hours" class="w-full p-1 border rounded" value="${appt.values.hours}"></div>
 								<div><label class="block text-xs">Hourly Rate</label><input type="number" id="input-${appt.id}-hourlyRate" step="0.01" data-calc="hourlyRate" class="w-full p-1 border rounded" value="${appt.values.hourlyRate}"></div>
 							</div>`;
-						break;
-				}
-				const typeName = appt.type === 'student-assistant' ? 'Student Assistant' : (appt.type === 'reader' ? 'Reader/Tutor' : appt.type.toUpperCase());
-				const gridColsClass = appt.type === 'gsr' ? (appt.values.workStudy ? 'md:grid-cols-6' : 'md:grid-cols-5') : 'md:grid-cols-5';
-				
-				return `<div class="appointment-row" id="appointment-${appt.id}" data-id="${appt.id}" data-type="${appt.type}">
+							break;
+					}
+					const typeName = appt.type === 'student-assistant' ? 'Student Assistant' : (appt.type === 'reader' ? 'Reader/Tutor' : appt.type.toUpperCase());
+					const gridColsClass = appt.type === 'gsr' ? (appt.values.workStudy ? 'md:grid-cols-6' : 'md:grid-cols-5') : 'md:grid-cols-5';
+
+					return `<div class="appointment-row" id="appointment-${appt.id}" data-id="${appt.id}" data-type="${appt.type}">
 						<div class="flex justify-between items-start">
 							<div><h4 class="font-bold text-lg">${typeName}</h4>${inputsHtml}</div>
 							<button class="btn btn-delete mt-2" data-id="${appt.id}">X</button>
@@ -446,286 +424,287 @@
 							<div><p class="text-xs">Total Cost</p><p class="font-bold text-lg text-[#002855]" data-output="total">${formatCurrency(appt.costs.total || 0)}</p></div>
 						</div>
 					</div>`;
-			}).join('');
-			updateSummaryTable();
-			renderCalculationBreakdown();
-			updateWarningVisibility();
-		}
-		
-		// Performs a lightweight, non-destructive update of the DOM, updating calculated values without re-creating the input elements, preserving focus.
-		function updateDOMValues() {
-			appointments.forEach(appt => {
-				const row = document.getElementById(`appointment-${appt.id}`);
-				if (!row) return;
-				if (appt.type !== 'student-assistant') {
-					const hoursInput = row.querySelector('input[readonly]');
-					if (hoursInput) hoursInput.value = ((parseFloat(appt.values.percentTime) || 0) * COST_DATA.HOURS_PER_FTE_PERCENT).toFixed(0);
-				}
-				row.querySelector('[data-output="salary"]').textContent = formatCurrency(appt.costs.salary || 0);
-				row.querySelector('[data-output="benefits"]').textContent = formatCurrency(appt.costs.benefits || 0);
-				row.querySelector('[data-output="tuition"]').textContent = formatCurrency(appt.costs.tuition || 0);
-				row.querySelector('[data-output="health_ins"]').textContent = formatCurrency(appt.costs.health_ins || 0);
-				const wsContainer = row.querySelector('[data-output-container="workStudySavings"]');
-				if (wsContainer) {
-					wsContainer.classList.toggle('hidden', !appt.values.workStudy);
-					wsContainer.querySelector('[data-output="workStudySavings"]').textContent = formatCurrency(appt.costs.totalWorkStudySavings || 0);
-				}
-				row.querySelector('[data-output="total"]').textContent = formatCurrency(appt.costs.total || 0);
-			});
-			updateSummaryTable();
-			renderCalculationBreakdown();
-			updateWarningVisibility();
-		}
-		
-		// Calculates initial salary and benefits for all appointments. totalBenefitRate is the combined number to which we apply the benefits.
-		function calculateInitialSalaries(totalBenefitRate) {
-			appointments.forEach(appt => {
-				let salary = 0, salaryFormula = '';
-				if (appt.type === 'gsr') {
-					const annualRate = COST_DATA.GSR_SCALE[appt.values.step] || 0, percentTime = parseFloat(appt.values.percentTime) || 0;
-					salary = (annualRate / 12) * 3 * (percentTime / 100);
-					salaryFormula = `(${formatCurrency(annualRate)} / 12 * 3) * ${percentTime}% = ${formatCurrency(salary)}`;
-				} else if (appt.type === 'ta') {
-					const annualRate = COST_DATA.TA_SCALE[appt.values.step] || 0, percentTime = parseFloat(appt.values.percentTime) || 0;
-					salary = (annualRate / 3) * (percentTime / 100);
-					salaryFormula = `(${formatCurrency(annualRate)} / 3) * ${percentTime}% = ${formatCurrency(salary)}`;
-				} else if (appt.type === 'reader') {
-					const hours = parseFloat(appt.values.hours) || 0;
-					salary = hours * COST_DATA.READER_TUTOR_RATE;
-					salaryFormula = `${hours.toFixed(1)} hrs * ${formatCurrency(COST_DATA.READER_TUTOR_RATE)}/hr = ${formatCurrency(salary)}`;
-				} else if (appt.type === 'student-assistant') {
-					const hours = parseFloat(appt.values.hours) || 0, rate = parseFloat(appt.values.hourlyRate) || 0;
-					salary = hours * rate;
-					salaryFormula = `${hours.toFixed(0)} hrs * ${formatCurrency(rate)}/hr = ${formatCurrency(salary)}`;
-				}
-				appt.costs = { salary, salaryFormula, benefits: salary * totalBenefitRate, tuition: 0, health_ins: 0, total: 0, workStudySalarySavings: 0, workStudyFeeSavings: 0, totalWorkStudySavings: 0 };
-			});
-		}
-		
-		// Calculates and distributes prorated fees for all appointments within a specific quarter.
-		// If you're reading this you're probably smarter than me, but for me this was maddening. 
-		// quarter - The quarter to calculate (e.g., 'Fall').
-		// quarterAppts - An array of appointment objects for that quarter.
-		function calculateProratedFees(quarter, quarterAppts) {
-			calculationDetails[quarter] = { log: [`<h4 class="font-bold text-lg">${quarter} Quarter</h4>`] };
-			const log = calculationDetails[quarter].log, totalBenefitRate = Object.values(COST_DATA.BENEFIT_RATES).reduce((a, b) => a + b, 0);
-			log.push(`<p class="font-semibold mt-2">1. Salary & Benefits Calculation:</p>`);
-			quarterAppts.forEach(appt => {
-				const typeName = appt.type.toUpperCase().replace('-', ' ');
-				log.push(`<p>&nbsp;&nbsp;- ${typeName} #${appt.id} Salary: ${appt.costs.salaryFormula}</p>`);
-				log.push(`<p>&nbsp;&nbsp;- ${typeName} #${appt.id} Benefits: ${formatCurrency(appt.costs.salary)} * ${totalBenefitRate.toFixed(4)} = ${formatCurrency(appt.costs.benefits)}</p>`);
-			});
-			const titleTotals = { gsr: { percentTime: 0, salary: 0, eligible: false }, ta: { percentTime: 0, salary: 0, eligible: false }, reader: { hours: 0, salary: 0, eligible: false } };
-			quarterAppts.forEach(appt => {
-				if (titleTotals[appt.type]) {
-					if (appt.type === 'reader') titleTotals[appt.type].hours += parseFloat(appt.values.hours) || 0;
-					else if (appt.type === 'gsr' || appt.type === 'ta') titleTotals[appt.type].percentTime += parseFloat(appt.values.percentTime) || 0;
-					titleTotals[appt.type].salary += appt.costs.salary;
-				}
-			});
-			log.push(`<p class="font-semibold mt-2">2. Fee Remission Eligibility Check:</p>`);
-			let eligibleTitles = [];
-			Object.keys(titleTotals).forEach(type => {
-				let isEligible = false, statusText = '';
-				if (type === 'reader') {
-					isEligible = titleTotals[type].hours >= 110;
-					statusText = isEligible ? '<span style="color: #266040; font-weight: bold;">ELIGIBLE</span>' : '<span style="color: #c10330; font-weight: bold;">INELIGIBLE</span>';
-					log.push(`<p>&nbsp;&nbsp;- Reader/Tutor: Total hours ${titleTotals[type].hours.toFixed(0)} >= 110? -> ${statusText}</p>`);
-				} else if (type === 'gsr' || type === 'ta') {
-					isEligible = titleTotals[type].percentTime >= 25;
-					statusText = isEligible ? '<span style="color: #266040; font-weight: bold;">ELIGIBLE</span>' : '<span style="color: #c10330; font-weight: bold;">INELIGIBLE</span>';
-					log.push(`<p>&nbsp;&nbsp;- ${type.toUpperCase()}: Total % time ${titleTotals[type].percentTime}% >= 25%? -> ${statusText}</p>`);
-				}
-				if (isEligible) {
-					titleTotals[type].eligible = true;
-					eligibleTitles.push(type);
-				}
-			});
-			if (eligibleTitles.length === 0) {
-				log.push(`<p class="font-semibold mt-2">Result: No appointments eligible for fee remission.</p>`);
-				quarterAppts.forEach(appt => appt.costs.total = appt.costs.salary + appt.costs.benefits);
-				return;
+				}).join('');
+				updateSummaryTable();
+				renderCalculationBreakdown();
+				updateWarningVisibility();
 			}
-			const { quarterly_tuition: totalTuition, quarterly_ship: totalShip, quarterly_non_resident: nonResFee } = COST_DATA.TUITION_FEES;
-			const isNonResidentQuarter = quarterAppts.some(a => a.values.nonResident && titleTotals[a.type]?.eligible);
-			const totalNonRes = isNonResidentQuarter ? nonResFee : 0;
-			log.push(`<p class="font-semibold mt-2">3. Total Fees for Quarter:</p>`);
-			log.push(`<p>&nbsp;&nbsp;- Tuition/Fees: ${formatCurrency(totalTuition)}</p>`);
-			log.push(`<p>&nbsp;&nbsp;- Health Insurance (SHIP): ${formatCurrency(totalShip)}</p>`);
-			log.push(`<p>&nbsp;&nbsp;- Non-Resident Fee: ${formatCurrency(totalNonRes)}</p>`);
-			let totalEligibleSalary = quarterAppts.reduce((sum, appt) => titleTotals[appt.type]?.eligible ? sum + appt.costs.salary : sum, 0);
-			log.push(`<p class="font-semibold mt-2">4. Proration Calculation (based on total eligible salary of ${formatCurrency(totalEligibleSalary)}):</p>`);
-			const hasEligibleGSR = quarterAppts.some(a => a.type === 'gsr' && titleTotals.gsr.eligible);
-			quarterAppts.forEach(appt => {
-				if (titleTotals[appt.type]?.eligible) {
-					const prorationFactor = totalEligibleSalary > 0 ? (appt.costs.salary / totalEligibleSalary) : 0;
-					log.push(`<p>&nbsp;&nbsp;- ${appt.type.toUpperCase().replace('-', ' ')} #${appt.id} Proration: ${formatCurrency(appt.costs.salary)} / ${formatCurrency(totalEligibleSalary)} = ${(prorationFactor * 100).toFixed(2)}%</p>`);
-					appt.costs.tuition = totalTuition * prorationFactor;
-					appt.costs.health_ins = totalShip * prorationFactor;
-					
-					const standardFeesForAppt = appt.costs.tuition + appt.costs.health_ins;
-	
-					if (totalNonRes > 0) {
-						if (hasEligibleGSR) {
-							if (appt.type === 'gsr') {
-								const gsrSalaryTotal = titleTotals.gsr.salary;
-								const gsrProrationFactor = gsrSalaryTotal > 0 ? (appt.costs.salary / gsrSalaryTotal) : 0;
-								appt.costs.tuition += totalNonRes * gsrProrationFactor;
-								log.push(`<p>&nbsp;&nbsp;&nbsp;&nbsp;...GSR bears NRST. Share: ${(gsrProrationFactor * 100).toFixed(2)}% of ${formatCurrency(totalNonRes)} = ${formatCurrency(totalNonRes * gsrProrationFactor)}</p>`);
+
+			// Performs a lightweight, non-destructive update of the DOM, updating calculated values without re-creating the input elements, preserving focus.
+			function updateDOMValues() {
+				appointments.forEach(appt => {
+					const row = document.getElementById(`appointment-${appt.id}`);
+					if (!row) return;
+					if (appt.type !== 'student-assistant') {
+						const hoursInput = row.querySelector('input[readonly]');
+						if (hoursInput) hoursInput.value = ((parseFloat(appt.values.percentTime) || 0) * COST_DATA.HOURS_PER_FTE_PERCENT).toFixed(0);
+					}
+					row.querySelector('[data-output="salary"]').textContent = formatCurrency(appt.costs.salary || 0);
+					row.querySelector('[data-output="benefits"]').textContent = formatCurrency(appt.costs.benefits || 0);
+					row.querySelector('[data-output="tuition"]').textContent = formatCurrency(appt.costs.tuition || 0);
+					row.querySelector('[data-output="health_ins"]').textContent = formatCurrency(appt.costs.health_ins || 0);
+					const wsContainer = row.querySelector('[data-output-container="workStudySavings"]');
+					if (wsContainer) {
+						wsContainer.classList.toggle('hidden', !appt.values.workStudy);
+						wsContainer.querySelector('[data-output="workStudySavings"]').textContent = formatCurrency(appt.costs.totalWorkStudySavings || 0);
+					}
+					row.querySelector('[data-output="total"]').textContent = formatCurrency(appt.costs.total || 0);
+				});
+				updateSummaryTable();
+				renderCalculationBreakdown();
+				updateWarningVisibility();
+			}
+
+			// Calculates initial salary and benefits for all appointments. totalBenefitRate is the combined number to which we apply the benefits.
+			function calculateInitialSalaries(totalBenefitRate) {
+				appointments.forEach(appt => {
+					let salary = 0, salaryFormula = '';
+					if (appt.type === 'gsr') {
+						const annualRate = COST_DATA.GSR_SCALE[appt.values.step] || 0, percentTime = parseFloat(appt.values.percentTime) || 0;
+						salary = (annualRate / 12) * 3 * (percentTime / 100);
+						salaryFormula = `(${formatCurrency(annualRate)} / 12 * 3) * ${percentTime}% = ${formatCurrency(salary)}`;
+					} else if (appt.type === 'ta') {
+						const annualRate = COST_DATA.TA_SCALE[appt.values.step] || 0, percentTime = parseFloat(appt.values.percentTime) || 0;
+						salary = (annualRate / 3) * (percentTime / 100);
+						salaryFormula = `(${formatCurrency(annualRate)} / 3) * ${percentTime}% = ${formatCurrency(salary)}`;
+					} else if (appt.type === 'reader') {
+						const hours = parseFloat(appt.values.hours) || 0;
+						salary = hours * COST_DATA.READER_TUTOR_RATE;
+						salaryFormula = `${hours.toFixed(1)} hrs * ${formatCurrency(COST_DATA.READER_TUTOR_RATE)}/hr = ${formatCurrency(salary)}`;
+					} else if (appt.type === 'student-assistant') {
+						const hours = parseFloat(appt.values.hours) || 0, rate = parseFloat(appt.values.hourlyRate) || 0;
+						salary = hours * rate;
+						salaryFormula = `${hours.toFixed(0)} hrs * ${formatCurrency(rate)}/hr = ${formatCurrency(salary)}`;
+					}
+					appt.costs = { salary, salaryFormula, benefits: salary * totalBenefitRate, tuition: 0, health_ins: 0, total: 0, workStudySalarySavings: 0, workStudyFeeSavings: 0, totalWorkStudySavings: 0 };
+				});
+			}
+
+			// Calculates and distributes prorated fees for all appointments within a specific quarter.
+			// If you're reading this you're probably smarter than me, but for me this was maddening. 
+			// quarter - The quarter to calculate (e.g., 'Fall').
+			// quarterAppts - An array of appointment objects for that quarter.
+			function calculateProratedFees(quarter, quarterAppts) {
+				calculationDetails[quarter] = { log: [`<h4 class="font-bold text-lg">${quarter} Quarter</h4>`] };
+				const log = calculationDetails[quarter].log, totalBenefitRate = Object.values(COST_DATA.BENEFIT_RATES).reduce((a, b) => a + b, 0);
+				log.push(`<p class="font-semibold mt-2">1. Salary & Benefits Calculation:</p>`);
+				quarterAppts.forEach(appt => {
+					const typeName = appt.type.toUpperCase().replace('-', ' ');
+					log.push(`<p>&nbsp;&nbsp;- ${typeName} #${appt.id} Salary: ${appt.costs.salaryFormula}</p>`);
+					log.push(`<p>&nbsp;&nbsp;- ${typeName} #${appt.id} Benefits: ${formatCurrency(appt.costs.salary)} * ${totalBenefitRate.toFixed(4)} = ${formatCurrency(appt.costs.benefits)}</p>`);
+				});
+				const titleTotals = { gsr: { percentTime: 0, salary: 0, eligible: false }, ta: { percentTime: 0, salary: 0, eligible: false }, reader: { hours: 0, salary: 0, eligible: false } };
+				quarterAppts.forEach(appt => {
+					if (titleTotals[appt.type]) {
+						if (appt.type === 'reader') titleTotals[appt.type].hours += parseFloat(appt.values.hours) || 0;
+						else if (appt.type === 'gsr' || appt.type === 'ta') titleTotals[appt.type].percentTime += parseFloat(appt.values.percentTime) || 0;
+						titleTotals[appt.type].salary += appt.costs.salary;
+					}
+				});
+				log.push(`<p class="font-semibold mt-2">2. Fee Remission Eligibility Check:</p>`);
+				let eligibleTitles = [];
+				Object.keys(titleTotals).forEach(type => {
+					let isEligible = false, statusText = '';
+					if (type === 'reader') {
+						isEligible = titleTotals[type].hours >= 110;
+						statusText = isEligible ? '<span style="color: #266040; font-weight: bold;">ELIGIBLE</span>' : '<span style="color: #c10330; font-weight: bold;">INELIGIBLE</span>';
+						log.push(`<p>&nbsp;&nbsp;- Reader/Tutor: Total hours ${titleTotals[type].hours.toFixed(0)} >= 110? -> ${statusText}</p>`);
+					} else if (type === 'gsr' || type === 'ta') {
+						isEligible = titleTotals[type].percentTime >= 25;
+						statusText = isEligible ? '<span style="color: #266040; font-weight: bold;">ELIGIBLE</span>' : '<span style="color: #c10330; font-weight: bold;">INELIGIBLE</span>';
+						log.push(`<p>&nbsp;&nbsp;- ${type.toUpperCase()}: Total % time ${titleTotals[type].percentTime}% >= 25%? -> ${statusText}</p>`);
+					}
+					if (isEligible) {
+						titleTotals[type].eligible = true;
+						eligibleTitles.push(type);
+					}
+				});
+				if (eligibleTitles.length === 0) {
+					log.push(`<p class="font-semibold mt-2">Result: No appointments eligible for fee remission.</p>`);
+					quarterAppts.forEach(appt => appt.costs.total = appt.costs.salary + appt.costs.benefits);
+					return;
+				}
+				const { quarterly_tuition: totalTuition, quarterly_ship: totalShip, quarterly_non_resident: nonResFee } = COST_DATA.TUITION_FEES;
+				const isNonResidentQuarter = quarterAppts.some(a => a.values.nonResident && titleTotals[a.type]?.eligible);
+				const totalNonRes = isNonResidentQuarter ? nonResFee : 0;
+				log.push(`<p class="font-semibold mt-2">3. Total Fees for Quarter:</p>`);
+				log.push(`<p>&nbsp;&nbsp;- Tuition/Fees: ${formatCurrency(totalTuition)}</p>`);
+				log.push(`<p>&nbsp;&nbsp;- Health Insurance (SHIP): ${formatCurrency(totalShip)}</p>`);
+				log.push(`<p>&nbsp;&nbsp;- Non-Resident Fee: ${formatCurrency(totalNonRes)}</p>`);
+				let totalEligibleSalary = quarterAppts.reduce((sum, appt) => titleTotals[appt.type]?.eligible ? sum + appt.costs.salary : sum, 0);
+				log.push(`<p class="font-semibold mt-2">4. Proration Calculation (based on total eligible salary of ${formatCurrency(totalEligibleSalary)}):</p>`);
+				const hasEligibleGSR = quarterAppts.some(a => a.type === 'gsr' && titleTotals.gsr.eligible);
+				quarterAppts.forEach(appt => {
+					if (titleTotals[appt.type]?.eligible) {
+						const prorationFactor = totalEligibleSalary > 0 ? (appt.costs.salary / totalEligibleSalary) : 0;
+						log.push(`<p>&nbsp;&nbsp;- ${appt.type.toUpperCase().replace('-', ' ')} #${appt.id} Proration: ${formatCurrency(appt.costs.salary)} / ${formatCurrency(totalEligibleSalary)} = ${(prorationFactor * 100).toFixed(2)}%</p>`);
+						appt.costs.tuition = totalTuition * prorationFactor;
+						appt.costs.health_ins = totalShip * prorationFactor;
+
+						const standardFeesForAppt = appt.costs.tuition + appt.costs.health_ins;
+
+						if (totalNonRes > 0) {
+							if (hasEligibleGSR) {
+								if (appt.type === 'gsr') {
+									const gsrSalaryTotal = titleTotals.gsr.salary;
+									const gsrProrationFactor = gsrSalaryTotal > 0 ? (appt.costs.salary / gsrSalaryTotal) : 0;
+									appt.costs.tuition += totalNonRes * gsrProrationFactor;
+									log.push(`<p>&nbsp;&nbsp;&nbsp;&nbsp;...GSR bears NRST. Share: ${(gsrProrationFactor * 100).toFixed(2)}% of ${formatCurrency(totalNonRes)} = ${formatCurrency(totalNonRes * gsrProrationFactor)}</p>`);
+								} else {
+									log.push(`<p>&nbsp;&nbsp;&nbsp;&nbsp;...NRST covered by GSR. This appointment pays $0.</p>`);
+								}
 							} else {
-								log.push(`<p>&nbsp;&nbsp;&nbsp;&nbsp;...NRST covered by GSR. This appointment pays $0.</p>`);
+								appt.costs.tuition += totalNonRes * prorationFactor;
+								log.push(`<p>&nbsp;&nbsp;&nbsp;&nbsp;...No GSR. Prorated NRST: ${(prorationFactor * 100).toFixed(2)}% of ${formatCurrency(totalNonRes)} = ${formatCurrency(totalNonRes * prorationFactor)}</p>`);
 							}
-						} else {
-							appt.costs.tuition += totalNonRes * prorationFactor;
-							log.push(`<p>&nbsp;&nbsp;&nbsp;&nbsp;...No GSR. Prorated NRST: ${(prorationFactor * 100).toFixed(2)}% of ${formatCurrency(totalNonRes)} = ${formatCurrency(totalNonRes * prorationFactor)}</p>`);
+						}
+
+						// work-study is infuriating.
+						if (appt.values.workStudy) {
+							const salaryCap = COST_DATA.WORK_STUDY.UNIT_SALARY_EQUIVALENT * appt.values.workStudyUnits;
+							const salarySavings = Math.min(appt.costs.salary, salaryCap) * COST_DATA.WORK_STUDY.SAVINGS_RATE;
+
+							appt.costs.workStudySalarySavings = salarySavings;
+
+							const salaryCoveragePercentage = appt.costs.salary > 0 ? appt.costs.workStudySalarySavings / appt.costs.salary : 0;
+							appt.costs.workStudyFeeSavings = standardFeesForAppt * salaryCoveragePercentage;
+							appt.costs.totalWorkStudySavings = appt.costs.workStudySalarySavings + appt.costs.workStudyFeeSavings;
+
+							log.push(`<p class="font-semibold mt-2">5. Work Study Savings for GSR #${appt.id}:</p>`);
+							log.push(`<p>&nbsp;&nbsp;- Applied Salary Savings: ${formatCurrency(appt.costs.workStudySalarySavings)}</p>`);
+							log.push(`<p>&nbsp;&nbsp;- Applied Fee Savings: ${formatCurrency(appt.costs.workStudyFeeSavings)}</p>`);
+							log.push(`<p>&nbsp;&nbsp;- Total WS Savings for this appointment: ${formatCurrency(appt.costs.totalWorkStudySavings)}</p>`);
 						}
 					}
-					
-					// work-study is infuriating.
-					if (appt.values.workStudy) {
-						const salaryCap = COST_DATA.WORK_STUDY.UNIT_SALARY_EQUIVALENT * appt.values.workStudyUnits;
-						const salarySavings = Math.min(appt.costs.salary, salaryCap) * COST_DATA.WORK_STUDY.SAVINGS_RATE;
-	
-						appt.costs.workStudySalarySavings = salarySavings;
-	
-						const salaryCoveragePercentage = appt.costs.salary > 0 ? appt.costs.workStudySalarySavings / appt.costs.salary : 0;
-						appt.costs.workStudyFeeSavings = standardFeesForAppt * salaryCoveragePercentage;
-						appt.costs.totalWorkStudySavings = appt.costs.workStudySalarySavings + appt.costs.workStudyFeeSavings;
-						
-						log.push(`<p class="font-semibold mt-2">5. Work Study Savings for GSR #${appt.id}:</p>`);
-						log.push(`<p>&nbsp;&nbsp;- Applied Salary Savings: ${formatCurrency(appt.costs.workStudySalarySavings)}</p>`);
-						log.push(`<p>&nbsp;&nbsp;- Applied Fee Savings: ${formatCurrency(appt.costs.workStudyFeeSavings)}</p>`);
-						log.push(`<p>&nbsp;&nbsp;- Total WS Savings for this appointment: ${formatCurrency(appt.costs.totalWorkStudySavings)}</p>`);
+					appt.costs.total = appt.costs.salary + appt.costs.benefits + appt.costs.tuition + appt.costs.health_ins - appt.costs.totalWorkStudySavings;
+				});
+			}
+
+			// Main calculationizer. Real word, look it up. Resets costs, then calculates salaries, then prorates fees.
+			function calculateAllCosts() {
+				calculationDetails = {};
+				const totalBenefitRate = Object.values(COST_DATA.BENEFIT_RATES).reduce((a, b) => a + b, 0);
+				appointments.forEach(appt => appt.costs = { salary: 0, benefits: 0, tuition: 0, health_ins: 0, total: 0, workStudySalarySavings: 0, workStudyFeeSavings: 0, totalWorkStudySavings: 0 });
+				calculateInitialSalaries(totalBenefitRate);
+				['Fall', 'Winter', 'Spring'].forEach(quarter => {
+					const quarterAppts = appointments.filter(a => a.values.quarter === quarter);
+					if (quarterAppts.length > 0) calculateProratedFees(quarter, quarterAppts);
+				});
+			}
+
+			// Renders the "Show Your Work" section based on the calculationDetails object.
+			function renderCalculationBreakdown() {
+				showWorkContainer.innerHTML = '';
+				const quarters = ['Fall', 'Winter', 'Spring'];
+				let hasCalculations = false;
+				quarters.forEach(quarter => {
+					if (calculationDetails[quarter]) {
+						hasCalculations = true;
+						const quarterDiv = document.createElement('div');
+						quarterDiv.innerHTML = calculationDetails[quarter].log.join('');
+						showWorkContainer.appendChild(quarterDiv);
 					}
-				}
-				appt.costs.total = appt.costs.salary + appt.costs.benefits + appt.costs.tuition + appt.costs.health_ins - appt.costs.totalWorkStudySavings;
-			});
-		}
-		
-		// Main calculationizer. Real word, look it up. Resets costs, then calculates salaries, then prorates fees.
-		function calculateAllCosts() {
-			calculationDetails = {};
-			const totalBenefitRate = Object.values(COST_DATA.BENEFIT_RATES).reduce((a, b) => a + b, 0);
-			appointments.forEach(appt => appt.costs = { salary: 0, benefits: 0, tuition: 0, health_ins: 0, total: 0, workStudySalarySavings: 0, workStudyFeeSavings: 0, totalWorkStudySavings: 0 });
-			calculateInitialSalaries(totalBenefitRate);
-			['Fall', 'Winter', 'Spring'].forEach(quarter => {
-				const quarterAppts = appointments.filter(a => a.values.quarter === quarter);
-				if (quarterAppts.length > 0) calculateProratedFees(quarter, quarterAppts);
-			});
-		}
-		
-		// Renders the "Show Your Work" section based on the calculationDetails object.
-		function renderCalculationBreakdown() {
-			showWorkContainer.innerHTML = '';
-			const quarters = ['Fall', 'Winter', 'Spring'];
-			let hasCalculations = false;
-			quarters.forEach(quarter => {
-				if (calculationDetails[quarter]) {
-					hasCalculations = true;
-					const quarterDiv = document.createElement('div');
-					quarterDiv.innerHTML = calculationDetails[quarter].log.join('');
-					showWorkContainer.appendChild(quarterDiv);
-				}
-			});
-			if (!hasCalculations) showWorkContainer.innerHTML = '<p>Add an appointment to see calculation details.</p>';
-		}
-		
-		// Shows or hides the warning cards based on current selections.
-		// Basically this calculator could be used by a couple of different populations, some of whom could be sailed into the rocks by NRST being included for ASEs at all and the FTE stuff. So, we warn.
-		function updateWarningVisibility() {
-			const isAnyNonResident = appointments.some(appt => appt.values.nonResident);
-			if (isAnyNonResident) {
-				nrstWarningCard.innerHTML = `<p class="font-bold">Caution!</p><p>Non-Residential Supplementary Tuition administration can be complex and case-dependent. Before including NRST remission in any cost forecasting, please review the latest guidelines on the applicability of doing so to the appointment type you have selected.</p>`;
-				nrstWarningCard.classList.remove('hidden');
-			} else {
-				nrstWarningCard.classList.add('hidden');
+				});
+				if (!hasCalculations) showWorkContainer.innerHTML = '<p>Add an appointment to see calculation details.</p>';
 			}
-	
-			let fteWarning = '';
-			['Fall', 'Winter', 'Spring'].forEach(quarter => {
-				const totalFTE = appointments.reduce((sum, appt) => {
-					return (appt.values.quarter === quarter && appt.type !== 'student-assistant') ? sum + (parseFloat(appt.values.percentTime) || 0) : sum;
-				}, 0);
-	
-				if (totalFTE > 75) {
-					fteWarning = `<p class="font-bold">Warning!</p><p>Employment may not exceed 75% during an academic quarter. For more information, please see <a href="https://grad.ucdavis.edu/student-employment" target="_blank" class="underline">this page</a>.</p>`;
-				} else if (totalFTE > 50 && !fteWarning) {
-					fteWarning = `<p class="font-bold">Caution!</p><p>Employment is typically limited to 50% during an academic quarter. For more information, please see <a href="https://grad.ucdavis.edu/student-employment" target="_blank" class="underline">this page</a>.</p>`;
-				}
-			});
-	
-			if (fteWarning) {
-				fteWarningCard.innerHTML = fteWarning;
-				fteWarningCard.classList.remove('hidden');
-				if (fteWarning.includes("Warning!")) {
-					fteWarningCard.classList.remove('bg-yellow-100', 'border-yellow-400', 'text-yellow-800');
-					fteWarningCard.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
+
+			// Shows or hides the warning cards based on current selections.
+			// Basically this calculator could be used by a couple of different populations, some of whom could be sailed into the rocks by NRST being included for ASEs at all and the FTE stuff. So, we warn.
+			function updateWarningVisibility() {
+				const isAnyNonResident = appointments.some(appt => appt.values.nonResident);
+				if (isAnyNonResident) {
+					nrstWarningCard.innerHTML = `<p class="font-bold">Caution!</p><p>Non-Residential Supplementary Tuition administration can be complex and case-dependent. Before including NRST remission in any cost forecasting, please review the latest guidelines on the applicability of doing so to the appointment type you have selected.</p>`;
+					nrstWarningCard.classList.remove('hidden');
 				} else {
-					fteWarningCard.classList.remove('bg-red-100', 'border-red-400', 'text-red-700');
-					fteWarningCard.classList.add('bg-yellow-100', 'border-yellow-400', 'text-yellow-800');
+					nrstWarningCard.classList.add('hidden');
 				}
-			} else {
-				fteWarningCard.classList.add('hidden');
+
+				let fteWarning = '';
+				['Fall', 'Winter', 'Spring'].forEach(quarter => {
+					const totalFTE = appointments.reduce((sum, appt) => {
+						return (appt.values.quarter === quarter && appt.type !== 'student-assistant') ? sum + (parseFloat(appt.values.percentTime) || 0) : sum;
+					}, 0);
+
+					if (totalFTE > 75) {
+						fteWarning = `<p class="font-bold">Warning!</p><p>Employment may not exceed 75% during an academic quarter. For more information, please see <a href="https://grad.ucdavis.edu/student-employment" target="_blank" class="underline">this page</a>.</p>`;
+					} else if (totalFTE > 50 && !fteWarning) {
+						fteWarning = `<p class="font-bold">Caution!</p><p>Employment is typically limited to 50% during an academic quarter. For more information, please see <a href="https://grad.ucdavis.edu/student-employment" target="_blank" class="underline">this page</a>.</p>`;
+					}
+				});
+
+				if (fteWarning) {
+					fteWarningCard.innerHTML = fteWarning;
+					fteWarningCard.classList.remove('hidden');
+					if (fteWarning.includes("Warning!")) {
+						fteWarningCard.classList.remove('bg-yellow-100', 'border-yellow-400', 'text-yellow-800');
+						fteWarningCard.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
+					} else {
+						fteWarningCard.classList.remove('bg-red-100', 'border-red-400', 'text-red-700');
+						fteWarningCard.classList.add('bg-yellow-100', 'border-yellow-400', 'text-yellow-800');
+					}
+				} else {
+					fteWarningCard.classList.add('hidden');
+				}
 			}
-		}
-		
-		// Updates the main "Cost Summary by Quarter" table at the bottom of the page.
-		function updateSummaryTable() {
-			const summary = { Fall: { salary: 0, benefitsAndFees: 0, total: 0, workStudySavings: 0 }, Winter: { salary: 0, benefitsAndFees: 0, total: 0, workStudySavings: 0 }, Spring: { salary: 0, benefitsAndFees: 0, total: 0, workStudySavings: 0 }};
-			let hasWorkStudy = false;
-			appointments.forEach(appt => {
-				const quarter = appt.values.quarter;
-				if (summary[quarter]) {
-					summary[quarter].salary += appt.costs.salary;
-					summary[quarter].benefitsAndFees += (appt.costs.benefits + appt.costs.tuition + appt.costs.health_ins);
-					summary[quarter].total += appt.costs.total;
-					summary[quarter].workStudySavings += appt.costs.totalWorkStudySavings;
-					if (appt.values.workStudy) hasWorkStudy = true;
-				}
-			});
-			
-			summaryTable.classList.toggle('ws-hidden', !hasWorkStudy);
-	
-			const tableBody = document.getElementById('summary-table-body');
-			tableBody.innerHTML = '';
-			let grandTotal = { salary: 0, benefitsAndFees: 0, total: 0, workStudySavings: 0 };
-			['Fall', 'Winter', 'Spring'].forEach(q => {
-				const quarterData = summary[q];
-				grandTotal.salary += quarterData.salary;
-				grandTotal.benefitsAndFees += quarterData.benefitsAndFees;
-				grandTotal.total += quarterData.total;
-				grandTotal.workStudySavings += quarterData.workStudySavings;
-				tableBody.innerHTML += `<tr><td class="p-2">${q}</td><td class="p-2 text-right">${formatCurrency(quarterData.salary)}</td><td class="p-2 text-right">${formatCurrency(quarterData.benefitsAndFees)}</td><td class="p-2 text-right text-green-600 ws-savings-col">${formatCurrency(quarterData.workStudySavings)}</td><td class="p-2 text-right">${formatCurrency(quarterData.total)}</td></tr>`;
-			});
-			document.getElementById('summary-total-salary').textContent = formatCurrency(grandTotal.salary);
-			document.getElementById('summary-total-benefits-fees').textContent = formatCurrency(grandTotal.benefitsAndFees);
-			document.getElementById('summary-total-savings').textContent = formatCurrency(grandTotal.workStudySavings);
-			document.getElementById('summary-grand-total').textContent = formatCurrency(grandTotal.total);
-	
-			if(grandTotal.workStudySavings > 0) {
-				workStudySummaryCard.innerHTML = `<p class="font-bold">Work Study Savings:</p>
+
+			// Updates the main "Cost Summary by Quarter" table at the bottom of the page.
+			function updateSummaryTable() {
+				const summary = { Fall: { salary: 0, benefitsAndFees: 0, total: 0, workStudySavings: 0 }, Winter: { salary: 0, benefitsAndFees: 0, total: 0, workStudySavings: 0 }, Spring: { salary: 0, benefitsAndFees: 0, total: 0, workStudySavings: 0 } };
+				let hasWorkStudy = false;
+				appointments.forEach(appt => {
+					const quarter = appt.values.quarter;
+					if (summary[quarter]) {
+						summary[quarter].salary += appt.costs.salary;
+						summary[quarter].benefitsAndFees += (appt.costs.benefits + appt.costs.tuition + appt.costs.health_ins);
+						summary[quarter].total += appt.costs.total;
+						summary[quarter].workStudySavings += appt.costs.totalWorkStudySavings;
+						if (appt.values.workStudy) hasWorkStudy = true;
+					}
+				});
+
+				summaryTable.classList.toggle('ws-hidden', !hasWorkStudy);
+
+				const tableBody = document.getElementById('summary-table-body');
+				tableBody.innerHTML = '';
+				let grandTotal = { salary: 0, benefitsAndFees: 0, total: 0, workStudySavings: 0 };
+				['Fall', 'Winter', 'Spring'].forEach(q => {
+					const quarterData = summary[q];
+					grandTotal.salary += quarterData.salary;
+					grandTotal.benefitsAndFees += quarterData.benefitsAndFees;
+					grandTotal.total += quarterData.total;
+					grandTotal.workStudySavings += quarterData.workStudySavings;
+					tableBody.innerHTML += `<tr><td class="p-2">${q}</td><td class="p-2 text-right">${formatCurrency(quarterData.salary)}</td><td class="p-2 text-right">${formatCurrency(quarterData.benefitsAndFees)}</td><td class="p-2 text-right text-green-600 ws-savings-col">${formatCurrency(quarterData.workStudySavings)}</td><td class="p-2 text-right">${formatCurrency(quarterData.total)}</td></tr>`;
+				});
+				document.getElementById('summary-total-salary').textContent = formatCurrency(grandTotal.salary);
+				document.getElementById('summary-total-benefits-fees').textContent = formatCurrency(grandTotal.benefitsAndFees);
+				document.getElementById('summary-total-savings').textContent = formatCurrency(grandTotal.workStudySavings);
+				document.getElementById('summary-grand-total').textContent = formatCurrency(grandTotal.total);
+
+				if (grandTotal.workStudySavings > 0) {
+					workStudySummaryCard.innerHTML = `<p class="font-bold">Work Study Savings:</p>
 					<div class="grid grid-cols-4 text-center">
 						<p>Fall: ${formatCurrency(summary.Fall.workStudySavings)}</p>
 						<p>Winter: ${formatCurrency(summary.Winter.workStudySavings)}</p>
 						<p>Spring: ${formatCurrency(summary.Spring.workStudySavings)}</p>
 						<p class="font-bold">Total: ${formatCurrency(grandTotal.workStudySavings)}</p>
 					</div>`;
-				workStudySummaryCard.classList.remove('hidden');
-			} else {
-				workStudySummaryCard.classList.add('hidden');
+					workStudySummaryCard.classList.remove('hidden');
+				} else {
+					workStudySummaryCard.classList.add('hidden');
+				}
 			}
-		}
-		
-		// Helper function to format a number as US currency and return the formatted currency string.
-		// value - The number to format.
-		function formatCurrency(value) {
-			return (value || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-		}
-		
-		// --- Initial Load ---
-		populateBaseCosts();
-		fullRender();
-	});
+
+			// Helper function to format a number as US currency and return the formatted currency string.
+			// value - The number to format.
+			function formatCurrency(value) {
+				return (value || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+			}
+
+			// --- Initial Load ---
+			populateBaseCosts();
+			fullRender();
+		});
 	</script>
 </body>
+
 </html>

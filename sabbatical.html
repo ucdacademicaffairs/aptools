@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,61 +9,61 @@
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="shared-tools.css">
 	<style>
-		:root {
-			--ucd-blue: #002855;
-			--ucd-gold: #FFBF00;
-			--ucd-light-gray: #f2f2f2;
-		}
-		body {
-			font-family: 'Public Sans', sans-serif; //"approxima nova"
-			background-color: var(--ucd-light-gray);
-		}
-		.card {
-			background-color: white;
-			border-radius: 0;
-			border: 1px solid #ddd;
-			padding: 1.5rem;
-		}
 		.summary-card {
 			background-color: #fafafa;
 		}
+
 		input[type=range]::-webkit-slider-thumb {
-			-webkit-appearance: none; appearance: none;
-			width: 20px; height: 20px;
+			-webkit-appearance: none;
+			appearance: none;
+			width: 20px;
+			height: 20px;
 			background: var(--ucd-blue);
-			cursor: pointer; border-radius: 50%;
+			cursor: pointer;
+			border-radius: 50%;
 		}
+
 		input[type=range]::-moz-range-thumb {
-			width: 20px; height: 20px;
+			width: 20px;
+			height: 20px;
 			background: var(--ucd-blue);
-			cursor: pointer; border-radius: 50%;
+			cursor: pointer;
+			border-radius: 50%;
 		}
+
 		.toggle-label {
 			transition: background-color .2s ease-in-out;
 		}
+
 		.toggle-checkbox {
 			transition: left .2s ease-in-out;
 			left: 0.25rem;
 			top: 50%;
 			transform: translateY(-50%);
 		}
+
 		.toggle-checkbox:checked {
 			left: 1.25rem;
 		}
-		.toggle-checkbox:checked + .toggle-label {
+
+		.toggle-checkbox:checked+.toggle-label {
 			background-color: var(--ucd-blue);
 		}
 	</style>
 </head>
+
 <body>
 	<main class="w-full max-w-5xl mx-auto p-4 md:p-8">
 		<div class="space-y-6">
 			<div class="card">
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<div>
-						<label for="totalCredits" class="block text-sm font-medium text-gray-700">Total Available Sabbatical Credits</label>
-						<input type="number" id="totalCredits" value="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#002855] focus:ring-[#002855] sm:text-sm p-2">
+						<label for="totalCredits" class="block text-sm font-medium text-gray-700">Total Available
+							Sabbatical Credits</label>
+						<input type="number" id="totalCredits" value="0"
+							class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#002855] focus:ring-[#002855] sm:text-sm p-2">
 					</div>
 					<div>
 						<label for="annualSalary" class="block text-sm font-medium text-gray-700">Annual Salary</label>
@@ -70,7 +71,8 @@
 							<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
 								<span class="text-gray-500 sm:text-sm">$</span>
 							</div>
-							<input type="text" id="annualSalary" value="123,456" class="block w-full rounded-md border-gray-300 pl-7 pr-2 py-2 focus:border-[#002855] focus:ring-[#002855] sm:text-sm">
+							<input type="text" id="annualSalary" value="123,456"
+								class="block w-full rounded-md border-gray-300 pl-7 pr-2 py-2 focus:border-[#002855] focus:ring-[#002855] sm:text-sm">
 						</div>
 						<p class="text-sm text-gray-500 mt-1" id="quarterlySalaryDisplay">($41,185 per quarter)</p>
 					</div>
@@ -102,7 +104,8 @@
 						<p class="text-2xl font-bold text-gray-800" id="summaryTotalIncome">$123,456</p>
 					</div>
 				</div>
-				<div id="summaryWarning" class="mt-4 p-3 bg-[#FFBF00]/20 border border-[#FFBF00] text-[#002855] rounded-md text-center font-medium hidden">
+				<div id="summaryWarning"
+					class="mt-4 p-3 bg-[#FFBF00]/20 border border-[#FFBF00] text-[#002855] rounded-md text-center font-medium hidden">
 					Warning: You have used more credits than you have available.
 				</div>
 			</div>
@@ -186,7 +189,7 @@
 					document.getElementById(`${quarterId}InResidence`).addEventListener('change', updateCalculations);
 				});
 			}
-			
+
 			function handleToggleChange(event) {
 				const quarterId = event.target.name.replace('Toggle', '');
 				document.getElementById(`${quarterId}SabbaticalControls`).classList.toggle('hidden');
@@ -205,26 +208,26 @@
 				QUARTERS.forEach(quarterName => {
 					const quarterId = quarterName.toLowerCase();
 					const isOnSabbatical = document.getElementById(`${quarterId}Toggle`).checked;
-					
+
 					const statusEl = document.getElementById(`${quarterId}Status`);
 					const creditsEl = document.getElementById(`${quarterId}Credits`);
 					const salaryEl = document.getElementById(`${quarterId}Salary`);
 
 					let creditsUsed = 0;
 					let quarterSalary = 0;
-					
+
 					if (isOnSabbatical) {
 						const creditSlider = document.getElementById(`${quarterId}CreditSlider`);
 						const isInResidence = document.getElementById(`${quarterId}InResidence`).checked;
-						
+
 						const baseCredits = parseInt(creditSlider.value, 10);
 						const sabbaticalPayPercent = (baseCredits / FULL_SABBATICAL_CREDIT_COST) * 100;
 						quarterSalary = QUARTERLY_SALARY * (sabbaticalPayPercent / 100);
-						
-						creditsUsed = isInResidence ? baseCredits * (2/3) : baseCredits;
-						
+
+						creditsUsed = isInResidence ? baseCredits * (2 / 3) : baseCredits;
+
 						document.getElementById(`${quarterId}PercentLabel`).textContent = `${sabbaticalPayPercent.toFixed(0)}% Pay`;
-						
+
 						totalSabbaticalPay += quarterSalary;
 						statusEl.textContent = `On Sabbatical ${isInResidence ? '(In Residence)' : ''}`;
 						statusEl.classList.add('text-[#002855]');
@@ -248,7 +251,7 @@
 				summaryCreditsRemaining.textContent = remainingCredits.toFixed(2).replace(/\.00$/, '').replace(/.67/, '.67');
 				summarySabbaticalPay.textContent = `$${totalSabbaticalPay.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 				summaryTotalIncome.textContent = `$${totalAnnualIncome.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-				
+
 				const remainingCreditsEl = document.getElementById('summaryCreditsRemaining');
 				if (remainingCredits < 0) {
 					summaryWarning.classList.remove('hidden');
@@ -264,9 +267,10 @@
 				addEventListeners();
 				updateCalculations();
 			}
-			
+
 			initialize();
 		});
 	</script>
 </body>
+
 </html>
