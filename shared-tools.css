@@ -1,10 +1,3 @@
-/* 
- * shared-tools.css
- * Here lies the foundational CSS for the Blue Cluster Heavy Industries administrative suite.
- * If you're reading this you're probably smarter than me, but for me standardizing this was maddening.
- * RIP whoever has to maintain this.
- */
-
 :root {
 	--ucd-blue: #002855;
 	--ucd-gold: #FFBF00;
@@ -26,7 +19,7 @@ body {
 	padding: 1rem 2rem;
 	display: flex;
 	align-items: center;
-	box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .ucd-logo-text {
@@ -70,4 +63,24 @@ body {
 
 .btn-delete:hover {
 	background-color: #c9302c;
+}
+
+.header-back-btn {
+	color: #ffffff;
+	text-decoration: none;
+	margin-right: 1.5rem;
+	font-weight: 600;
+	font-size: 0.9rem;
+	opacity: 0.8;
+	transition: opacity 0.2s;
+	display: flex;
+	align-items: center;
+	padding: 0.4rem 0.8rem;
+	border-radius: 0.25rem;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.header-back-btn:hover {
+	opacity: 1;
+	background-color: rgba(255, 255, 255, 0.2);
 }
