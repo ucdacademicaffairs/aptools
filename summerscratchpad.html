@@ -251,7 +251,7 @@
 
                     const annualSalary = getCleanNumber(CONFIG.TA_SCALE[step]);
                     const monthly = annualSalary / 9;
-                    const monthlyFTE = monthly * percent;
+                    const monthlyFTE = monthly * 0.5; // Always calculate TA base rate from 50% FTE
                     const quarterly = monthlyFTE * 3;
                     const hourlyRate = quarterly / 220;
 
@@ -262,7 +262,7 @@
                     // Write out to UI
                     document.getElementById('out-ta-base').textContent = formatCurrency(annualSalary);
                     document.getElementById('out-ta-mo').textContent = formatCurrency(monthly);
-                    document.getElementById('out-ta-fte-lbl').textContent = (percent * 100).toFixed(0);
+                    document.getElementById('out-ta-fte-lbl').textContent = "50";
                     document.getElementById('out-ta-mo-fte').textContent = formatCurrency(monthlyFTE);
                     document.getElementById('out-ta-qtr').textContent = formatCurrency(quarterly);
                     document.getElementById('out-ta-hr').textContent = formatCurrency(hourlyRate);
