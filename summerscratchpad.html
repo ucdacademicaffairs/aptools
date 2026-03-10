@@ -48,7 +48,7 @@
         <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
             <!-- TA SCRATCHPAD -->
-            <div class="card p-6 flex flex-col h-full shadow-lg border-t-8 border-t-[#00b2e3]">
+            <div class="card p-6 flex flex-col h-full shadow-lg border-t-8 border-t-[#008eaa]">
                 <h2 class="text-2xl font-bold text-[#002855] mb-4">Teaching Assistants (TAs)</h2>
 
                 <div class="grid grid-cols-2 gap-4 mb-6">
@@ -178,6 +178,41 @@
 
         </section>
 
+        <!-- REVENUE SCRATCHPAD -->
+        <section class="mt-6 mb-6">
+            <div class="card p-6 flex flex-col shadow-lg border-t-8 border-t-[#ffdc00]">
+                <h2 class="text-2xl font-bold text-[#002855] mb-4">Revenue Calculation</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Units</label>
+                        <input type="number" id="rev-units" value="4"
+                            class="mt-1 block w-full pl-3 pr-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#002855] focus:border-[#002855] sm:text-sm rounded-md shadow-sm border">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Enrollment</label>
+                        <input type="number" id="rev-enrollment" value="46"
+                            class="mt-1 block w-full pl-3 pr-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#002855] focus:border-[#002855] sm:text-sm rounded-md shadow-sm border">
+                    </div>
+                </div>
+
+                <div
+                    class="bg-gray-50 rounded p-4 font-mono text-sm text-gray-800 space-y-2 border border-gray-200 shadow-inner">
+                    <div class="flex justify-between">
+                        <span>SCH (<span id="out-rev-units-lbl"></span> × <span
+                                id="out-rev-enrollment-lbl"></span>):</span>
+                        <span id="out-rev-sch" class="font-bold"></span>
+                    </div>
+
+                    <div class="border-t border-gray-300 my-2 pt-2"></div>
+                    <div class="flex justify-between items-end text-[#002855]">
+                        <span class="font-bold text-lg">Revenue ($100 × SCH):</span>
+                        <span id="out-rev-total" class="font-bold text-xl"></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
     </div>
 
     <!-- Loading Overlay -->
@@ -226,8 +261,31 @@
                 document.getElementById('app-container').style.display = 'block';
 
                 // Set up event listeners and populate selects
+                setupRev();
                 setupTA();
                 setupInst();
+            }
+
+            // --- REVENUE LOGIC ---
+            function setupRev() {
+                const revUnitsInput = document.getElementById('rev-units');
+                const revEnrollmentInput = document.getElementById('rev-enrollment');
+
+                function calcRev() {
+                    const units = getCleanNumber(revUnitsInput.value);
+                    const enrollment = getCleanNumber(revEnrollmentInput.value);
+                    const sch = units * enrollment;
+                    const revenue = 100 * sch;
+
+                    document.getElementById('out-rev-units-lbl').textContent = units;
+                    document.getElementById('out-rev-enrollment-lbl').textContent = enrollment;
+                    document.getElementById('out-rev-sch').textContent = sch;
+                    document.getElementById('out-rev-total').textContent = formatCurrency(revenue);
+                }
+
+                revUnitsInput.addEventListener('input', calcRev);
+                revEnrollmentInput.addEventListener('input', calcRev);
+                calcRev(); // Initial run
             }
 
             // TA logic

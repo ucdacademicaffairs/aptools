@@ -156,8 +156,8 @@
 		"title": "Summer Salary Scratchpad",
 		"category": "Finance",
 		"description": "Calculates detailed summer session compensation for TAs, AIs, and Lecturers based on annual salary rates and units, including benefit costs and maximum salary caps.",
-		"lastUpdated": "March 6th, 2026",
-		"lastChange": "New tool added.",
+		"lastUpdated": "March 10th, 2026",
+		"lastChange": "Added revenue calculator.",
 		"gridSpan": "",
 		"buttons": [
 			{
