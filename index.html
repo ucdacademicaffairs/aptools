@@ -1,16 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Blue Cluster Tools</title>
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+	<link
+		href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@700&display=swap"
+		rel="stylesheet">
 	<link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-	
+
 	<div class="energy-grid"></div>
 
 	<header class="page-header animate-on-load">
@@ -18,7 +22,9 @@
 			<div class="header-content">
 				<div style="display: flex; align-items: center;">
 					<div class="uc-badge" title="Click me 5 times!">💙</div>
-					<h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 700; color: white; letter-spacing: -0.5px;">Blue Cluster Tools</h1>
+					<h1
+						style="font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 700; color: white; letter-spacing: -0.5px;">
+						Blue Cluster Tools</h1>
 				</div>
 			</div>
 		</div>
@@ -29,7 +35,7 @@
 			<br>
 			<h2 class="section-heading">Mini-Apps</h2>
 			<div id="apps-grid" class="tools-grid">
-				 <p style="grid-column: 1/-1; text-align: center; color: var(--text-secondary);">Loading tools...</p>
+				<p style="grid-column: 1/-1; text-align: center; color: var(--text-secondary);">Loading tools...</p>
 			</div>
 		</div>
 
@@ -42,9 +48,13 @@
 	<footer class="page-footer">
 		<div class="container footer-content">
 			<br>
-			<p style="margin-bottom: 1rem;">Please contact <a href="mailto:woangel@ucdavis.edu">Will Arcement-Angel (woangel@ucdavis.edu)</a> with questions.</p>
-			<p style="margin-bottom: 1rem;">This subdomain hosts tools created by and for the Blue Cluster team. The official Blue Cluster website can be found at <a href="https://bluecluster.ucdavis.edu" target="_blank" rel="noopener">bluecluster.ucdavis.edu</a>.</p>
-			<p style="font-size: 0.875rem;">&copy; 2026 Regents of the University of California, Davis campus. All rights reserved.</p>
+			<p style="margin-bottom: 1rem;">Please contact <a href="mailto:woangel@ucdavis.edu">Will Arcement-Angel
+					(woangel@ucdavis.edu)</a> with questions.</p>
+			<p style="margin-bottom: 1rem;">This subdomain hosts tools created by the Blue Cluster team, but the
+				official Blue Cluster website can be found at <a href="https://bluecluster.ucdavis.edu" target="_blank"
+					rel="noopener">bluecluster.ucdavis.edu</a>.</p>
+			<p style="font-size: 0.875rem;">&copy; 2026 Regents of the University of California, Davis campus. All
+				rights reserved.</p>
 			<br>
 		</div>
 	</footer>
@@ -67,11 +77,11 @@
 
 				const appsGrid = document.getElementById('apps-grid');
 				const resourceGrid = document.getElementById('resources-grid');
-				
+
 				appsGrid.innerHTML = '';
 				resourceGrid.innerHTML = '';
 
-				let delayCounter = 200; 
+				let delayCounter = 200;
 
 				tools.forEach(tool => {
 					const card = document.createElement('div');
@@ -90,7 +100,7 @@
 						}).join('');
 					}
 
-					const updateHtml = tool.lastChange 
+					const updateHtml = tool.lastChange
 						? `<p class="update-info">Last updated: ${tool.lastUpdated}</p>
 						   <p class="update-note">${tool.lastChange}</p>`
 						: `<br>`;
@@ -168,7 +178,7 @@
 		console.log('%cAlso try clicking the UC badge 5 times...', 'color: #00D4FF; font-size: 12px;');
 
 		let badgeClicks = 0;
-		document.querySelector('.uc-badge').addEventListener('click', function() {
+		document.querySelector('.uc-badge').addEventListener('click', function () {
 			badgeClicks++;
 			if (badgeClicks >= 5) {
 				this.style.animation = 'spin 1s ease-in-out';
@@ -191,4 +201,5 @@
 		}
 	</script>
 </body>
+
 </html>
