@@ -169,19 +169,24 @@
 		console.log('%cAlso try clicking the UC badge 5 times...', 'color: #00D4FF; font-size: 12px;');
 
 		let badgeClicks = 0;
-		document.querySelector('.uc-badge').addEventListener('click', function () {
-			badgeClicks++;
-			if (badgeClicks >= 5) {
-				this.style.animation = 'spin 1s ease-in-out';
-				this.textContent = '🐴';
-				setTimeout(() => { this.textContent = '💙'; this.style.animation = ''; badgeClicks = 0; }, 1000);
-				for (let i = 0; i < 10; i++) {
-					const cow = document.createElement('div');
-					cow.textContent = '🐄';
-					cow.style.cssText = `position: fixed; top: -50px; left: ${Math.random() * 100}%; font-size: 2rem; z-index: 10000; animation: fall ${2 + Math.random() * 2}s linear; pointer-events: none;`;
-					document.body.appendChild(cow);
-					setTimeout(() => cow.remove(), 4000);
-				}
+		document.addEventListener('DOMContentLoaded', () => {
+			const badge = document.querySelector('.uc-badge');
+			if (badge) {
+				badge.addEventListener('click', function () {
+					badgeClicks++;
+					if (badgeClicks >= 5) {
+						this.style.animation = 'spin 1s ease-in-out';
+						this.textContent = '🐴';
+						setTimeout(() => { this.textContent = '💙'; this.style.animation = ''; badgeClicks = 0; }, 1000);
+						for (let i = 0; i < 10; i++) {
+							const cow = document.createElement('div');
+							cow.textContent = '🐄';
+							cow.style.cssText = `position: fixed; top: -50px; left: ${Math.random() * 100}%; font-size: 2rem; z-index: 10000; animation: fall ${2 + Math.random() * 2}s linear; pointer-events: none;`;
+							document.body.appendChild(cow);
+							setTimeout(() => cow.remove(), 4000);
+						}
+					}
+				});
 			}
 		});
 		if (!document.querySelector('#easter-egg-styles')) {
