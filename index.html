@@ -4,22 +4,31 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Blue Cluster Heavy Industries</title>
+	<title>Blue Cluster Tools</title>
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link
 		href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@700&display=swap"
 		rel="stylesheet">
 	<link rel="stylesheet" href="style.css">
-	<link rel="stylesheet" href="shared-tools.css">
-	<script src="header.js" defer></script>
 </head>
 
 <body>
 
 	<div class="energy-grid"></div>
 
-	<div id="header-placeholder"></div>
+	<header class="page-header animate-on-load">
+		<div class="container">
+			<div class="header-content">
+				<div style="display: flex; align-items: center;">
+					<div class="uc-badge" title="Click me 5 times!">💙</div>
+					<h1
+						style="font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 700; color: white; letter-spacing: -0.5px;">
+						Blue Cluster Heavy Industries</h1>
+				</div>
+			</div>
+		</div>
+	</header>
 
 	<main class="container">
 		<div class="intro-section animate-on-load" style="animation-delay: 100ms;">
@@ -169,24 +178,19 @@
 		console.log('%cAlso try clicking the UC badge 5 times...', 'color: #00D4FF; font-size: 12px;');
 
 		let badgeClicks = 0;
-		document.addEventListener('DOMContentLoaded', () => {
-			const badge = document.querySelector('.uc-badge');
-			if (badge) {
-				badge.addEventListener('click', function () {
-					badgeClicks++;
-					if (badgeClicks >= 5) {
-						this.style.animation = 'spin 1s ease-in-out';
-						this.textContent = '🐴';
-						setTimeout(() => { this.textContent = '💙'; this.style.animation = ''; badgeClicks = 0; }, 1000);
-						for (let i = 0; i < 10; i++) {
-							const cow = document.createElement('div');
-							cow.textContent = '🐄';
-							cow.style.cssText = `position: fixed; top: -50px; left: ${Math.random() * 100}%; font-size: 2rem; z-index: 10000; animation: fall ${2 + Math.random() * 2}s linear; pointer-events: none;`;
-							document.body.appendChild(cow);
-							setTimeout(() => cow.remove(), 4000);
-						}
-					}
-				});
+		document.querySelector('.uc-badge').addEventListener('click', function () {
+			badgeClicks++;
+			if (badgeClicks >= 5) {
+				this.style.animation = 'spin 1s ease-in-out';
+				this.textContent = '🐴';
+				setTimeout(() => { this.textContent = '💙'; this.style.animation = ''; badgeClicks = 0; }, 1000);
+				for (let i = 0; i < 10; i++) {
+					const cow = document.createElement('div');
+					cow.textContent = '🐄';
+					cow.style.cssText = `position: fixed; top: -50px; left: ${Math.random() * 100}%; font-size: 2rem; z-index: 10000; animation: fall ${2 + Math.random() * 2}s linear; pointer-events: none;`;
+					document.body.appendChild(cow);
+					setTimeout(() => cow.remove(), 4000);
+				}
 			}
 		});
 		if (!document.querySelector('#easter-egg-styles')) {
