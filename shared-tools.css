@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@700&display=swap');
+
 :root {
 	--ucd-blue: #002855;
 	--ucd-gold: #FFBF00;
@@ -16,16 +18,55 @@ body {
 .ucd-header {
 	background-color: var(--ucd-blue);
 	color: white;
-	padding: 1rem 2rem;
-	display: flex;
-	align-items: center;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	padding: 0.75rem 0;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
-.ucd-logo-text {
-	font-weight: 700;
+.header-content {
+	max-width: 1400px;
+	margin: 0 auto;
+	padding: 0 2rem;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.header-logo-container {
+	display: flex;
+	align-items: center;
+}
+
+.uc-badge {
+	width: 36px;
+	height: 36px;
+	background: linear-gradient(135deg, #FFBF00 0%, #FFD700 100%);
+	border-radius: 6px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: 900;
+	font-size: 1.1rem; /* Slightly larger for better visual balance */
+	line-height: 1;
+	color: #002855;
+	box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+	margin-right: 0.75rem;
+	flex-shrink: 0;
+}
+
+/* Ensure the emoji specifically is centered and doesn't bounce */
+.uc-badge::after {
+    content: '💙';
+    display: block;
+    transform: translateY(0.5px); /* Precise nudge for perfect vertical balance */
+}
+
+.header-title {
+	font-family: 'Space Grotesk', sans-serif;
 	font-size: 1.5rem;
-	letter-spacing: 0.5px;
+	font-weight: 700;
+	color: white;
+	letter-spacing: -0.2px;
+	margin: 0;
 }
 
 /* Base card styling */
