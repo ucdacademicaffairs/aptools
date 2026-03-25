@@ -7,7 +7,7 @@
 		"description": "A prototype service ledger and resource planning system for academic personnel. It models faculty service as a temporal state machine, and tracks FTE, course loads, advancement history, leave status, etc. quarter-by-quarter.",
 		"lastUpdated": "February 21st, 2026",
 		"lastChange": "All sorts of little updates in response to user feedback! Check out the live log.",
-		"gridSpan": "card-span-3",
+		"gridSpan": "card-span-2",
 		"buttons": [
 			{
 				"label": "Launch Tool →",
@@ -18,6 +18,23 @@
 				"label": "Live Log",
 				"url": "https://docs.google.com/spreadsheets/d/1KEhnElhyMuo2HCMmfPeJ3-SZqAjFy8cMX-s9LwDEY3I/edit?usp=sharing",
 				"style": "text"
+			}
+		]
+	},
+	{
+		"id": "practica",
+		"section": "apps",
+		"title": "Practica",
+		"category": "Systems",
+		"description": "A prototype shared event planning and task assginment tool - 'kanban-inspired'.",
+		"lastUpdated": "March 25th, 2026",
+		"lastChange": "First version",
+		"gridSpan": "",
+		"buttons": [
+			{
+				"label": "Launch Tool →",
+				"url": "https://bombandgrapnel.com/practica/",
+				"style": "primary"
 			}
 		]
 	},
