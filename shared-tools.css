@@ -13,6 +13,7 @@ body {
 	font-family: 'Proxima Nova', 'Public Sans', sans-serif;
 	background-color: var(--ucd-light-gray);
 	color: #333;
+	margin: 0;
 }
 
 .ucd-header {
