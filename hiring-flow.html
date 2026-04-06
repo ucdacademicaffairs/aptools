@@ -407,7 +407,7 @@
 
             <div class="alert-box" id="funding-summary"
                 style="margin-top: 2rem; background: #e3f2fd; border-color: #2196f3;">
-                <strong>Summary:</strong> Total Grant Allocation: <span id="total-allocation">100</span>%
+                <strong>Summary:</strong> Total Fund Allocation: <span id="total-allocation">100</span>%
                 <div id="funding-error"
                     style="color: #d32f2f; font-size: 0.85rem; margin-top: 5px; display: none; font-weight: 600;">
                     Warning: Total allocation must be 100% of the appointment.</div>
@@ -652,7 +652,7 @@
             const errorEl = document.getElementById('funding-error');
             if (total !== 100) {
                 errorEl.style.display = 'block';
-                errorEl.textContent = `Warning: Grants only account for ${total}% of the appointment. Total should be 100%.`;
+                errorEl.textContent = `Warning: Funds only account for ${total}% of the appointment. Total should be 100%.`;
             } else {
                 errorEl.style.display = 'none';
             }
