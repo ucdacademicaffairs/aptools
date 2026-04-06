@@ -189,12 +189,24 @@
 
         .grant-row {
             display: grid;
-            grid-template-columns: 2fr 2fr 1fr 40px;
+            grid-template-columns: 1.5fr 3.5fr 0.8fr 44px;
             gap: 1rem;
-            align-items: end;
-            margin-bottom: 1rem;
-            padding-bottom: 1rem;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
             border-bottom: 1px dashed #eee;
+        }
+
+        .financial-header {
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #eee;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            align-items: center;
         }
 
         /* Nav Buttons */
@@ -363,28 +375,31 @@
         <!-- Step 3 - Financials -->
         <div class="wizard-card" id="stage-3">
             <div class="wizard-header">
-                <h2>Stage 3: Financials & Grant Splitting</h2>
+                <h2>Stage 3: Financials & Cost Splitting</h2>
                 <p>Allocate funding for this appointment.</p>
             </div>
 
+            <div class="grant-row financial-header">
+                <div>Fund Name</div>
+                <div>Chart of Accounts (COA)</div>
+                <div>% Split</div>
+                <div></div>
+            </div>
+
             <div id="grant-container">
-                <div class="grant-row"
-                    style="grid-template-columns: 1.5fr 3fr 1fr 40px !important; gap: 1rem; border-bottom: 1px dashed #eee; padding-bottom: 1rem; margin-bottom: 1rem;">
+                <div class="grant-row">
                     <div>
-                        <label>Fund Name</label>
-                        <input type="text" placeholder="NSF - Smith">
+                        <input type="text" placeholder="e.g. NSF - Smith">
                     </div>
                     <div>
-                        <label>Chart of Accounts (COA)</label>
-                        <input type="text" placeholder="3-LSHUM-GEN7550-92882-62-1277-2277...">
+                        <input type="text" placeholder="e.g. 3-LSHUM-GEN7550-92882-62-1277-2277...">
                     </div>
                     <div>
-                        <label>% split</label>
                         <input type="number" class="grant-percent" value="100">
                     </div>
                     <div>
-                        <button class="btn"
-                            style="background: #eee; color: #999; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; padding: 0; margin-top: 24px;">&times;</button>
+                        <button class="btn btn-delete" style="width: 44px; height: 44px; padding: 0;"
+                            onclick="this.closest('.grant-row').remove(); validateFunding();">&times;</button>
                     </div>
                 </div>
             </div>
@@ -399,7 +414,7 @@
             </div>
         </div>
 
-        <!-- STAGE 4: COMPLIANCE -->
+        <!-- Stage 4: Compliance -->
         <div class="wizard-card" id="stage-4">
             <div class="wizard-header">
                 <h2>Stage 4: Compliance & Checklist</h2>
@@ -569,7 +584,7 @@
                 nextBtn.textContent = (currentStage === totalStages - 1) ? 'Review Final Plan ➔' : 'Next Stage ➔';
             }
 
-            // Conditional visibility for Stage 1-2 based on title
+            // Conditional visibility for Step 1-2 based on title
             const selectedSeries = document.getElementById('series').value;
             const unit18Notice = document.getElementById('unit18-rofr-container');
             const stepPlusContainer = document.getElementById('step-plus-container');
@@ -604,24 +619,23 @@
             }
         }
 
-        // Add Grant Row
         document.getElementById('add-grant').addEventListener('click', () => {
             const container = document.getElementById('grant-container');
             const newRow = document.createElement('div');
             newRow.className = 'grant-row';
-            newRow.style.cssText = "grid-template-columns: 2fr 3fr 1fr 40px !important; gap: 1rem;";
             newRow.innerHTML = `
                 <div>
                     <input type="text" placeholder="e.g. NSF - Jones">
                 </div>
                 <div>
-                    <input type="text" placeholder="e.g. 3-LSHUM-GEN7550-92882-62-1277-2277...">
+                    <input type="text" placeholder="e.g. 3-L... (Account String)">
                 </div>
                 <div>
                     <input type="number" class="grant-percent" value="0">
                 </div>
                 <div>
-                    <button class="btn btn-delete" onclick="this.closest('.grant-row').remove(); validateFunding();">&times;</button>
+                    <button class="btn btn-delete" style="width: 44px; height: 44px; padding: 0;"
+                        onclick="this.closest('.grant-row').remove(); validateFunding();">&times;</button>
                 </div>
             `;
             container.appendChild(newRow);
@@ -722,7 +736,7 @@
 
         document.getElementById('btn-next').addEventListener('click', () => {
             if (currentStage < totalStages) {
-                // Validation before moving past Stage 2
+                // Validation before moving past Step 2
                 if (currentStage === 2) {
                     const calc = calculateSalaries();
                     if (!calc) {
