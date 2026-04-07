@@ -17,7 +17,7 @@
 	<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 
 	<link rel="stylesheet" href="shared-tools.css">
-    <script src="header.js" defer></script>
+	<script src="header.js" defer></script>
 
 	<style>
 		.btn-action {
@@ -37,7 +37,6 @@
 			border-radius: 0.5rem;
 		}
 
-		/* The specific "Big Card" look */
 		.card-stat {
 			padding: 1.5rem;
 			border-left-width: 4px;
@@ -83,7 +82,6 @@
 			border-radius: 0.5rem;
 			border: 1px solid #e5e7eb;
 			overflow: hidden;
-			/* Keeps children inside the border radius */
 			display: flex;
 			flex-direction: column;
 		}
@@ -93,7 +91,6 @@
 			font-weight: bold;
 			font-size: 0.9rem;
 			text-align: center;
-			/* Symmetric padding to ensure whitespace over title matches under title */
 			padding-top: 1rem;
 			padding-bottom: 1rem;
 			border-bottom: 1px solid #f3f4f6;
@@ -105,16 +102,200 @@
 			padding: 1rem;
 		}
 
-		/* Custom utility for the cyan color */
 		.text-ucd-cyan {
 			color: var(--ucd-cyan);
+		}
+
+		/* Comparison Flow Indicators */
+		@media (min-width: 768px) {
+			.stat-grid {
+				display: grid;
+				grid-template-columns: 1fr 40px 1fr 40px 1fr;
+				align-items: center;
+				margin-bottom: 2rem;
+			}
+
+			.stat-arrow-grid {
+				color: #cbd5e1;
+				font-size: 1.5rem;
+				font-weight: bold;
+				text-align: center;
+				user-select: none;
+			}
+
+			.column-label {
+				font-size: 0.65rem;
+				font-weight: 800;
+				text-transform: uppercase;
+				letter-spacing: 0.15em;
+				color: #94a3b8;
+				padding-left: 0.25rem;
+			}
+		}
+
+		/* Helper for mobile cards */
+		.card-stat-m {
+			margin-bottom: 1.5rem;
+		}
+
+		/* Print/export optimization stuff... ugh. */
+		@media print {
+			@page {
+				size: portrait;
+				margin: 0.45in;
+				/* Slightly tighter page margins */
+			}
+
+			#upload-section,
+			#btn-compare,
+			button,
+			#header-placeholder,
+			.section-title:first-of-type,
+			div[class*="bg-[#002855]"] button,
+			.no-print {
+				display: none !important;
+			}
+
+			body {
+				background: white !important;
+				color: black !important;
+				font-size: 8pt !important;
+				line-height: 1.2 !important;
+			}
+
+			.text-gray-400,
+			.metric-label,
+			.metric-header,
+			.column-label {
+				color: #4b5563 !important;
+			}
+
+			.metric-value.text-gray-400 {
+				color: #64748b !important;
+			}
+
+			main {
+				max-width: 100% !important;
+				margin: 0 !important;
+				padding: 0 !important;
+			}
+
+			#dashboard {
+				display: block !important;
+				padding: 0 !important;
+			}
+
+			.break-before-page {
+				break-before: page;
+				page-break-before: always;
+				margin-top: 0.5rem !important;
+			}
+
+			.card {
+				box-shadow: none !important;
+				border: 1px solid #cbd5e1 !important;
+				padding: 0.65rem !important;
+				margin-bottom: 0.5rem !important;
+				page-break-inside: avoid !important;
+			}
+
+			.stat-grid {
+				display: grid !important;
+				grid-template-columns: 1fr 35px 1fr 35px 1fr !important;
+				/* Wider arrow columns to prevent overlap */
+				margin-bottom: 0.4rem !important;
+				align-items: center !important;
+			}
+
+			/* Operational Metrics stuff */
+			.metric-box {
+				margin-bottom: 0 !important;
+			}
+
+			.charts-grid {
+				display: grid !important;
+				grid-template-columns: 1fr 1fr !important;
+				gap: 1rem !important;
+			}
+
+			.relative.h-64 {
+				height: 200px !important;
+			}
+
+			canvas {
+				width: 100% !important;
+				height: 100% !important;
+			}
+
+			.section-title {
+				margin-top: 0.75rem !important;
+				/* Compact section headers */
+				margin-bottom: 0.4rem !important;
+				padding-bottom: 0.25rem !important;
+				font-size: 1.1rem !important;
+				border-bottom: 2px solid #002855 !important;
+			}
+
+			h2.text-4xl {
+				font-size: 1.5rem !important;
+				margin-bottom: 0.125rem !important;
+			}
+
+			.text-lg {
+				font-size: 0.85rem !important;
+			}
+
+			.metric-value {
+				font-size: 1.35rem !important;
+				/* Slightly smaller values to fit */
+			}
+
+			.text-2xl {
+				font-size: 1.15rem !important;
+			}
+
+			table {
+				font-size: 8pt !important;
+				width: 100% !important;
+			}
+
+			th,
+			td {
+				padding: 0.4rem 0.5rem !important;
+			}
+
+			th {
+				background-color: #f8fafc !important;
+				color: #002855 !important;
+			}
+
+			.metric-header {
+				padding: 0.4rem !important;
+				font-size: 0.8rem !important;
+			}
+
+			.metric-body {
+				padding: 0.5rem !important;
+			}
+
+			/* Specific grids for operational metrics */
+			#dashboard>.grid {
+				gap: 0.5rem !important;
+				/* Tighter gap between metric boxes */
+				margin-bottom: 0.5rem !important;
+			}
+
+			/* Ensure the 4-column Offerings grid doesn't wrap/break */
+			.grid-cols-4 {
+				grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+			}
 		}
 	</style>
 </head>
 
 <body class="min-h-screen flex flex-col">
 
-    <div id="header-placeholder"></div>
+	<div id="header-placeholder"></div>
 
 	<main class="w-full max-w-4xl mx-auto p-4 md:p-8 space-y-6">
 
@@ -164,18 +345,54 @@
 
 			<div id="dashboard" class="hidden pb-12">
 
-				<h2 class="section-title mt-0">Financial Overview</h2>
+				<div class="flex justify-between items-end border-b-2 border-gray-100 pb-2 mb-4">
+					<h2 class="text-[#002855] font-bold text-xl">Financial Overview</h2>
+					<button onclick="window.print()"
+						class="text-xs bg-[#002855] text-white font-bold py-2 px-4 rounded hover:bg-slate-700 transition-colors shadow-sm no-print">
+						Download/Print PDF Summary
+					</button>
+				</div>
 
-				<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-					<div class="card card-stat border-[#002855]">
-						<p class="metric-label">Old Budget (Allocated; Inc. Add'l Funds)</p>
-						<h3 class="metric-value text-gray-600" id="budget-old">$0</h3>
+				<!-- Column Headers for Desktop -->
+				<div class="hidden md:grid stat-grid mb-2">
+					<div class="column-label">Base Period (Old)</div>
+					<div></div> <!-- Spacer for Arrow -->
+					<div class="column-label">Comparison Period (New)</div>
+					<div></div> <!-- Spacer for Arrow -->
+					<div class="column-label">Year-over-Year Change</div>
+				</div>
+
+				<!-- Row 1: Budget -->
+				<div class="grid grid-cols-1 md:hidden gap-6 mb-8">
+					<div class="card card-stat border-[#002855] shadow-sm">
+						<p class="metric-label">Old Budget (Allocated)</p>
+						<h3 class="metric-value text-gray-400" id="budget-old-m">$0</h3>
 					</div>
-					<div class="card card-stat border-[#FFBF00]">
-						<p class="metric-label">New Budget (Allocated; Inc. Add'l Funds)</p>
+					<div class="card card-stat border-[#FFBF00] shadow-sm">
+						<p class="metric-label">New Budget (Allocated)</p>
+						<h3 class="metric-value" id="budget-new-m">$0</h3>
+					</div>
+					<div class="card card-stat shadow-sm" id="card-budget-diff-m">
+						<p class="metric-label">Budget Variance</p>
+						<div class="flex items-baseline gap-2">
+							<h3 class="text-2xl font-bold" id="budget-diff-m">$0</h3>
+							<span class="text-sm font-bold py-1 px-2 rounded-full" id="budget-pct-m">0%</span>
+						</div>
+					</div>
+				</div>
+
+				<div class="hidden md:grid stat-grid">
+					<div class="card card-stat border-[#002855] shadow-sm">
+						<p class="metric-label">Old Budget (Allocated)</p>
+						<h3 class="metric-value text-gray-400" id="budget-old">$0</h3>
+					</div>
+					<div class="stat-arrow-grid">→</div>
+					<div class="card card-stat border-[#FFBF00] shadow-sm">
+						<p class="metric-label">New Budget (Allocated)</p>
 						<h3 class="metric-value" id="budget-new">$0</h3>
 					</div>
-					<div class="card card-stat" id="card-budget-diff">
+					<div class="stat-arrow-grid">→</div>
+					<div class="card card-stat shadow-sm" id="card-budget-diff">
 						<p class="metric-label">Budget Variance</p>
 						<div class="flex items-baseline gap-2">
 							<h3 class="text-2xl font-bold" id="budget-diff">$0</h3>
@@ -184,16 +401,37 @@
 					</div>
 				</div>
 
-				<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-					<div class="card card-stat border-[#002855]">
+				<!-- Row 2: Expenditures -->
+				<div class="grid grid-cols-1 md:hidden gap-6 mb-8">
+					<div class="card card-stat border-[#002855] shadow-sm">
 						<p class="metric-label">Old Expenditures</p>
-						<h3 class="metric-value text-gray-600" id="exp-old">$0</h3>
+						<h3 class="metric-value text-gray-400" id="exp-old-m">$0</h3>
 					</div>
-					<div class="card card-stat border-[#FFBF00]">
+					<div class="card card-stat border-[#FFBF00] shadow-sm">
+						<p class="metric-label">New Expenditures</p>
+						<h3 class="metric-value" id="exp-new-m">$0</h3>
+					</div>
+					<div class="card card-stat shadow-sm" id="card-exp-diff-m">
+						<p class="metric-label">Expenditure Variance</p>
+						<div class="flex items-baseline gap-2">
+							<h3 class="text-2xl font-bold" id="exp-diff-m">$0</h3>
+							<span class="text-sm font-bold py-1 px-2 rounded-full" id="exp-pct-m">0%</span>
+						</div>
+					</div>
+				</div>
+
+				<div class="hidden md:grid stat-grid">
+					<div class="card card-stat border-[#002855] shadow-sm">
+						<p class="metric-label">Old Expenditures</p>
+						<h3 class="metric-value text-gray-400" id="exp-old">$0</h3>
+					</div>
+					<div class="stat-arrow-grid">→</div>
+					<div class="card card-stat border-[#FFBF00] shadow-sm">
 						<p class="metric-label">New Expenditures</p>
 						<h3 class="metric-value" id="exp-new">$0</h3>
 					</div>
-					<div class="card card-stat" id="card-exp-diff">
+					<div class="stat-arrow-grid">→</div>
+					<div class="card card-stat shadow-sm" id="card-exp-diff">
 						<p class="metric-label">Expenditure Variance</p>
 						<div class="flex items-baseline gap-2">
 							<h3 class="text-2xl font-bold" id="exp-diff">$0</h3>
@@ -202,16 +440,29 @@
 					</div>
 				</div>
 
-				<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-					<div class="card card-stat border-[#002855]">
+				<!-- Row 3: Balance -->
+				<div class="grid grid-cols-1 md:hidden gap-6 mb-8">
+					<div class="card card-stat border-[#002855] shadow-sm">
 						<p class="metric-label">Old Balance</p>
-						<h3 class="metric-value text-gray-600" id="bal-old">$0</h3>
+						<h3 class="metric-value text-gray-400" id="bal-old-m">$0</h3>
 					</div>
-					<div class="card card-stat border-[#FFBF00]">
+					<div class="card card-stat border-[#FFBF00] shadow-sm">
+						<p class="metric-label">New Balance</p>
+						<h3 class="metric-value" id="bal-new-m">$0</h3>
+					</div>
+				</div>
+
+				<div class="hidden md:grid stat-grid">
+					<div class="card card-stat border-[#002855] shadow-sm">
+						<p class="metric-label">Old Balance</p>
+						<h3 class="metric-value text-gray-400" id="bal-old">$0</h3>
+					</div>
+					<div class="stat-arrow-grid">→</div>
+					<div class="card card-stat border-[#FFBF00] shadow-sm">
 						<p class="metric-label">New Balance</p>
 						<h3 class="metric-value" id="bal-new">$0</h3>
 					</div>
-					<div class="hidden md:block"></div>
+					<!-- Empty space for the rest of the grid -->
 				</div>
 
 
@@ -236,44 +487,47 @@
 				</div>
 
 
-				<h2 class="section-title">Spending Breakdown</h2>
-				<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-					<div class="card p-6 shadow-sm">
-						<h3 class="font-bold text-lg mb-4 text-[#002855]">Expenditures by Category</h3>
-						<div class="relative h-64 w-full">
-							<canvas id="chart-bar"></canvas>
+				<div id="print-page-2" class="break-before-page">
+					<h2 class="section-title">Spending Breakdown</h2>
+					<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 charts-grid">
+						<div class="card p-6 shadow-sm">
+							<h3 class="font-bold text-lg mb-4 text-[#002855]">Expenditures by Category</h3>
+							<div class="relative h-64 w-full">
+								<canvas id="chart-bar"></canvas>
+							</div>
+						</div>
+						<div class="card p-6 shadow-sm">
+							<h3 class="font-bold text-lg mb-4 text-[#002855]">Variance Drivers</h3>
+							<div class="relative h-64 w-full">
+								<canvas id="chart-diff"></canvas>
+							</div>
 						</div>
 					</div>
-					<div class="card p-6 shadow-sm">
-						<h3 class="font-bold text-lg mb-4 text-[#002855]">Variance Drivers</h3>
-						<div class="relative h-64 w-full">
-							<canvas id="chart-diff"></canvas>
-						</div>
-					</div>
-				</div>
 
-				<div class="card rounded-lg shadow-sm overflow-hidden mt-8">
-					<div class="p-6 border-b border-gray-100 flex justify-between items-center bg-[#002855] text-white">
-						<h3 class="font-bold text-lg">Detailed Line Items</h3>
-						<button onclick="exportTableToCSV()"
-							class="text-xs bg-[#FFBF00] text-[#002855] font-bold py-2 px-4 rounded hover:bg-yellow-400">
-							Download CSV
-						</button>
-					</div>
-					<div class="table-container overflow-x-auto">
-						<table class="w-full text-sm text-left">
-							<thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b">
-								<tr>
-									<th class="px-6 py-4 font-bold">Category</th>
-									<th class="px-6 py-4 text-right">Old ($)</th>
-									<th class="px-6 py-4 text-right">New ($)</th>
-									<th class="px-6 py-4 text-right">Difference ($)</th>
-									<th class="px-6 py-4 text-right">Change (%)</th>
-								</tr>
-							</thead>
-							<tbody id="detail-table-body" class="divide-y divide-gray-100">
-							</tbody>
-						</table>
+					<div class="card rounded-lg shadow-sm overflow-hidden mt-8">
+						<div
+							class="p-6 border-b border-gray-100 flex justify-between items-center bg-[#002855] text-white">
+							<h3 class="font-bold text-lg">Detailed Line Items</h3>
+							<button onclick="exportTableToCSV()"
+								class="text-xs bg-[#FFBF00] text-[#002855] font-bold py-2 px-4 rounded hover:bg-yellow-400 no-print">
+								Download CSV
+							</button>
+						</div>
+						<div class="table-container overflow-x-auto">
+							<table class="w-full text-sm text-left">
+								<thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b">
+									<tr>
+										<th class="px-6 py-4 font-bold">Category</th>
+										<th class="px-6 py-4 text-right">Old ($)</th>
+										<th class="px-6 py-4 text-right">New ($)</th>
+										<th class="px-6 py-4 text-right">Difference ($)</th>
+										<th class="px-6 py-4 text-right">Change (%)</th>
+									</tr>
+								</thead>
+								<tbody id="detail-table-body" class="divide-y divide-gray-100">
+								</tbody>
+							</table>
+						</div>
 					</div>
 				</div>
 
@@ -456,21 +710,26 @@
 			function renderTopLevelFinancials(oldD, newD) {
 				const format = (n) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 
-				// Budget
-				document.getElementById('budget-old').textContent = format(oldD.totalBudget);
-				document.getElementById('budget-new').textContent = format(newD.totalBudget);
+				// Helper to set both mobile and desktop
+				const set = (id, val) => {
+					const el = document.getElementById(id);
+					if (el) el.textContent = val;
+					const elm = document.getElementById(id + '-m');
+					if (elm) elm.textContent = val;
+				};
+
+				set('budget-old', format(oldD.totalBudget));
+				set('budget-new', format(newD.totalBudget));
 				updateDiffCard('budget', newD.totalBudget - oldD.totalBudget, oldD.totalBudget);
 
-				// Expenditures
-				document.getElementById('exp-old').textContent = format(oldD.totalExp);
-				document.getElementById('exp-new').textContent = format(newD.totalExp);
+				set('exp-old', format(oldD.totalExp));
+				set('exp-new', format(newD.totalExp));
 				updateDiffCard('exp', newD.totalExp - oldD.totalExp, oldD.totalExp);
 
-				// Balance
 				const oldBal = oldD.totalBudget - oldD.totalExp;
 				const newBal = newD.totalBudget - newD.totalExp;
-				document.getElementById('bal-old').textContent = format(oldBal);
-				document.getElementById('bal-new').textContent = format(newBal);
+				set('bal-old', format(oldBal));
+				set('bal-new', format(newBal));
 			}
 
 			function updateDiffCard(idPrefix, diff, base) {
@@ -478,20 +737,29 @@
 				const elPct = document.getElementById(`${idPrefix}-pct`);
 				const card = document.getElementById(`card-${idPrefix}-diff`);
 
+				const elDiffM = document.getElementById(`${idPrefix}-diff-m`);
+				const elPctM = document.getElementById(`${idPrefix}-pct-m`);
+				const cardM = document.getElementById(`card-${idPrefix}-diff-m`);
+
 				const format = (n) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 
-				elDiff.textContent = (diff > 0 ? "+" : "") + format(diff);
-				const pct = base !== 0 ? (diff / base) * 100 : 0;
-				elPct.textContent = (diff > 0 ? "+" : "") + pct.toFixed(1) + "%";
+				const diffText = (diff > 0 ? "+" : "") + format(diff);
+				const pctVal = base !== 0 ? (diff / base) * 100 : 0;
+				const pctText = (diff > 0 ? "+" : "") + pctVal.toFixed(1) + "%";
+
+				if (elDiff) elDiff.textContent = diffText;
+				if (elPct) elPct.textContent = pctText;
+				if (elDiffM) elDiffM.textContent = diffText;
+				if (elPctM) elPctM.textContent = pctText;
 
 				// Colors
-				if (diff > 0) {
-					card.className = "card card-stat border-yellow-500";
-					elPct.className = "text-sm font-bold py-1 px-2 rounded-full bg-yellow-100 text-yellow-800";
-				} else {
-					card.className = "card card-stat border-green-500";
-					elPct.className = "text-sm font-bold py-1 px-2 rounded-full bg-green-100 text-green-800";
-				}
+				const colorClass = diff > 0 ? "card card-stat border-yellow-500 shadow-sm" : "card card-stat border-green-500 shadow-sm";
+				const pctClass = diff > 0 ? "text-sm font-bold py-1 px-2 rounded-full bg-yellow-100 text-yellow-800" : "text-sm font-bold py-1 px-2 rounded-full bg-green-100 text-green-800";
+
+				if (card) card.className = colorClass;
+				if (elPct) elPct.className = pctClass;
+				if (cardM) cardM.className = colorClass;
+				if (elPctM) elPctM.className = pctClass;
 			}
 
 			function renderMetrics(oldM, newM) {
@@ -511,9 +779,14 @@
 					const valNew = newM[key] || 0;
 					const diff = valNew - valOld;
 
-					// Pretty Title (Title Case)
-					const title = key.toLowerCase().replace(/\b\w/g, s => s.toUpperCase())
-						.replace('Sch', 'SCH').replace('Ta', 'TA');
+					// Labels - New specialized ones or standard mapping
+					let title;
+					if (key === 'TA COUNT') title = 'TA Count (50% Appointments)';
+					else if (key === 'READER COUNT') title = 'Reader Count (Hours)';
+					else {
+						title = key.toLowerCase().replace(/\b\w/g, s => s.toUpperCase())
+							.replace('Sch', 'SCH').replace('Ta', 'TA');
+					}
 
 					// Negatives are now cyan (#00b2e3)
 					const diffColor = diff > 0 ? "text-green-600" : (diff < 0 ? "text-ucd-cyan" : "text-gray-400");
