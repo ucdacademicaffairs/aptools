@@ -119,6 +119,48 @@
             line-height: 1;
             /* Tight line height for easier centering */
         }
+
+        @media print {
+            body {
+                background-color: white !important;
+                padding: 0 !important;
+            }
+
+            #header-placeholder, 
+            .no-print, 
+            .card:not(#roadmap-output .card), 
+            footer,
+            .input-section {
+                display: none !important;
+            }
+
+            main {
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            .roadmap-container {
+                page-break-inside: avoid;
+            }
+
+            .milestone {
+                break-inside: avoid;
+                border: 1px solid #eee !important;
+                box-shadow: none !important;
+                margin-bottom: 1.5rem !important;
+            }
+
+            h1 {
+                font-size: 24pt !important;
+                margin-bottom: 10pt !important;
+            }
+
+            .roadmap-line {
+                background-color: #eee !important;
+                print-color-adjust: exact;
+            }
+        }
     </style>
 </head>
 
@@ -132,7 +174,7 @@
         </div>
 
         <!-- Input Section -->
-        <div class="card p-6 shadow-sm bg-white">
+        <div class="card p-6 shadow-sm bg-white input-section">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Series</label>
@@ -221,7 +263,7 @@
                 <div class="flex gap-2 no-print">
                     <button onclick="window.print()"
                         class="text-xs bg-[#002855] text-white font-bold py-2 px-4 rounded hover:bg-slate-700 transition-colors shadow-sm">
-                        Print Roadmap
+                        Export/Print
                     </button>
                 </div>
             </div>
