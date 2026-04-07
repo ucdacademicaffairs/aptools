@@ -1,5 +1,5 @@
 /**
- * Shared Header Component for Blue Cluster Tools
+ * Shared header! 
  * This script injects the unified header into elements with id="header-placeholder"
  */
 
@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const isIndex = window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/');
     
     if (isIndex) {
-        // Index page structure (Glassmorphism + Animation + Container)
+        // The index page has a different look that's a little more fun, so it's a special guy.
         placeholder.innerHTML = `
         <header class="page-header animate-on-load">
             <div class="container">
@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </header>
         `;
     } else {
-        // Tool page structure (Solid Navy + Back Button)
+        // Every other tool has more of a restrained look. 
         placeholder.innerHTML = `
         <header class="ucd-header">
             <div class="header-content">
