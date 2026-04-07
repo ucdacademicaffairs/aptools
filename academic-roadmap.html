@@ -43,7 +43,8 @@
 
         .milestone {
             position: relative;
-            margin-bottom: 2.5rem; /* Increased vertical spacing */
+            margin-bottom: 2.5rem;
+            /* Increased vertical spacing */
             padding: 1rem;
             border-radius: 0.5rem;
             border: 1px solid #e5e7eb;
@@ -106,7 +107,8 @@
 
         .timeline-year {
             position: absolute;
-            left: -9.1rem; /* Added gap between text and dot */
+            left: -9.1rem;
+            /* Added gap between text and dot */
             top: 1.45rem;
             /* Adjusted for vertical center with dot */
             font-size: 0.75rem;
@@ -169,18 +171,45 @@
                 </div>
                 <div class="md:col-span-3">
                     <hr class="my-2 border-gray-100">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Forecasting: Next
-                        Review Expectation</label>
-                    <select id="forecast-select"
-                        class="w-full md:w-1/2 p-2 border border-[#FFBF00] bg-yellow-50/30 rounded-md focus:ring-2 focus:ring-[#002855] outline-none font-medium">
-                        <option value="normal">Standard Merit (Normal Duration)</option>
-                        <option value="accel-1.5">1.5-Step Merit (Step Plus)</option>
-                        <option value="accel-2.0">2.0-Step Merit (Step Plus)</option>
-                        <option value="accel-time">Accelerated Review (1 Year Early)</option>
-                        <option value="defer-1">Deferral/Postponement (+1 Year Duration)</option>
-                    </select>
-                    <p class="text-[10px] text-gray-400 mt-2 italic">Note: Forecasting only applies to the immediate
-                        upcoming review. Subsequent cycles return to normal service intervals.</p>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Forecasting:
+                        Career Scenario Builder</label>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-[10px] text-gray-400 uppercase mb-1">Upcoming Review (#1)</label>
+                            <select id="forecast-1"
+                                class="forecast-slot w-full p-2 border border-[#FFBF00] bg-yellow-50/30 rounded-md focus:ring-2 focus:ring-[#002855] outline-none text-sm font-medium">
+                                <option value="normal">Standard Merit</option>
+                                <option value="accel-1.5">1.5-Step Plus Merit</option>
+                                <option value="accel-2.0">2.0-Step Plus Merit</option>
+                                <option value="accel-time">Accelerated Review (-1 Yr)</option>
+                                <option value="defer-1">Postponement (+1 Yr)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-gray-400 uppercase mb-1">Subsequent Review (#2)</label>
+                            <select id="forecast-2"
+                                class="forecast-slot w-full p-2 border border-gray-200 bg-gray-50/30 rounded-md focus:ring-2 focus:ring-[#002855] outline-none text-sm">
+                                <option value="normal">Standard Merit</option>
+                                <option value="accel-1.5">1.5-Step Plus Merit</option>
+                                <option value="accel-2.0">2.0-Step Plus Merit</option>
+                                <option value="accel-time">Accelerated Review (-1 Yr)</option>
+                                <option value="defer-1">Postponement (+1 Yr)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-gray-400 uppercase mb-1">Future Review (#3)</label>
+                            <select id="forecast-3"
+                                class="forecast-slot w-full p-2 border border-gray-200 bg-gray-50/30 rounded-md focus:ring-2 focus:ring-[#002855] outline-none text-sm">
+                                <option value="normal">Standard Merit</option>
+                                <option value="accel-1.5">1.5-Step Plus Merit</option>
+                                <option value="accel-2.0">2.0-Step Plus Merit</option>
+                                <option value="accel-time">Accelerated Review (-1 Yr)</option>
+                                <option value="defer-1">Postponement (+1 Yr)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-gray-400 mt-2 italic">Define up to 3 upcoming reviews to see their
+                        cumulative impact. Subsequent reviews thereafter return to normal cycles.</p>
                 </div>
             </div>
         </div>
@@ -224,8 +253,8 @@
             </div>
 
             <p class="mt-8 text-xs text-gray-500 italic p-4 bg-gray-50 rounded border border-dashed text-center">
-                Disclaimer: Review timelines are subject to APM and campus-specific policies. Accelerations, deferrals,
-                and clock-stops are not modeled here. Confirm all dates with your department analyst.
+                Disclaimer: Review timelines are subject to ... review. Please confirm all dates with your departmental
+                academic personnel coordinator.
             </p>
         </div>
 
@@ -268,21 +297,21 @@
             },
             'lecturer-soe': {
                 assistant: {
-                    name: 'Assistant Teaching Professor',
+                    name: 'Assistant Professor of Teaching',
                     steps: [1, 2, 3, 4, 5, 6],
                     duration: (step) => 2,
                     promotionEligible: [4, 5, 6],
                     nextRank: 'associate'
                 },
                 associate: {
-                    name: 'Associate Teaching Professor',
+                    name: 'Associate Professor of Teaching',
                     steps: [1, 2, 3, 4, 5],
                     duration: (step) => (step < 4 ? 2 : 3),
                     promotionEligible: [3, 4, 5],
                     nextRank: 'full'
                 },
                 full: {
-                    name: 'Teaching Professor',
+                    name: 'Professor of Teaching',
                     steps: [1, 2, 3, 4, 5, 6, 7, 8, 9],
                     duration: (step) => 3,
                     promotionEligible: [],
@@ -296,7 +325,11 @@
             rank: document.getElementById('rank-select'),
             step: document.getElementById('step-select'),
             date: document.getElementById('effective-date'),
-            forecast: document.getElementById('forecast-select')
+            forecasts: [
+                document.getElementById('forecast-1'),
+                document.getElementById('forecast-2'),
+                document.getElementById('forecast-3')
+            ]
         };
 
         const elements = {
@@ -335,7 +368,7 @@
         inputs.rank.addEventListener('change', updateStepOptions);
         inputs.step.addEventListener('change', generateRoadmap);
         inputs.date.addEventListener('change', generateRoadmap);
-        inputs.forecast.addEventListener('change', generateRoadmap);
+        inputs.forecasts.forEach(f => f.addEventListener('change', generateRoadmap));
 
         function generateRoadmap() {
             const series = inputs.series.value;
@@ -366,21 +399,23 @@
             // Project 15 years
             const maxYears = 15;
             let yearsProjected = 0;
-            let isFirstJump = true;
+            let reviewCounter = 0;
 
             while (yearsProjected < maxYears) {
                 const rankData = APM_LOGIC[series][currentRank];
                 let dur = rankData.duration(currentStep);
 
-                const forecastType = inputs.forecast.value;
+                const forecastType = (reviewCounter < inputs.forecasts.length)
+                    ? inputs.forecasts[reviewCounter].value
+                    : 'normal';
 
-                // Handle Forecaster for first jump
-                if (isFirstJump) {
-                    if (forecastType === 'defer-1') {
-                        dur += 1;
-                    } else if (forecastType === 'accel-time') {
-                        dur = Math.max(1, dur - 1); // Ensure at least 1 year
-                    }
+                const isPlanned = (reviewCounter < inputs.forecasts.length) && forecastType !== 'normal';
+
+                // Handle Forecaster
+                if (forecastType === 'defer-1') {
+                    dur += 1;
+                } else if (forecastType === 'accel-time') {
+                    dur = Math.max(1, dur - 1);
                 }
 
                 // 1. Dossier Prep Milestone (Fall of the year before effective date)
@@ -392,7 +427,7 @@
                     label: 'Dossier Submission',
                     detail: `Submit dossier for ${rankData.promotionEligible.includes(currentStep) ? 'Promotion' : 'Merit'} review`,
                     date: dossierDate,
-                    badge: 'Preparation'
+                    badge: isPlanned ? 'Planned' : 'Preparation'
                 });
 
                 // 2. Advancement Milestone
@@ -407,23 +442,19 @@
                     nextRank = rankData.nextRank;
                     nextStep = 1;
                     // Accelerations in promotion usually result in Step 2 or 3
-                    if (isFirstJump) {
-                        if (forecastType === 'accel-1.5') nextStep = 2;
-                        if (forecastType === 'accel-2.0') nextStep = 2; // Simple model
+                    if (forecastType === 'accel-1.5' || forecastType === 'accel-2.0') {
+                        nextStep = 2;
                     }
                 } else {
                     const maxStep = rankData.steps[rankData.steps.length - 1];
 
-                    if (isFirstJump) {
-                        if (forecastType === 'accel-1.5') nextStep = currentStep + 1.5;
-                        if (forecastType === 'accel-2.0') nextStep = currentStep + 2.0;
-                    }
+                    if (forecastType === 'accel-1.5') nextStep = currentStep + 1.5;
+                    if (forecastType === 'accel-2.0') nextStep = currentStep + 2.0;
 
                     if (typeof nextStep === 'number' && nextStep > maxStep) {
                         if (currentRank === 'full') {
                             nextStep = 'Above Scale';
                         } else {
-                            // Suggest promotion? For now just stay at max
                             nextStep = maxStep;
                         }
                     } else if (currentStep >= maxStep) {
@@ -436,14 +467,12 @@
                 }
 
                 let milestoneLabel = isPromotion ? 'Promotion Effective' : 'Merit Effective';
-                if (isFirstJump) {
-                    if (forecastType.includes('accel-1.5') || forecastType.includes('accel-2.0')) {
-                        milestoneLabel = 'Step Plus Merit Effective';
-                    } else if (forecastType === 'accel-time') {
-                        milestoneLabel = 'Accelerated Merit Effective';
-                    } else if (forecastType === 'defer-1') {
-                        milestoneLabel = 'Postponed Merit Effective';
-                    }
+                if (forecastType.includes('accel-1.5') || forecastType.includes('accel-2.0')) {
+                    milestoneLabel = 'Step Plus Merit Effective';
+                } else if (forecastType === 'accel-time') {
+                    milestoneLabel = 'Accelerated Merit Effective';
+                } else if (forecastType === 'defer-1') {
+                    milestoneLabel = 'Postponed Merit Effective';
                 }
 
                 roadmap.push({
@@ -451,12 +480,12 @@
                     label: milestoneLabel,
                     detail: `${APM_LOGIC[series][nextRank].name}, Step ${nextStep}`,
                     date: new Date(currentDate),
-                    badge: isPromotion ? 'Promotion' : (isFirstJump && (forecastType.includes('accel') || forecastType === 'accel-time') ? 'Acceleration' : 'Merit')
+                    badge: isPromotion ? 'Promotion' : (isPlanned ? 'Planned' : 'Merit')
                 });
 
                 currentRank = nextRank;
                 currentStep = nextStep;
-                isFirstJump = false;
+                reviewCounter++;
 
                 if (currentStep === 'Above Scale' && yearsProjected > 10) break;
             }
