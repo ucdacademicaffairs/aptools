@@ -158,8 +158,8 @@
 		"SAVINGS_RATE": 0.75
 	},
 	"SUMMER_BENEFIT_RATES": {
-		"ase": 0.022,
-		"senate_lecturer": 0.088
+		"ase": 0.017,
+		"senate_lecturer": 0.1
 	},
 	"QUARTER_DATES": {
 		"Spring 2027": {
