@@ -107,6 +107,23 @@
 		]
 	},
 	{
+		"id": "academic-roadmap",
+		"section": "apps",
+		"title": "Academic Merit & Promotion Roadmap",
+		"category": "HR",
+		"description": "Quickly visualize the multi-year timeline of an academic career. Models standard APM service intervals (2 vs 3 years), dossier preparation lead-times, and promotion eligibility checkpoints. Intended for Academic Personnel staff sitting down with faculty.",
+		"lastUpdated": "April 7th, 2026",
+		"lastChange": "First version.",
+		"gridSpan": "",
+		"buttons": [
+			{
+				"label": "Launch Tool →",
+				"url": "academic-roadmap.html",
+				"style": "primary"
+			}
+		]
+	},
+	{
 		"id": "lecturer-pay",
 		"section": "apps",
 		"title": "Lecturer Pay Calculator",

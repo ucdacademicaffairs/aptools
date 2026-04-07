@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Merit & Promotion Roadmap</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&family=Space+Grotesk:wght@700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="shared-tools.css">
+    <script src="header.js" defer></script>
+
+    <style>
+        :root {
+            --ucd-blue: #002855;
+            --ucd-gold: #FFBF00;
+            --ucd-teal: #6bca98;
+            --ucd-cyan: #00b2e3;
+        }
+
+        .roadmap-container {
+            position: relative;
+            padding-left: 9rem;
+        }
+
+        .roadmap-line {
+            position: absolute;
+            left: 7.25rem;
+            /* Moved line slightly right */
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background-color: #e5e7eb;
+            border-radius: 2px;
+        }
+
+        .milestone {
+            position: relative;
+            margin-bottom: 2.5rem; /* Increased vertical spacing */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+            background: white;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .milestone:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        .milestone::before {
+            content: '';
+            position: absolute;
+            left: -2.25rem;
+            top: 1.3rem;
+            /* Slightly higher to vertically center with the text */
+            width: 1rem;
+            height: 1rem;
+            background: white;
+            border: 3px solid var(--ucd-blue);
+            border-radius: 50%;
+            z-index: 10;
+        }
+
+        .milestone.promotion::before {
+            border-color: var(--ucd-gold);
+            background: var(--ucd-gold);
+        }
+
+        .milestone.current::before {
+            background: var(--ucd-blue);
+            box-shadow: 0 0 0 4px rgba(0, 40, 85, 0.2);
+        }
+
+        .milestone.dossier::before {
+            border-style: dashed;
+            width: 0.75rem;
+            height: 0.75rem;
+            left: -2.12rem;
+            top: 1.42rem;
+            /* Adjusted to keep dossier circles centered */
+        }
+
+        .badge-merit {
+            background-color: rgba(0, 40, 85, 0.1);
+            color: var(--ucd-blue);
+        }
+
+        .badge-promotion {
+            background-color: rgba(255, 191, 0, 0.2);
+            color: #856404;
+        }
+
+        .badge-dossier {
+            background-color: #f3f4f6;
+            color: #4b5563;
+        }
+
+        .timeline-year {
+            position: absolute;
+            left: -9.1rem; /* Added gap between text and dot */
+            top: 1.45rem;
+            /* Adjusted for vertical center with dot */
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #6b7280;
+            text-align: right;
+            width: 6.5rem;
+            line-height: 1;
+            /* Tight line height for easier centering */
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col bg-[#f8fafc]">
+    <div id="header-placeholder"></div>
+
+    <main class="w-full max-w-4xl mx-auto p-4 md:p-8 space-y-8">
+        <div class="text-center mb-10">
+            <h1 class="text-3xl font-bold text-[#002855] font-['Space_Grotesk']">Career Roadmap</h1>
+            <p class="text-gray-600 mt-2">Visualize your Academic Merit & Promotion timeline</p>
+        </div>
+
+        <!-- Input Section -->
+        <div class="card p-6 shadow-sm bg-white">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Series</label>
+                    <select id="series-select"
+                        class="w-full p-2 border rounded-md focus:ring-2 focus:ring-[#002855] outline-none">
+                        <option value="professor">Professor (Ladder Rank)</option>
+                        <option value="lecturer-soe">Lecturer with SOE</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Current Rank &
+                        Step</label>
+                    <div class="flex gap-2">
+                        <select id="rank-select"
+                            class="flex-grow p-2 border rounded-md focus:ring-2 focus:ring-[#002855] outline-none">
+                            <option value="assistant">Assistant Professor</option>
+                            <option value="associate">Associate Professor</option>
+                            <option value="full">Professor</option>
+                        </select>
+                        <select id="step-select"
+                            class="w-20 p-2 border rounded-md focus:ring-2 focus:ring-[#002855] outline-none">
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Effective Date of
+                        Current Step</label>
+                    <input type="date" id="effective-date" value="2024-07-01"
+                        class="w-full p-2 border rounded-md focus:ring-2 focus:ring-[#002855] outline-none">
+                </div>
+                <div class="md:col-span-3">
+                    <hr class="my-2 border-gray-100">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Forecasting: Next
+                        Review Expectation</label>
+                    <select id="forecast-select"
+                        class="w-full md:w-1/2 p-2 border border-[#FFBF00] bg-yellow-50/30 rounded-md focus:ring-2 focus:ring-[#002855] outline-none font-medium">
+                        <option value="normal">Standard Merit (Normal Duration)</option>
+                        <option value="accel-1.5">1.5-Step Merit (Step Plus)</option>
+                        <option value="accel-2.0">2.0-Step Merit (Step Plus)</option>
+                        <option value="accel-time">Accelerated Review (1 Year Early)</option>
+                        <option value="defer-1">Deferral/Postponement (+1 Year Duration)</option>
+                    </select>
+                    <p class="text-[10px] text-gray-400 mt-2 italic">Note: Forecasting only applies to the immediate
+                        upcoming review. Subsequent cycles return to normal service intervals.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard View -->
+        <div id="roadmap-output" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="summary-title" class="text-xl font-bold text-[#002855]">Roadmap Summary</h2>
+                <div class="flex gap-2 no-print">
+                    <button onclick="window.print()"
+                        class="text-xs bg-[#002855] text-white font-bold py-2 px-4 rounded hover:bg-slate-700 transition-colors shadow-sm">
+                        Print Roadmap
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+                <div class="card p-4 bg-white border-l-4 border-[#002855]">
+                    <p class="text-[10px] font-bold uppercase text-gray-400">Next Review Cycle</p>
+                    <h3 id="next-review-year" class="text-lg font-bold text-[#002855] mt-1">AY 2025-26</h3>
+                </div>
+                <div class="card p-4 bg-white border-l-4 border-var(--ucd-gold)">
+                    <p class="text-[10px] font-bold uppercase text-gray-400">Review Type</p>
+                    <h3 id="next-review-type" class="text-lg font-bold text-[#002855] mt-1">Merit</h3>
+                </div>
+                <div class="card p-4 bg-white border-l-4 border-[#6bca98]">
+                    <p class="text-[10px] font-bold uppercase text-gray-400">Next Effective Date</p>
+                    <h3 id="next-effective-date" class="text-lg font-bold text-[#002855] mt-1">July 1, 2026</h3>
+                </div>
+                <div class="card p-4 bg-white border-l-4 border-[#ef4444]">
+                    <p class="text-[10px] font-bold uppercase text-gray-400">Status</p>
+                    <h3 id="series-status" class="text-lg font-bold text-[#002855] mt-1">On Track</h3>
+                </div>
+            </div>
+
+            <div class="roadmap-container mt-12">
+                <div class="roadmap-line"></div>
+                <div id="timeline-content">
+                    <!-- Milestones injected here -->
+                </div>
+            </div>
+
+            <p class="mt-8 text-xs text-gray-500 italic p-4 bg-gray-50 rounded border border-dashed text-center">
+                Disclaimer: Review timelines are subject to APM and campus-specific policies. Accelerations, deferrals,
+                and clock-stops are not modeled here. Confirm all dates with your department analyst.
+            </p>
+        </div>
+
+        <div id="initial-state" class="text-center p-20 opacity-40">
+            <div class="text-5xl mb-4">🗺️</div>
+            <p>Select your rank and step above to generate your roadmap.</p>
+        </div>
+    </main>
+
+    <footer class="mt-auto p-8 text-center text-xs text-gray-400">
+        © 2026 Regents of the University of California, Davis campus.
+    </footer>
+
+    <script>
+        // --- Data & Logic ---
+
+        const APM_LOGIC = {
+            professor: {
+                assistant: {
+                    name: 'Assistant Professor',
+                    steps: [1, 2, 3, 4, 5, 6],
+                    duration: (step) => 2,
+                    promotionEligible: [4, 5, 6],
+                    nextRank: 'associate'
+                },
+                associate: {
+                    name: 'Associate Professor',
+                    steps: [1, 2, 3, 4, 5],
+                    duration: (step) => (step < 4 ? 2 : 3),
+                    promotionEligible: [3, 4, 5],
+                    nextRank: 'full'
+                },
+                full: {
+                    name: 'Professor',
+                    steps: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+                    duration: (step) => 3, // Exceptions usually at Step 5/9 but omitted for simplicity
+                    promotionEligible: [],
+                    nextRank: null
+                }
+            },
+            'lecturer-soe': {
+                assistant: {
+                    name: 'Assistant Teaching Professor',
+                    steps: [1, 2, 3, 4, 5, 6],
+                    duration: (step) => 2,
+                    promotionEligible: [4, 5, 6],
+                    nextRank: 'associate'
+                },
+                associate: {
+                    name: 'Associate Teaching Professor',
+                    steps: [1, 2, 3, 4, 5],
+                    duration: (step) => (step < 4 ? 2 : 3),
+                    promotionEligible: [3, 4, 5],
+                    nextRank: 'full'
+                },
+                full: {
+                    name: 'Teaching Professor',
+                    steps: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+                    duration: (step) => 3,
+                    promotionEligible: [],
+                    nextRank: null
+                }
+            }
+        };
+
+        const inputs = {
+            series: document.getElementById('series-select'),
+            rank: document.getElementById('rank-select'),
+            step: document.getElementById('step-select'),
+            date: document.getElementById('effective-date'),
+            forecast: document.getElementById('forecast-select')
+        };
+
+        const elements = {
+            output: document.getElementById('roadmap-output'),
+            initial: document.getElementById('initial-state'),
+            timeline: document.getElementById('timeline-content'),
+            summaryTitle: document.getElementById('summary-title'),
+            nextReviewYear: document.getElementById('next-review-year'),
+            nextReviewType: document.getElementById('next-review-type'),
+            nextEffDate: document.getElementById('next-effective-date')
+        };
+
+        // Populate steps based on rank
+        function updateStepOptions() {
+            const series = inputs.series.value;
+            const rank = inputs.rank.value;
+            const data = APM_LOGIC[series][rank];
+
+            const currentStep = inputs.step.value;
+            inputs.step.innerHTML = '';
+            data.steps.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s;
+                opt.innerText = s;
+                inputs.step.appendChild(opt);
+            });
+
+            // Try to restore previous step if valid
+            if (data.steps.includes(parseInt(currentStep))) {
+                inputs.step.value = currentStep;
+            }
+            generateRoadmap();
+        }
+
+        inputs.series.addEventListener('change', updateStepOptions);
+        inputs.rank.addEventListener('change', updateStepOptions);
+        inputs.step.addEventListener('change', generateRoadmap);
+        inputs.date.addEventListener('change', generateRoadmap);
+        inputs.forecast.addEventListener('change', generateRoadmap);
+
+        function generateRoadmap() {
+            const series = inputs.series.value;
+            const rank = inputs.rank.value;
+            const step = parseInt(inputs.step.value) || 1;
+            const effDateString = inputs.date.value;
+            if (!effDateString) return;
+            const effDate = new Date(effDateString + 'T00:00:00'); // Ensure local time
+
+            elements.initial.classList.add('hidden');
+            elements.output.classList.remove('hidden');
+
+            const roadmap = [];
+            let currentRank = rank;
+            let currentStep = step;
+            let currentDate = new Date(effDate);
+
+            // Add Current State
+            roadmap.push({
+                type: 'current',
+                label: 'Current Status',
+                rank: currentRank,
+                step: currentStep,
+                date: new Date(currentDate),
+                badge: 'Current'
+            });
+
+            // Project 15 years
+            const maxYears = 15;
+            let yearsProjected = 0;
+            let isFirstJump = true;
+
+            while (yearsProjected < maxYears) {
+                const rankData = APM_LOGIC[series][currentRank];
+                let dur = rankData.duration(currentStep);
+
+                const forecastType = inputs.forecast.value;
+
+                // Handle Forecaster for first jump
+                if (isFirstJump) {
+                    if (forecastType === 'defer-1') {
+                        dur += 1;
+                    } else if (forecastType === 'accel-time') {
+                        dur = Math.max(1, dur - 1); // Ensure at least 1 year
+                    }
+                }
+
+                // 1. Dossier Prep Milestone (Fall of the year before effective date)
+                const dossierYear = currentDate.getFullYear() + dur - 1;
+                const dossierDate = new Date(dossierYear, 9, 1); // October 1st
+
+                roadmap.push({
+                    type: 'dossier',
+                    label: 'Dossier Submission',
+                    detail: `Submit dossier for ${rankData.promotionEligible.includes(currentStep) ? 'Promotion' : 'Merit'} review`,
+                    date: dossierDate,
+                    badge: 'Preparation'
+                });
+
+                // 2. Advancement Milestone
+                currentDate.setFullYear(currentDate.getFullYear() + dur);
+                yearsProjected += dur;
+
+                const isPromotion = rankData.promotionEligible.includes(currentStep);
+                let nextRank = currentRank;
+                let nextStep = currentStep + 1;
+
+                if (isPromotion) {
+                    nextRank = rankData.nextRank;
+                    nextStep = 1;
+                    // Accelerations in promotion usually result in Step 2 or 3
+                    if (isFirstJump) {
+                        if (forecastType === 'accel-1.5') nextStep = 2;
+                        if (forecastType === 'accel-2.0') nextStep = 2; // Simple model
+                    }
+                } else {
+                    const maxStep = rankData.steps[rankData.steps.length - 1];
+
+                    if (isFirstJump) {
+                        if (forecastType === 'accel-1.5') nextStep = currentStep + 1.5;
+                        if (forecastType === 'accel-2.0') nextStep = currentStep + 2.0;
+                    }
+
+                    if (typeof nextStep === 'number' && nextStep > maxStep) {
+                        if (currentRank === 'full') {
+                            nextStep = 'Above Scale';
+                        } else {
+                            // Suggest promotion? For now just stay at max
+                            nextStep = maxStep;
+                        }
+                    } else if (currentStep >= maxStep) {
+                        if (currentRank === 'full') {
+                            nextStep = 'Above Scale';
+                        } else {
+                            nextStep = maxStep;
+                        }
+                    }
+                }
+
+                let milestoneLabel = isPromotion ? 'Promotion Effective' : 'Merit Effective';
+                if (isFirstJump) {
+                    if (forecastType.includes('accel-1.5') || forecastType.includes('accel-2.0')) {
+                        milestoneLabel = 'Step Plus Merit Effective';
+                    } else if (forecastType === 'accel-time') {
+                        milestoneLabel = 'Accelerated Merit Effective';
+                    } else if (forecastType === 'defer-1') {
+                        milestoneLabel = 'Postponed Merit Effective';
+                    }
+                }
+
+                roadmap.push({
+                    type: isPromotion ? 'promotion' : 'merit',
+                    label: milestoneLabel,
+                    detail: `${APM_LOGIC[series][nextRank].name}, Step ${nextStep}`,
+                    date: new Date(currentDate),
+                    badge: isPromotion ? 'Promotion' : (isFirstJump && (forecastType.includes('accel') || forecastType === 'accel-time') ? 'Acceleration' : 'Merit')
+                });
+
+                currentRank = nextRank;
+                currentStep = nextStep;
+                isFirstJump = false;
+
+                if (currentStep === 'Above Scale' && yearsProjected > 10) break;
+            }
+
+            renderTimeline(roadmap);
+            updateSummary(roadmap);
+        }
+
+        function renderTimeline(roadmap) {
+            elements.timeline.innerHTML = '';
+            roadmap.forEach(item => {
+                const div = document.createElement('div');
+                div.className = `milestone ${item.type}`;
+
+                const year = item.date.getFullYear();
+                const month = item.date.getMonth();
+
+                // Determine Academic Year string
+                // If it's July or later, it's the start of AY (Year)-(Year+1)
+                // If it's June or earlier, it's the end of AY (Year-1)-(Year)
+                let ay;
+                if (month >= 6) { // July (6) to Dec (11)
+                    ay = `AY ${year}-${(year + 1).toString().slice(-2)}`;
+                } else {
+                    ay = `AY ${year - 1}-${year.toString().slice(-2)}`;
+                }
+
+                const badgeClass = item.type === 'promotion' ? 'badge-promotion' : (item.type === 'dossier' ? 'badge-dossier' : 'badge-merit');
+                const dateString = item.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+                div.innerHTML = `
+                    <div class="timeline-year">${ay}</div>
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-bold text-[#002855]">${item.label}</h4>
+                            <p class="text-sm text-gray-600">${item.detail || (APM_LOGIC[inputs.series.value][item.rank].name + ' Step ' + item.step)}</p>
+                            <p class="text-[10px] text-gray-400 mt-1">${dateString}</p>
+                        </div>
+                        <span class="text-[10px] font-bold px-2 py-1 rounded ${badgeClass}">${item.badge}</span>
+                    </div>
+                `;
+                elements.timeline.appendChild(div);
+            });
+        }
+
+        function updateSummary(roadmap) {
+            const firstAction = roadmap.find(r => r.type !== 'current');
+            if (!firstAction) return;
+
+            const target = firstAction.type === 'dossier' ? roadmap[roadmap.indexOf(firstAction) + 1] : firstAction;
+
+            const year = target.date.getFullYear();
+            elements.nextReviewYear.innerText = `AY ${year - 1}-${year.toString().slice(-2)}`;
+            elements.nextReviewType.innerText = target.badge;
+            elements.nextEffDate.innerText = target.date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        }
+
+        // Init
+        updateStepOptions();
+
+    </script>
+</body>
+
+</html>
