@@ -46,7 +46,7 @@ body {
 	align-items: center;
 	justify-content: center;
 	font-weight: 900;
-	font-size: 1.1rem; /* Slightly larger for better visual balance */
+	font-size: 1.1rem; 
 	line-height: 1;
 	color: #002855;
 	box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
@@ -54,11 +54,10 @@ body {
 	flex-shrink: 0;
 }
 
-/* Ensure the emoji specifically is centered and doesn't bounce */
 .uc-badge::after {
     content: '💙';
     display: block;
-    transform: translateY(0.5px); /* Precise nudge for perfect vertical balance */
+    transform: translateY(0.5px); /* centering this broke my soul on a tuesday */
 }
 
 .header-title {
