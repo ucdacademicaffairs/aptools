@@ -192,8 +192,8 @@
                     <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Series</label>
                     <select id="series-select"
                         class="w-full p-2 border rounded-md focus:ring-2 focus:ring-[#002855] outline-none">
-                        <option value="professor">Professor (Ladder Rank)</option>
-                        <option value="lecturer-soe">Lecturer with SOE</option>
+                        <option value="professor">Professor</option>
+                        <option value="lecturer-soe">Professor of Teaching</option>
                     </select>
                 </div>
                 <div>
@@ -235,7 +235,8 @@
                                 <option value="normal">Standard Advancement (1-Step)</option>
                                 <option value="accel-1.5">1.5-Step Advancement</option>
                                 <option value="accel-2.0">2.0-Step Advancement</option>
-                                <option value="accel-lateral" class="lateral-option hidden">Lateral Promotion (0-Step)</option>
+                                <option value="accel-lateral" class="lateral-option hidden">Lateral Promotion (0-Step)
+                                </option>
                                 <option value="accel-time">Accelerated Review (-1 Yr)</option>
                                 <option value="defer-1">Postponement (+1 Yr)</option>
                             </select>
@@ -247,7 +248,8 @@
                                 <option value="normal">Standard Advancement (1-Step)</option>
                                 <option value="accel-1.5">1.5-Step Advancement</option>
                                 <option value="accel-2.0">2.0-Step Advancement</option>
-                                <option value="accel-lateral" class="lateral-option hidden">Lateral Promotion (0-Step)</option>
+                                <option value="accel-lateral" class="lateral-option hidden">Lateral Promotion (0-Step)
+                                </option>
                                 <option value="accel-time">Accelerated Review (-1 Yr)</option>
                                 <option value="defer-1">Postponement (+1 Yr)</option>
                             </select>
@@ -259,7 +261,8 @@
                                 <option value="normal">Standard Advancement (1-Step)</option>
                                 <option value="accel-1.5">1.5-Step Advancement</option>
                                 <option value="accel-2.0">2.0-Step Advancement</option>
-                                <option value="accel-lateral" class="lateral-option hidden">Lateral Promotion (0-Step)</option>
+                                <option value="accel-lateral" class="lateral-option hidden">Lateral Promotion (0-Step)
+                                </option>
                                 <option value="accel-time">Accelerated Review (-1 Yr)</option>
                                 <option value="defer-1">Postponement (+1 Yr)</option>
                             </select>
@@ -439,7 +442,7 @@
                 const rankData = APM_LOGIC[series][currentRank];
                 const isPromotionBarrier = rankData.promotionEligible.includes(currentStep);
                 const lateralOption = dropdown.querySelector('option[value="accel-lateral"]');
-                
+
                 if (isPromotionBarrier) {
                     lateralOption.disabled = false;
                     lateralOption.style.display = 'block';
