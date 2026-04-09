@@ -80,6 +80,7 @@
 				<div class="flex flex-wrap gap-2" id="add-buttons">
 					<button class="btn" data-type="gsr">GSR</button>
 					<button class="btn" data-type="ta">TA</button>
+					<button class="btn" data-type="ai">AI</button>
 					<button class="btn" data-type="reader">Reader/Tutor</button>
 					<button class="btn" data-type="student-assistant">Student Assistant</button>
 				</div>
@@ -317,6 +318,10 @@
 					<div class="grid grid-cols-2 md:grid-cols-3 gap-2 mt-1">${Object.entries(COST_DATA.TA_SCALE).map(([step, val]) => `<div><label class="text-xs">Step ${step}</label><input type="number" class="w-full p-1 border rounded" data-key="TA_SCALE.${step}" value="${val}"></div>`).join('')}</div>
 				</div>
 				<div>
+					<h4 class="font-bold">AI Annual Salary Scale (2025-26, 9-month)</h4>
+					<div class="grid grid-cols-2 md:grid-cols-7 gap-2 mt-1">${Object.entries(COST_DATA.AI_SCALE || {}).map(([step, val]) => `<div><label class="text-xs">Point ${step}</label><input type="number" class="w-full p-1 border rounded" data-key="AI_SCALE.${step}" value="${val}"></div>`).join('')}</div>
+				</div>
+				<div>
 					<h4 class="font-bold">Reader/Tutor Hourly Rate</h4>
 					<div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-1">
 						<div><label class="text-xs">Rate ($/hr)</label><input type="number" class="w-full p-1 border rounded" data-key="READER_TUTOR_RATE" value="${COST_DATA.READER_TUTOR_RATE}"></div>
@@ -361,7 +366,7 @@
 					},
 					costs: {}
 				};
-				if (type !== 'gsr') {
+				if (type !== 'gsr' && type !== 'ta' && type !== 'ai') {
 					delete newAppt.values.workStudy;
 					delete newAppt.values.workStudyUnits;
 				}
@@ -401,6 +406,15 @@
 								<div class="text-center"><label class="block text-xs">Include NRST?</label><input type="checkbox" id="input-${appt.id}-nonResident" data-calc="nonResident" class="h-6 w-6 mt-1" ${appt.values.nonResident ? 'checked' : ''}></div>
 							</div>`;
 							break;
+						case 'ai':
+							inputsHtml = `<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mt-2">
+								<div><label class="block text-xs">Quarter</label><select id="input-${appt.id}-quarter" data-calc="quarter" class="w-full p-1 border rounded">${quarterOptions}</select></div>
+								<div><label class="block text-xs">Point</label><select id="input-${appt.id}-step" data-calc="step" class="w-full p-1 border rounded">${Object.keys(COST_DATA.AI_SCALE).map(step => `<option value="${step}" ${step === appt.values.step ? 'selected' : ''}>${step}</option>`).join('')}</select></div>
+								${percentTimeDropdown}
+								<div><label class="block text-xs">Total Hours</label><input type="number" class="w-full p-1 border rounded" value="${displayHours.toFixed(0)}" readonly></div>
+								<div class="text-center"><label class="block text-xs">Include NRST?</label><input type="checkbox" id="input-${appt.id}-nonResident" data-calc="nonResident" class="h-6 w-6 mt-1" ${appt.values.nonResident ? 'checked' : ''}></div>
+							</div>`;
+							break;
 						case 'reader':
 							inputsHtml = `<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
 								<div><label class="block text-xs">Quarter</label><select id="input-${appt.id}-quarter" data-calc="quarter" class="w-full p-1 border rounded">${quarterOptions}</select></div>
@@ -417,8 +431,8 @@
 							</div>`;
 							break;
 					}
-					const typeName = appt.type === 'student-assistant' ? 'Student Assistant' : (appt.type === 'reader' ? 'Reader/Tutor' : appt.type.toUpperCase());
-					const gridColsClass = appt.type === 'gsr' ? (appt.values.workStudy ? 'md:grid-cols-6' : 'md:grid-cols-5') : 'md:grid-cols-5';
+					const typeName = appt.type === 'student-assistant' ? 'Student Assistant' : (appt.type === 'reader' ? 'Reader/Tutor' : (appt.type === 'ai' ? 'Associate Instructor' : appt.type.toUpperCase()));
+					const gridColsClass = (appt.type === 'gsr' || appt.type === 'ta' || appt.type === 'ai') ? (appt.values.workStudy ? 'md:grid-cols-6' : 'md:grid-cols-5') : 'md:grid-cols-5';
 
 					return `<div class="appointment-row" id="appointment-${appt.id}" data-id="${appt.id}" data-type="${appt.type}">
 						<div class="flex justify-between items-start">
@@ -477,6 +491,10 @@
 						const annualRate = COST_DATA.TA_SCALE[appt.values.step] || 0, percentTime = parseFloat(appt.values.percentTime) || 0;
 						salary = (annualRate / 3) * (percentTime / 100);
 						salaryFormula = `(${formatCurrency(annualRate)} / 3) * ${percentTime}% = ${formatCurrency(salary)}`;
+					} else if (appt.type === 'ai') {
+						const annualRate = COST_DATA.AI_SCALE[appt.values.step] || 0, percentTime = parseFloat(appt.values.percentTime) || 0;
+						salary = (annualRate / 3) * (percentTime / 100);
+						salaryFormula = `(${formatCurrency(annualRate)} / 3) * ${percentTime}% = ${formatCurrency(salary)}`;
 					} else if (appt.type === 'reader') {
 						const hours = parseFloat(appt.values.hours) || 0;
 						salary = hours * COST_DATA.READER_TUTOR_RATE;
@@ -503,7 +521,7 @@
 					log.push(`<p>&nbsp;&nbsp;- ${typeName} #${appt.id} Salary: ${appt.costs.salaryFormula}</p>`);
 					log.push(`<p>&nbsp;&nbsp;- ${typeName} #${appt.id} Benefits: ${formatCurrency(appt.costs.salary)} * ${totalBenefitRate.toFixed(4)} = ${formatCurrency(appt.costs.benefits)}</p>`);
 				});
-				const titleTotals = { gsr: { percentTime: 0, salary: 0, eligible: false }, ta: { percentTime: 0, salary: 0, eligible: false }, reader: { hours: 0, salary: 0, eligible: false } };
+				const titleTotals = { gsr: { percentTime: 0, salary: 0, eligible: false }, ta: { percentTime: 0, salary: 0, eligible: false }, ai: { percentTime: 0, salary: 0, eligible: false }, reader: { hours: 0, salary: 0, eligible: false } };
 				quarterAppts.forEach(appt => {
 					if (titleTotals[appt.type]) {
 						if (appt.type === 'reader') titleTotals[appt.type].hours += parseFloat(appt.values.hours) || 0;
@@ -519,7 +537,7 @@
 						isEligible = titleTotals[type].hours >= 110;
 						statusText = isEligible ? '<span style="color: #266040; font-weight: bold;">ELIGIBLE</span>' : '<span style="color: #c10330; font-weight: bold;">INELIGIBLE</span>';
 						log.push(`<p>&nbsp;&nbsp;- Reader/Tutor: Total hours ${titleTotals[type].hours.toFixed(0)} >= 110? -> ${statusText}</p>`);
-					} else if (type === 'gsr' || type === 'ta') {
+					} else if (type === 'gsr' || type === 'ta' || type === 'ai') {
 						isEligible = titleTotals[type].percentTime >= 25;
 						statusText = isEligible ? '<span style="color: #266040; font-weight: bold;">ELIGIBLE</span>' : '<span style="color: #c10330; font-weight: bold;">INELIGIBLE</span>';
 						log.push(`<p>&nbsp;&nbsp;- ${type.toUpperCase()}: Total % time ${titleTotals[type].percentTime}% >= 25%? -> ${statusText}</p>`);
@@ -710,9 +728,7 @@
 				return (value || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 			}
 
-			// Initial Load
-			populateBaseCosts();
-			fullRender();
+			// Initial Load is handled inside initialize()
 		});
 	</script>
 </body>

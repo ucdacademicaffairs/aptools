@@ -163,8 +163,8 @@
 		"title": "Student Employment Cost Calculator",
 		"category": "Finance",
 		"description": "Create an 'employment schedule' for graduate student employees and display the costs associated. Features proper proration of same-quarter multiple-appointment benefits and work-study. 'GSR Version' and 'STDT Version' are optimized for inclusion in external sites via iFrame.",
-		"lastUpdated": "March 5th, 2026",
-		"lastChange": "Updated to use a central JSON file for base rates.",
+		"lastUpdated": "April 9th, 2026",
+		"lastChange": "Belatedly added Associate Instructor appointments.",
 		"gridSpan": "card-span-2",
 		"buttons": [
 			{
