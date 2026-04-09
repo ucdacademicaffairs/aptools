@@ -521,6 +521,7 @@
 					log.push(`<p>&nbsp;&nbsp;- ${typeName} #${appt.id} Salary: ${appt.costs.salaryFormula}</p>`);
 					log.push(`<p>&nbsp;&nbsp;- ${typeName} #${appt.id} Benefits: ${formatCurrency(appt.costs.salary)} * ${totalBenefitRate.toFixed(4)} = ${formatCurrency(appt.costs.benefits)}</p>`);
 				});
+				const titleTotals = { gsr: { percentTime: 0, salary: 0, eligible: false }, ta: { percentTime: 0, salary: 0, eligible: false }, ai: { percentTime: 0, salary: 0, eligible: false }, reader: { hours: 0, salary: 0, eligible: false } };
 				let totalStudentFTE = 0;
 				quarterAppts.forEach(appt => {
 					if (titleTotals[appt.type]) {
