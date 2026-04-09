@@ -521,11 +521,16 @@
 					log.push(`<p>&nbsp;&nbsp;- ${typeName} #${appt.id} Salary: ${appt.costs.salaryFormula}</p>`);
 					log.push(`<p>&nbsp;&nbsp;- ${typeName} #${appt.id} Benefits: ${formatCurrency(appt.costs.salary)} * ${totalBenefitRate.toFixed(4)} = ${formatCurrency(appt.costs.benefits)}</p>`);
 				});
-				const titleTotals = { gsr: { percentTime: 0, salary: 0, eligible: false }, ta: { percentTime: 0, salary: 0, eligible: false }, ai: { percentTime: 0, salary: 0, eligible: false }, reader: { hours: 0, salary: 0, eligible: false } };
+				let totalStudentFTE = 0;
 				quarterAppts.forEach(appt => {
 					if (titleTotals[appt.type]) {
-						if (appt.type === 'reader') titleTotals[appt.type].hours += parseFloat(appt.values.hours) || 0;
-						else if (appt.type === 'gsr' || appt.type === 'ta') titleTotals[appt.type].percentTime += parseFloat(appt.values.percentTime) || 0;
+						if (appt.type === 'reader') {
+							titleTotals[appt.type].hours += parseFloat(appt.values.hours) || 0;
+						} else if (appt.type === 'gsr' || appt.type === 'ta' || appt.type === 'ai') {
+							const percent = parseFloat(appt.values.percentTime) || 0;
+							titleTotals[appt.type].percentTime += percent;
+							totalStudentFTE += percent;
+						}
 						titleTotals[appt.type].salary += appt.costs.salary;
 					}
 				});
@@ -538,9 +543,10 @@
 						statusText = isEligible ? '<span style="color: #266040; font-weight: bold;">ELIGIBLE</span>' : '<span style="color: #c10330; font-weight: bold;">INELIGIBLE</span>';
 						log.push(`<p>&nbsp;&nbsp;- Reader/Tutor: Total hours ${titleTotals[type].hours.toFixed(0)} >= 110? -> ${statusText}</p>`);
 					} else if (type === 'gsr' || type === 'ta' || type === 'ai') {
-						isEligible = titleTotals[type].percentTime >= 25;
+						const isConsolidatedEligible = totalStudentFTE >= 25;
+						isEligible = isConsolidatedEligible;
 						statusText = isEligible ? '<span style="color: #266040; font-weight: bold;">ELIGIBLE</span>' : '<span style="color: #c10330; font-weight: bold;">INELIGIBLE</span>';
-						log.push(`<p>&nbsp;&nbsp;- ${type.toUpperCase()}: Total % time ${titleTotals[type].percentTime}% >= 25%? -> ${statusText}</p>`);
+						log.push(`<p>&nbsp;&nbsp;- ${type.toUpperCase()} Group: Total Quarter Effort ${totalStudentFTE}% >= 25%? -> ${statusText}</p>`);
 					}
 					if (isEligible) {
 						titleTotals[type].eligible = true;
@@ -654,9 +660,9 @@
 					}, 0);
 
 					if (totalFTE > 75) {
-						fteWarning = `<p class="font-bold">Warning!</p><p>Employment may not exceed 75% during an academic quarter. For more information, please see <a href="https://grad.ucdavis.edu/student-employment" target="_blank" class="underline">this page</a>.</p>`;
+						fteWarning = `<p class="font-bold text-red-700">Warning!</p><p>Total student employment may not exceed 75% during an academic quarter. This includes all ASE/GSR appointments across all departments.</p>`;
 					} else if (totalFTE > 50 && !fteWarning) {
-						fteWarning = `<p class="font-bold">Caution!</p><p>Employment is typically limited to 50% during an academic quarter. For more information, please see <a href="https://grad.ucdavis.edu/student-employment" target="_blank" class="underline">this page</a>.</p>`;
+						fteWarning = `<p class="font-bold text-yellow-800">Caution!</p><p>Employment is typically limited to 50% during an academic quarter. For more information, please see <a href="https://grad.ucdavis.edu/student-employment" target="_blank" class="underline">this page</a>.</p>`;
 					}
 				});
 
