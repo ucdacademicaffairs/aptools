@@ -105,6 +105,18 @@
             color: #4b5563;
         }
 
+        .badge-past {
+            background-color: #f1f5f9;
+            color: #64748b;
+            opacity: 0.8;
+        }
+
+        .badge-pending {
+            background-color: #fffbeb;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+
         .timeline-year {
             position: absolute;
             left: -9.1rem;
@@ -597,6 +609,23 @@
                 if (currentStep === 'Above Scale' && yearsProjected > 10) break;
             }
 
+            // Post-process statuses based on today's date
+            const today = new Date();
+            let foundNext = false;
+
+            roadmap.forEach(item => {
+                if (item.type === 'current') return;
+
+                if (item.date < today) {
+                    item.badge = 'Past';
+                    item.statusClass = 'badge-past';
+                } else if (!foundNext) {
+                    item.badge = 'Pending';
+                    item.statusClass = 'badge-pending';
+                    foundNext = true;
+                }
+            });
+
             renderTimeline(roadmap);
             updateSummary(roadmap);
         }
@@ -620,7 +649,7 @@
                     ay = `AY ${year - 1}-${year.toString().slice(-2)}`;
                 }
 
-                const badgeClass = item.type === 'promotion' ? 'badge-promotion' : (item.type === 'dossier' ? 'badge-dossier' : 'badge-merit');
+                const badgeClass = item.statusClass || (item.type === 'promotion' ? 'badge-promotion' : (item.type === 'dossier' ? 'badge-dossier' : 'badge-merit'));
                 const dateString = item.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
                 div.innerHTML = `
