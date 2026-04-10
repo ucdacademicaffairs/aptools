@@ -463,10 +463,8 @@
                 if (forecastType === 'accel-lateral') stepMod = 0.0;
 
                 if (isPromotionBarrier) {
+                    let nominalPromotionStep = (currentRank === 'assistant') ? currentStep - 3 : currentStep - 2;
                     currentRank = rankData.nextRank;
-                    let nominalPromotionStep = 1;
-                    if (currentStep === 5) nominalPromotionStep = 2;
-                    if (currentStep === 6) nominalPromotionStep = 3;
                     currentStep = Math.max(1, nominalPromotionStep + (stepMod - 1.0));
                 } else {
                     currentStep = currentStep + stepMod;
@@ -555,15 +553,9 @@
                 if (forecastType === 'accel-lateral') stepMod = 0.0; // Lateral promotion target
 
                 if (isPromotion) {
+                    let nominalPromotionStep = (currentRank === 'assistant') ? currentStep - 3 : currentStep - 2;
                     nextRank = rankData.nextRank;
-                    // Standard Promotional Mapping (Davis style)
-                    // Assistant 4 -> Associate 1 (Standard 1-step)
-                    // Assistant 5 -> Associate 2 (Standard 1-step)
-                    // Assistant 6 -> Associate 3 (Standard 1-step)
-                    let nominalPromotionStep = 1;
-                    if (currentStep === 5) nominalPromotionStep = 2;
-                    if (currentStep === 6) nominalPromotionStep = 3;
-
+                    
                     // Apply forecast offset relative to standard
                     nextStep = nominalPromotionStep + (stepMod - 1.0);
                     nextStep = Math.max(1, nextStep); // Promotion usually at least Step 1
