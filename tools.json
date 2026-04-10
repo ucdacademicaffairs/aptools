@@ -112,8 +112,8 @@
 		"title": "Merit & Promotion Roadmap",
 		"category": "HR",
 		"description": "Quickly visualize the multi-year timeline of an academic career. Models standard APM service intervals (2 vs 3 years), dossier preparation lead-times, and promotion eligibility checkpoints. Intended for Academic Personnel staff sitting down with faculty.",
-		"lastUpdated": "April 7th, 2026",
-		"lastChange": "Added lateral promotion option and applicability-checking logic.",
+		"lastUpdated": "April 10th, 2026",
+		"lastChange": "Added merit-in-lieu option and applicability-checking logic.",
 		"gridSpan": "",
 		"buttons": [
 			{

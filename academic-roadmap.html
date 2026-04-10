@@ -237,6 +237,7 @@
                                 <option value="accel-2.0">2.0-Step Advancement</option>
                                 <option value="accel-lateral" class="lateral-option hidden">Lateral Promotion (0-Step)
                                 </option>
+                                <option value="merit-lieu" class="merit-lieu-option hidden">Merit in Lieu of Promotion (1-step)</option>
                                 <option value="accel-time">Accelerated Review (-1 Yr)</option>
                                 <option value="defer-1">Postponement (+1 Yr)</option>
                             </select>
@@ -442,15 +443,29 @@
                 const rankData = APM_LOGIC[series][currentRank];
                 const isPromotionBarrier = rankData.promotionEligible.includes(currentStep);
                 const lateralOption = dropdown.querySelector('option[value="accel-lateral"]');
-
+                const meritLieuOption = dropdown.querySelector('option[value="merit-lieu"]');
+                
                 if (isPromotionBarrier) {
                     lateralOption.disabled = false;
                     lateralOption.style.display = 'block';
+
+                    // Merit in Lieu only if there's a next step in the current rank
+                    const maxStep = rankData.steps[rankData.steps.length - 1];
+                    if (currentStep < maxStep) {
+                        meritLieuOption.disabled = false;
+                        meritLieuOption.style.display = 'block';
+                    } else {
+                        meritLieuOption.disabled = true;
+                        meritLieuOption.style.display = 'none';
+                        if (dropdown.value === 'merit-lieu') dropdown.value = 'normal';
+                    }
                 } else {
                     lateralOption.disabled = true;
                     lateralOption.style.display = 'none';
+                    meritLieuOption.disabled = true;
+                    meritLieuOption.style.display = 'none';
                     // Reset if invalidly selected
-                    if (dropdown.value === 'accel-lateral') {
+                    if (dropdown.value === 'accel-lateral' || dropdown.value === 'merit-lieu') {
                         dropdown.value = 'normal';
                     }
                 }
@@ -462,7 +477,7 @@
                 if (forecastType === 'accel-2.0') stepMod = 2.0;
                 if (forecastType === 'accel-lateral') stepMod = 0.0;
 
-                if (isPromotionBarrier) {
+                if (isPromotionBarrier && forecastType !== 'merit-lieu') {
                     let nominalPromotionStep = (currentRank === 'assistant') ? currentStep - 3 : currentStep - 2;
                     currentRank = rankData.nextRank;
                     currentStep = Math.max(1, nominalPromotionStep + (stepMod - 1.0));
@@ -542,7 +557,9 @@
                 currentDate.setFullYear(currentDate.getFullYear() + dur);
                 yearsProjected += dur;
 
-                const isPromotion = rankData.promotionEligible.includes(currentStep);
+                const isStandardPromotion = rankData.promotionEligible.includes(currentStep);
+                const isMeritInLieu = (forecastType === 'merit-lieu');
+                const isPromotion = isStandardPromotion && !isMeritInLieu;
                 let nextRank = currentRank;
                 let nextStep = currentStep; // Start with baseline
 
