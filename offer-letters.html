@@ -629,10 +629,15 @@
 					<p>Please sign and date below to indicate you understand and accept the terms of your appointment and return one copy to your hiring contact listed below. Failure to return a signed letter by <b>${data.deadline}</b> constitutes rejection of this offer.</p>
 					
 					<div class="letter-footer">
-						<p><b>Hiring Department/Unit Contact:</b><br>${data.contactName}<br>${data.contactPhone}<br>${data.contactEmail}</p>
+						<div style="margin-bottom: 11pt;">
+							<p style="margin: 0;"><b>Hiring Department/Unit Contact:</b></p>
+							<p style="margin: 0;">${data.contactName}</p>
+							<p style="margin: 0;">${data.contactPhone}</p>
+							<p style="margin: 0;">${data.contactEmail}</p>
+						</div>
 						<p>Sincerely,</p>
-						<br>
-						<p><b>${data.headOfDept}</b></p>
+						<p style="height: 11pt; margin: 0;"></p>
+						<p style="margin-bottom: 0;"><b>${data.headOfDept}</b></p>
 						<p>Cc: Employment File</p>
 					</div>
 					
@@ -664,7 +669,10 @@
 					
 					<p>This appointment is at <b>${fteDisplay}</b>. You will be paid at a monthly rate of <b>${formatCurrency(data.monthlySal)}</b> (based on a full-time monthly rate of ${formatCurrency(data.monthlySal * (100 / data.totalFte))}). Your paychecks will be issued on <b>${data.payDates}</b>.</p>
 					
-					<p><b>Short Statement of Required Work Duties:</b><br>${data.duties}</p>
+					<div style="margin-bottom: 11pt;">
+						<p style="margin: 0;"><b>Short Statement of Required Work Duties:</b></p>
+						<p style="margin: 0;">${data.duties.replace(/\n/g, '</p><p style="margin: 0;">')}</p>
+					</div>
 					
 					<p><b>Leaves of Absences</b> - Leaves of absences, including short-term and long-term leave, are governed by Article 17 – Leaves. Requests for any leave of absence must meet the eligibility criteria, and in some cases, must be approved by your PI/supervisor or department in advance. More information can be found here: UC Davis Family and Medical Leave for Funded Graduate Students.</p>
 					
@@ -695,10 +703,15 @@
 					<p>Please sign and date below to indicate you understand and accept the terms of your appointment and return one copy to your hiring contact listed below. Failure to return a signed letter by <b>${data.deadline}</b> constitutes rejection of this offer.</p>
 					
 					<div class="letter-footer">
-						<p><b>Hiring Department/Unit Contact:</b><br>${data.contactName}<br>${data.contactPhone}<br>${data.contactEmail}</p>
+						<div style="margin-bottom: 11pt;">
+							<p style="margin: 0;"><b>Hiring Department/Unit Contact:</b></p>
+							<p style="margin: 0;">${data.contactName}</p>
+							<p style="margin: 0;">${data.contactPhone}</p>
+							<p style="margin: 0;">${data.contactEmail}</p>
+						</div>
 						<p>Sincerely,</p>
-						<br>
-						<p><b>${data.headOfDept}</b></p>
+						<p style="height: 11pt; margin: 0;"></p>
+						<p style="margin-bottom: 0;"><b>${data.headOfDept}</b></p>
 						<p>Cc: Employment File</p>
 					</div>
 					
