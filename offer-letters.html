@@ -172,14 +172,14 @@
 				</div>
 			</div>
 
-			<div id="fte-warning-card" class="card bg-yellow-100 border-yellow-400 text-yellow-800 hidden mb-6"></div>
-
 			<div class="card">
 				<h3 class="text-xl font-bold text-gray-800 mb-4">Appointments</h3>
 				<div id="appointments-container">
 					<p class="text-gray-500">No appointments added yet. Click a button above to begin.</p>
 				</div>
 			</div>
+
+			<div id="fte-warning-card" class="card bg-yellow-100 border-yellow-400 text-yellow-800 hidden"></div>
 
 			<div class="flex justify-center py-6">
 				<button id="generate-letters-btn"
@@ -282,7 +282,7 @@
 			function updateWarnings() {
 				let errorText = '';
 				let warningText = '';
-				let isError = false;
+				let hasError = false;
 
 				['Fall', 'Winter', 'Spring'].forEach(quarter => {
 					let totalFte = 0;
@@ -295,26 +295,20 @@
 					});
 
 					if (totalFte > 75) {
-						errorText += `<p>Total employment for ${quarter} exceeds 75% (${totalFte.toFixed(1)}%). This is not permitted.</p>`;
-						isError = true;
-					} else if (totalFte > 50 && !isError) {
-						warningText += `<p>Total employment for ${quarter} exceeds 50% (${totalFte.toFixed(1)}%). Caution advised.</p>`;
+						errorText += `<p><strong>Error:</strong> Total appointment for ${quarter} exceeds 75% (${totalFte.toFixed(1)}%). This is not permitted.</p>`;
+						hasError = true;
+					} else if (totalFte > 50) {
+						warningText += `<p><strong>Caution:</strong> Total appointment for ${quarter} exceeds 50% (${totalFte.toFixed(1)}%). Caution advised.</p>`;
 					}
 				});
 
 				const warningCard = document.getElementById('fte-warning-card');
-				if (errorText) {
-					warningCard.innerHTML = `<p class="font-bold text-red-700">Error!</p>${errorText}`;
-					warningCard.className = "card bg-red-100 border-red-400 text-red-700 mb-6 block";
-					warningCard.classList.remove('hidden');
-					generateBtn.disabled = true;
-				} else if (warningText) {
-					warningCard.innerHTML = `<p class="font-bold text-yellow-800">Caution!</p>${warningText}`;
-					warningCard.className = "card bg-yellow-100 border-yellow-400 text-yellow-800 mb-6 block";
-					warningCard.classList.remove('hidden');
-					generateBtn.disabled = false;
+				if (errorText || warningText) {
+					warningCard.innerHTML = errorText + warningText;
+					warningCard.className = `card ${hasError ? 'bg-red-100 border-red-400 text-red-700' : 'bg-yellow-100 border-yellow-400 text-yellow-800'} block`;
+					generateBtn.disabled = hasError;
 				} else {
-					warningCard.className = "card bg-yellow-100 border-yellow-400 text-yellow-800 hidden mb-6";
+					warningCard.className = "card bg-yellow-100 border-yellow-400 text-yellow-800 hidden";
 					generateBtn.disabled = false;
 				}
 			}
@@ -344,6 +338,7 @@
 					appt.values[key] = target.value;
 				}
 				calculateAllCosts();
+				updateWarnings();
 			});
 
 			appointmentsContainer.addEventListener('click', e => {
