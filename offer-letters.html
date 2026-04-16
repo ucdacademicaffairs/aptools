@@ -114,8 +114,11 @@
 				</div>
 				<div>
 					<label class="block text-sm font-semibold text-gray-700">Student Full Name</label>
-					<input type="text" id="global-student-name" class="w-full p-2 border rounded mt-1"
-						placeholder="Fulanah Doe">
+					<input type="text" id="global-student-name" class="w-full p-2 border rounded mt-1" placeholder="Fulanah Doe">
+				</div>
+				<div>
+					<label class="block text-sm font-semibold text-gray-700">Student Email</label>
+					<input type="email" id="global-student-email" class="w-full p-2 border rounded mt-1" placeholder="student@ucdavis.edu">
 				</div>
 				<div>
 					<label class="block text-sm font-semibold text-gray-700">Hiring Department</label>
@@ -168,6 +171,8 @@
 					<button class="btn" data-type="reader">Reader/Tutor</button>
 				</div>
 			</div>
+
+			<div id="fte-warning-card" class="card bg-yellow-100 border-yellow-400 text-yellow-800 hidden mb-6"></div>
 
 			<div class="card">
 				<h3 class="text-xl font-bold text-gray-800 mb-4">Appointments</h3>
@@ -268,6 +273,52 @@
 				});
 			});
 
+			// Phone number formatting
+			document.getElementById('global-contact-phone').addEventListener('input', function (e) {
+				var x = e.target.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,3})(\d{0,4})/);
+				e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
+			});
+
+			function updateWarnings() {
+				let errorText = '';
+				let warningText = '';
+				let isError = false;
+
+				['Fall', 'Winter', 'Spring'].forEach(quarter => {
+					let totalFte = 0;
+					appointments.filter(a => a.values.quarter === quarter).forEach(appt => {
+						if (appt.type === 'reader') {
+							totalFte += (parseFloat(appt.values.percentTime) || 0) / 4.4;
+						} else {
+							totalFte += parseFloat(appt.values.percentTime) || 0;
+						}
+					});
+
+					if (totalFte > 75) {
+						errorText += `<p>Total employment for ${quarter} exceeds 75% (${totalFte.toFixed(1)}%). This is not permitted.</p>`;
+						isError = true;
+					} else if (totalFte > 50 && !isError) {
+						warningText += `<p>Total employment for ${quarter} exceeds 50% (${totalFte.toFixed(1)}%). Caution advised.</p>`;
+					}
+				});
+
+				const warningCard = document.getElementById('fte-warning-card');
+				if (errorText) {
+					warningCard.innerHTML = `<p class="font-bold text-red-700">Error!</p>${errorText}`;
+					warningCard.className = "card bg-red-100 border-red-400 text-red-700 mb-6 block";
+					warningCard.classList.remove('hidden');
+					generateBtn.disabled = true;
+				} else if (warningText) {
+					warningCard.innerHTML = `<p class="font-bold text-yellow-800">Caution!</p>${warningText}`;
+					warningCard.className = "card bg-yellow-100 border-yellow-400 text-yellow-800 mb-6 block";
+					warningCard.classList.remove('hidden');
+					generateBtn.disabled = false;
+				} else {
+					warningCard.className = "card bg-yellow-100 border-yellow-400 text-yellow-800 hidden mb-6";
+					generateBtn.disabled = false;
+				}
+			}
+
 			addButtonsContainer.addEventListener('click', e => {
 				if (e.target.classList.contains('btn')) addAppointment(e.target.dataset.type);
 			});
@@ -311,7 +362,7 @@
 					values: {
 						quarter: 'Fall',
 						step: '1',
-						percentTime: '50',
+						percentTime: type === 'reader' ? '110' : '50',
 						supervisor: '',
 						workDuties: type === 'gsr' ? 'Conducting research related to...' : ''
 					},
@@ -323,6 +374,7 @@
 
 			function fullRender() {
 				calculateAllCosts();
+				updateWarnings();
 				appointmentsContainer.innerHTML = appointments.length === 0 ? '<p class="text-gray-500">No appointments added yet. Click a button above to begin.</p>' : appointments.map(appt => {
 					const typeName = appt.type.toUpperCase();
 					const quarterOptions = ['Fall', 'Winter', 'Spring'].map(q => `<option ${q === appt.values.quarter ? 'selected' : ''}>${q}</option>`).join('');
@@ -360,13 +412,14 @@
 							` : ''}
 							<div>
 								<label class="block text-xs font-semibold">% Time / Hours</label>
-								${appt.type === 'reader' ? `
-									<input type="number" data-calc="percentTime" class="w-full p-1 border rounded" value="110" placeholder="Total Hours">
-								` : `
-									<select data-calc="percentTime" class="w-full p-1 border rounded">
-										${[25, 50, 75].map(v => `<option value="${v}" ${v == appt.values.percentTime ? 'selected' : ''}>${v}%</option>`).join('')}
-									</select>
-								`}
+								<select data-calc="percentTime" class="w-full p-1 border rounded">
+									${[25, 50, 75].map(v => {
+										const hrs = Math.round(v * 4.4);
+										const val = appt.type === 'reader' ? hrs : v;
+										const isSelected = val == appt.values.percentTime ? 'selected' : '';
+										return `<option value="${val}" ${isSelected}>${v}% / ${hrs} hours</option>`;
+									}).join('')}
+								</select>
 							</div>
 							<div class="col-span-1 md:col-span-2 lg:col-span-3">
 								<label class="block text-xs font-semibold">Supervisor / Instructor</label>
@@ -404,6 +457,7 @@
 			// Main generation logic
 			generateBtn.addEventListener('click', () => {
 				const studentName = document.getElementById('global-student-name').value || '[STUDENT NAME]';
+				const studentEmail = document.getElementById('global-student-email').value || '';
 				const deptName = document.getElementById('global-dept-name').value || '[DEPARTMENT NAME]';
 				const headOfDept = document.getElementById('global-head-of-dept').value || '[HEAD OF DEPT]';
 				const contactName = document.getElementById('global-contact-name').value || '[CONTACT NAME]';
@@ -480,8 +534,8 @@
 			});
 
 			document.getElementById('download-word-btn').addEventListener('click', () => {
-				// We wrap in a basic HTML structure that Word understands as a .doc
-				const content = letterPreviewContainer.innerHTML;
+				// Convert HTML to a single line and preserve space to prevent Word from adding weird page breaks
+				const content = letterPreviewContainer.innerHTML.replace(/\n|\t/g, ' ');
 				const html = `
 					<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
 					<head><meta charset='utf-8'><title>Offer Letters</title>
@@ -525,11 +579,12 @@
 				const title = data.type === 'ta' ? 'Teaching Assistant' : (data.type === 'ai' ? 'Associate Instructor' : 'Reader/Tutor');
 
 				const hourlyText = isHourly ? `
-					<p><b>&lt;&lt;Use for hourly ASE titles&gt;&gt;</b> You are responsible for honestly and accurately reporting your hours worked on an affirmative basis, including any leaves of absence taken. Such reporting must be done through the appropriate time and attendance reporting form and/or through your campus time and attendance system, by the submission deadline and procedures as set by your campus. Failure to accurately report work hours or an absence from work in any circumstance may result in an overpayment of public funds requiring your repayment. Submitting erroneous information in the time and attendance system will be subject to your submission being overridden and pay withheld for the time not worked. Failing to accurately report work hours or absences in any way and receiving an overpayment of funds is a serious violation of university policy that may result in disciplinary action, up to and including dismissal. See information on UC Davis Time Reporting System (TRS)</p>
+					<p>You are responsible for honestly and accurately reporting your hours worked on an affirmative basis, including any leaves of absence taken. Such reporting must be done through the appropriate time and attendance reporting form and/or through your campus time and attendance system, by the submission deadline and procedures as set by your campus. Failure to accurately report work hours or an absence from work in any circumstance may result in an overpayment of public funds requiring your repayment. Submitting erroneous information in the time and attendance system will be subject to your submission being overridden and pay withheld for the time not worked. Failing to accurately report work hours or absences in any way and receiving an overpayment of funds is a serious violation of university policy that may result in disciplinary action, up to and including dismissal. See information on UC Davis Time Reporting System (TRS)</p>
 				` : `
-					<p><b>&lt;&lt;Use for salaried ASE titles&gt;&gt;</b> Reporting in Time and Attendance System - You are responsible for honestly and accurately reporting the use of any leave or absences from work each month on the appropriate leave-reporting form and/or through your campus time and attendance system each month, in accordance with established local procedures. Failure to report an absence from work in any circumstance may result in an overpayment of public funds requiring your repayment. Submitting erroneous information in the time and attendance system will be subject to your submission being overridden and pay withheld for the time not worked. Failing to accurately report absences in any way and receiving an overpayment of funds is a serious violation of university policy that may result in disciplinary action, up to and including dismissal. If you have no absences or leave to report, you must still submit a report acknowledging no absences or leave to report in your local time and attendance system by the submission deadline as set by your campus. See information on UC Davis Time Reporting System (TRS)</p>
+					<p><b>Reporting in Time and Attendance System</b> - You are responsible for honestly and accurately reporting the use of any leave or absences from work each month on the appropriate leave-reporting form and/or through your campus time and attendance system each month, in accordance with established local procedures. Failure to report an absence from work in any circumstance may result in an overpayment of public funds requiring your repayment. Submitting erroneous information in the time and attendance system will be subject to your submission being overridden and pay withheld for the time not worked. Failing to accurately report absences in any way and receiving an overpayment of funds is a serious violation of university policy that may result in disciplinary action, up to and including dismissal. If you have no absences or leave to report, you must still submit a report acknowledging no absences or leave to report in your local time and attendance system by the submission deadline as set by your campus. See information on UC Davis Time Reporting System (TRS)</p>
 				`;
 
+				const fteDisplay = isHourly ? `${(data.totalFte / 4.4).toFixed(0)}% / ${data.totalFte} hours` : `${data.totalFte}% / ${(data.totalFte * 4.4).toFixed(0)} hours`;
 				const salaryLine = isHourly ?
 					`at an hourly rate of ${formatCurrency(data.monthlySal)} per hour` :
 					`at a monthly salary of ${formatCurrency(data.monthlySal)} (based on a full-time monthly rate of ${formatCurrency(data.monthlySal * (100 / data.totalFte))})`;
@@ -548,7 +603,7 @@
 					
 					<p>I am pleased to offer you an appointment as a <b>${title}</b> in the <b>${data.deptName}</b> for the <b>${data.quarter} ${data.year}-${data.year + 1}</b>. Your supervisor for this appointment will be <b>${data.supervisor}</b>.</p>
 					
-					<p>This appointment is at <b>${data.totalFte}${isHourly ? ' total hours' : '% time'}</b>. You will be paid ${salaryLine}. Your paychecks will be issued on <b>${data.payDates}</b>.</p>
+					<p>This appointment is at <b>${fteDisplay}</b>. You will be paid ${salaryLine}. Your paychecks will be issued on <b>${data.payDates}</b>.</p>
 					
 					${hourlyText}
 					
@@ -587,7 +642,7 @@
 					</div>
 					
 					<div class="mt-8">
-						<p>I _________ accept. I _____ decline the above appointment.</p>
+						<p>I accept _________ (or) I decline _________ the above appointment.</p>
 						<div class="flex gap-8 mt-4">
 							<div><div class="signature-line"></div><p class="text-xs">Signature of Prospective ASE</p></div>
 							<div><div class="signature-line" style="width: 100px;"></div><p class="text-xs">Date Signed</p></div>
@@ -597,6 +652,7 @@
 			}
 
 			function generateGsrLetter(data) {
+				const fteDisplay = `${data.totalFte}% / ${(data.totalFte * 4.4).toFixed(0)} hours`;
 				return `
 				<div class="letter-page letter-preview mb-8">
 					<div class="letter-header">
@@ -611,7 +667,7 @@
 					
 					<p>I am pleased to offer you an appointment as a <b>Graduate Student Researcher</b> in the <b>${data.deptName}</b> for the <b>${data.quarter} ${data.year}-${data.year + 1}</b>. Your PI/Supervisor for this appointment will be <b>${data.supervisor}</b>.</p>
 					
-					<p>This appointment is at <b>${data.totalFte}% time</b>. You will be paid at a monthly rate of <b>${formatCurrency(data.monthlySal)}</b> (based on a full-time monthly rate of ${formatCurrency(data.monthlySal * (100 / data.totalFte))}). Your paychecks will be issued on <b>${data.payDates}</b>.</p>
+					<p>This appointment is at <b>${fteDisplay}</b>. You will be paid at a monthly rate of <b>${formatCurrency(data.monthlySal)}</b> (based on a full-time monthly rate of ${formatCurrency(data.monthlySal * (100 / data.totalFte))}). Your paychecks will be issued on <b>${data.payDates}</b>.</p>
 					
 					<p><b>Short Statement of Required Work Duties:</b><br>${data.duties}</p>
 					
@@ -652,7 +708,7 @@
 					</div>
 					
 					<div class="mt-8">
-						<p>I _________ accept. I _____ decline the above appointment.</p>
+						<p>I accept _________ (or) I decline _________ the above appointment.</p>
 						<div class="flex gap-8 mt-4">
 							<div><div class="signature-line"></div><p class="text-xs">Signature of Prospective GSR</p></div>
 							<div><div class="signature-line" style="width: 100px;"></div><p class="text-xs">Date Signed</p></div>
