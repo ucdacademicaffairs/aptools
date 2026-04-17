@@ -611,25 +611,22 @@
 					`;
 
 					const worker = html2pdf().set(opt).from(isolatedHtml);
-					// Output as Data URI, then split to get the pure Base64 content
-					const dataUri = await worker.outputPdf('datauristring');
-					const pdfBase64 = dataUri.split('base64,')[1];
+					const pdfBlob = await worker.outputPdf('blob');
 
 					btn.innerText = 'Dispatching to SignRequest...';
 
-					const payload = {
-						studentName: studentName || 'Student',
-						studentEmail: studentEmail,
-						contactEmail: contactEmail || '',
-						contactName: contactName || 'Department Contact',
-						pdfBase64: pdfBase64
-					};
+					const formData = new FormData();
+					formData.append('studentName', studentName || 'Student');
+					formData.append('studentEmail', studentEmail);
+					formData.append('contactEmail', contactEmail || '');
+					formData.append('contactName', contactName || 'Department Contact');
+					// Append the blob explicitly as a file with a name
+					formData.append('document', pdfBlob, 'Offer_Letter.pdf');
 
 					await fetch(ZAPIER_WEBHOOK_URL, {
 						method: 'POST',
-						mode: 'no-cors',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify(payload)
+						// Do NOT set Content-Type header; let the browser set multipart/form-data with boundary
+						body: formData
 					});
 
 					alert("Success! The fully packaged PDF has been sent to a webhook for routing.");
