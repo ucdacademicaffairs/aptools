@@ -222,12 +222,10 @@
 			<div class="p-4 bg-white border-b flex flex-wrap gap-4 justify-between items-center">
 				<h3 class="text-xl font-bold">Letter Preview</h3>
 				<div class="flex flex-wrap gap-2">
-					<button id="send-zapier-btn" class="btn bg-purple-600 hover:bg-purple-700 text-white">Send via
-						DocuSign</button>
-					<button id="download-word-btn" class="btn bg-blue-800 text-white">Download .doc (Word)</button>
-					<button id="download-text-btn" class="btn bg-gray-700 text-white">Download .txt</button>
-					<button id="print-letters-btn" class="btn bg-blue-600 text-white">Print to PDF</button>
-					<button id="close-modal-btn" class="btn btn-delete">Close Preview</button>
+					<button id="send-zapier-btn" class="btn bg-purple-600 hover:bg-purple-700 text-white">Send via SignRequest</button>
+					<button id="download-word-btn" class="btn bg-blue-700 hover:bg-blue-800 text-white">Download .doc (Word)</button>
+					<button id="print-letters-btn" class="btn bg-blue-700 hover:bg-blue-800 text-white">Print to PDF</button>
+					<button id="close-modal-btn" class="btn bg-red-600 hover:bg-red-700 text-white">Close Preview</button>
 				</div>
 			</div>
 			<div id="letter-preview-container" class="flex-grow overflow-y-auto p-4 md:p-8 bg-gray-200">
@@ -617,7 +615,7 @@
 					const dataUri = await worker.outputPdf('datauristring');
 					const pdfBase64 = dataUri.split('base64,')[1];
 
-					btn.innerText = 'Dispatching to Zapier...';
+					btn.innerText = 'Dispatching to SignRequest...';
 
 					const payload = {
 						studentName: studentName || 'Student',
@@ -779,10 +777,10 @@
 					</div>
 					
 					<div class="mt-8">
-						<p>I accept _________ <span style="color:white; font-size:1px;">\\check_accept\\</span> (or) I decline _________ <span style="color:white; font-size:1px;">\\check_decline\\</span> the above appointment.</p>
+						<p>I accept _________ <span style="color:white; font-size:1px;">[[c|1]]</span> (or) I decline _________ <span style="color:white; font-size:1px;">[[c|1]]</span> the above appointment.</p>
 						<div class="flex gap-8 mt-4">
-							<div><div class="signature-line"></div><p class="text-xs">Signature of Prospective ASE <span style="color:white; font-size:1px;">\\sig1\\</span></p></div>
-							<div><div class="signature-line" style="width: 100px;"></div><p class="text-xs">Date Signed <span style="color:white; font-size:1px;">\\date1\\</span></p></div>
+							<div><div class="signature-line"></div><p class="text-xs">Signature of Prospective ASE <span style="color:white; font-size:1px;">[[s|1]]</span></p></div>
+							<div><div class="signature-line" style="width: 100px;"></div><p class="text-xs">Date Signed <span style="color:white; font-size:1px;">[[d|1]]</span></p></div>
 						</div>
 					</div>
 				</div>`;
@@ -853,10 +851,10 @@
 					</div>
 					
 					<div class="mt-8">
-						<p>I accept _________ <span style="color:white; font-size:1px;">\\check_accept\\</span> (or) I decline _________ <span style="color:white; font-size:1px;">\\check_decline\\</span> the above appointment.</p>
+						<p>I accept _________ <span style="color:white; font-size:1px;">[[c|1]]</span> (or) I decline _________ <span style="color:white; font-size:1px;">[[c|1]]</span> the above appointment.</p>
 						<div class="flex gap-8 mt-4">
-							<div><div class="signature-line"></div><p class="text-xs">Signature of Prospective GSR <span style="color:white; font-size:1px;">\\sig1\\</span></p></div>
-							<div><div class="signature-line" style="width: 100px;"></div><p class="text-xs">Date Signed <span style="color:white; font-size:1px;">\\date1\\</span></p></div>
+							<div><div class="signature-line"></div><p class="text-xs">Signature of Prospective GSR <span style="color:white; font-size:1px;">[[s|1]]</span></p></div>
+							<div><div class="signature-line" style="width: 100px;"></div><p class="text-xs">Date Signed <span style="color:white; font-size:1px;">[[d|1]]</span></p></div>
 						</div>
 					</div>
 				</div>`;
