@@ -241,7 +241,7 @@
 
 	<script>
 		document.addEventListener('DOMContentLoaded', function () {
-			const ZAPIER_WEBHOOK_URL = 'https://hooks.zapier.com/hooks/catch/27268773/uj1leu5/';
+			const ZAPIER_WEBHOOK_URL = 'https://hook.us2.make.com/kkrxssjvof9ovbuhan1v3nembprinxj1';
 
 			let COST_DATA = {};
 			let appointments = [];
@@ -615,9 +615,9 @@
 					const worker = html2pdf().set(opt).from(isolatedHtml);
 					const pdfBlob = await worker.outputPdf('blob');
 
-					btn.innerText = 'Dispatching to Zapier...';
+					btn.innerText = 'Dispatching to Make...';
 
-					// Use FormData to send a true file payload to Zapier
+					// Use FormData to send a true file payload to Make
 					const formData = new FormData();
 					formData.append('studentName', studentName || 'Student');
 					formData.append('studentEmail', studentEmail);
@@ -633,7 +633,7 @@
 						body: formData
 					});
 
-					alert("Success! The fully packaged PDF has been sent to your Zapier webhook for routing.");
+					alert("Success! The fully packaged PDF has been sent to a Make webhook for routing.");
 				} catch (e) {
 					console.error(e);
 					alert("An error occurred generating or sending the PDF.");
