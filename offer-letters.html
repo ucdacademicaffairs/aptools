@@ -613,8 +613,9 @@
 					`;
 
 					const worker = html2pdf().set(opt).from(isolatedHtml);
-					// Output as clean Base64 string (no data: URI prefix)
-					const pdfBase64 = await worker.outputPdf('base64');
+					// Output as Data URI, then split to get the pure Base64 content
+					const dataUri = await worker.outputPdf('datauristring');
+					const pdfBase64 = dataUri.split('base64,')[1];
 
 					btn.innerText = 'Dispatching to Zapier...';
 
@@ -628,6 +629,7 @@
 
 					await fetch(ZAPIER_WEBHOOK_URL, {
 						method: 'POST',
+						mode: 'no-cors',
 						headers: { 'Content-Type': 'application/json' },
 						body: JSON.stringify(payload)
 					});
