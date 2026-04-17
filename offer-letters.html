@@ -6,6 +6,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Offer Letter Generator</title>
 	<script src="https://cdn.tailwindcss.com"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&display=swap" rel="stylesheet">
@@ -119,38 +120,46 @@
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
 						<div>
 							<label class="block text-sm font-semibold text-gray-700">Student Full Name</label>
-							<input type="text" id="global-student-name" class="w-full h-10 px-3 border rounded mt-1" placeholder="Fulanah Doe">
+							<input type="text" id="global-student-name" class="w-full h-10 px-3 border rounded mt-1"
+								placeholder="Fulanah Doe">
 						</div>
 						<div>
 							<label class="block text-sm font-semibold text-gray-700">Student Email</label>
-							<input type="email" id="global-student-email" class="w-full h-10 px-3 border rounded mt-1" placeholder="student@ucdavis.edu">
+							<input type="email" id="global-student-email" class="w-full h-10 px-3 border rounded mt-1"
+								placeholder="student@ucdavis.edu">
 						</div>
 					</div>
 				</div>
 
 				<!-- Hiring Department Information Panel -->
 				<div class="bg-gray-50/50 border rounded-lg p-5 shadow-sm">
-					<h4 class="font-bold text-gray-800 mb-4 text-xs tracking-widest uppercase">Hiring Department Information</h4>
+					<h4 class="font-bold text-gray-800 mb-4 text-xs tracking-widest uppercase">Hiring Department
+						Information</h4>
 					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-5">
 						<div class="lg:col-span-3">
 							<label class="block text-sm font-semibold text-gray-700">Hiring Department</label>
-							<input type="text" id="global-dept-name" class="w-full h-10 px-3 border rounded mt-1" placeholder="Department of History">
+							<input type="text" id="global-dept-name" class="w-full h-10 px-3 border rounded mt-1"
+								placeholder="Department of History">
 						</div>
 						<div class="lg:col-span-3">
 							<label class="block text-sm font-semibold text-gray-700">Head of Hiring Dept/Unit</label>
-							<input type="text" id="global-head-of-dept" class="w-full h-10 px-3 border rounded mt-1" placeholder="Dr. Sarah Smith, Chair">
+							<input type="text" id="global-head-of-dept" class="w-full h-10 px-3 border rounded mt-1"
+								placeholder="Dr. Sarah Smith, Chair">
 						</div>
 						<div class="md:col-span-2 lg:col-span-2">
 							<label class="block text-sm font-semibold text-gray-700">Dept Contact Name</label>
-							<input type="text" id="global-contact-name" class="w-full h-10 px-3 border rounded mt-1" placeholder="Max Mustermann">
+							<input type="text" id="global-contact-name" class="w-full h-10 px-3 border rounded mt-1"
+								placeholder="Max Mustermann">
 						</div>
 						<div class="lg:col-span-2">
 							<label class="block text-sm font-semibold text-gray-700">Dept Contact Phone</label>
-							<input type="text" id="global-contact-phone" class="w-full h-10 px-3 border rounded mt-1" placeholder="(530) 752-XXXX">
+							<input type="text" id="global-contact-phone" class="w-full h-10 px-3 border rounded mt-1"
+								placeholder="(530) 752-XXXX">
 						</div>
 						<div class="lg:col-span-2">
 							<label class="block text-sm font-semibold text-gray-700">Dept Contact Email</label>
-							<input type="email" id="global-contact-email" class="w-full h-10 px-3 border rounded mt-1" placeholder="mmuster@ucdavis.edu">
+							<input type="email" id="global-contact-email" class="w-full h-10 px-3 border rounded mt-1"
+								placeholder="mmuster@ucdavis.edu">
 						</div>
 					</div>
 				</div>
@@ -213,9 +222,11 @@
 			<div class="p-4 bg-white border-b flex flex-wrap gap-4 justify-between items-center">
 				<h3 class="text-xl font-bold">Letter Preview</h3>
 				<div class="flex flex-wrap gap-2">
-					<button id="download-word-btn" class="btn bg-blue-800">Download .doc (Word)</button>
-					<button id="download-text-btn" class="btn bg-gray-700">Download .txt</button>
-					<button id="print-letters-btn" class="btn bg-blue-600">Print to PDF</button>
+					<button id="send-zapier-btn" class="btn bg-purple-600 hover:bg-purple-700 text-white">Send via
+						DocuSign</button>
+					<button id="download-word-btn" class="btn bg-blue-800 text-white">Download .doc (Word)</button>
+					<button id="download-text-btn" class="btn bg-gray-700 text-white">Download .txt</button>
+					<button id="print-letters-btn" class="btn bg-blue-600 text-white">Print to PDF</button>
 					<button id="close-modal-btn" class="btn btn-delete">Close Preview</button>
 				</div>
 			</div>
@@ -230,6 +241,8 @@
 
 	<script>
 		document.addEventListener('DOMContentLoaded', function () {
+			const ZAPIER_WEBHOOK_URL = 'https://hooks.zapier.com/hooks/catch/27268773/uj1leu5/';
+
 			let COST_DATA = {};
 			let appointments = [];
 			let appointmentCounter = 0;
@@ -428,11 +441,11 @@
 								<label class="block text-xs font-semibold">% Time / Hours</label>
 								<select data-calc="percentTime" class="w-full p-1 mt-1 h-[30px] border rounded leading-none">
 									${[25, 50, 75].map(v => {
-										const hrs = Math.round(v * 4.4);
-										const val = appt.type === 'reader' ? hrs : v;
-										const isSelected = val == appt.values.percentTime ? 'selected' : '';
-										return `<option value="${val}" ${isSelected}>${v}% / ${hrs} hours</option>`;
-									}).join('')}
+						const hrs = Math.round(v * 4.4);
+						const val = appt.type === 'reader' ? hrs : v;
+						const isSelected = val == appt.values.percentTime ? 'selected' : '';
+						return `<option value="${val}" ${isSelected}>${v}% / ${hrs} hours</option>`;
+					}).join('')}
 								</select>
 							</div>
 							<div class="col-span-1 md:col-span-2 lg:col-span-3">
@@ -507,12 +520,12 @@
 
 					// Sort group appointments by Quarter order
 					const qOrder = { 'Fall': 1, 'Winter': 2, 'Spring': 3 };
-					groupAppts.sort((a,b) => qOrder[a.values.quarter] - qOrder[b.values.quarter]);
-					
+					groupAppts.sort((a, b) => qOrder[a.values.quarter] - qOrder[b.values.quarter]);
+
 					// Extract quarters ensuring no duplicates
 					const quartersSet = new Set(groupAppts.map(a => a.values.quarter));
 					const quartersArr = Array.from(quartersSet);
-					
+
 					let quarterString = quartersArr[0];
 					if (quartersArr.length === 2) {
 						quarterString = quartersArr.join(' and ');
@@ -559,6 +572,64 @@
 
 			closeModalBtn.addEventListener('click', () => {
 				letterModal.classList.add('hidden');
+			});
+
+			document.getElementById('send-zapier-btn').addEventListener('click', async () => {
+				if (!ZAPIER_WEBHOOK_URL) {
+					alert('Please configure your ZAPIER_WEBHOOK_URL in the script file before sending.');
+					return;
+				}
+
+				const studentName = document.getElementById('global-student-name').value;
+				const studentEmail = document.getElementById('global-student-email').value;
+				const contactEmail = document.getElementById('global-contact-email').value;
+
+				if (!studentEmail) {
+					alert("Please provide the Student Email in the Global Information panel before sending.");
+					return;
+				}
+
+				const btn = document.getElementById('send-zapier-btn');
+				const originalText = btn.innerText;
+				btn.innerText = 'Packaging PDF...';
+				btn.disabled = true;
+
+				try {
+					const opt = {
+						margin: 0.25,
+						filename: 'Offer_Letter.pdf',
+						image: { type: 'jpeg', quality: 1.0 },
+						html2canvas: { scale: 2 },
+						jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+					};
+
+					const worker = html2pdf().set(opt).from(printContainer);
+					const pdfDataUri = await worker.outputPdf('datauristring');
+
+					btn.innerText = 'Dispatching to Zapier...';
+
+					const payload = {
+						studentName: studentName || 'Student',
+						studentEmail: studentEmail,
+						contactEmail: contactEmail || '',
+						pdfBase64: pdfDataUri
+					};
+
+					await fetch(ZAPIER_WEBHOOK_URL, {
+						method: 'POST',
+						mode: 'no-cors',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify(payload)
+					});
+
+					alert("Success! The fully packaged PDF has been sent to your Zapier webhook for routing.");
+				} catch (e) {
+					console.error(e);
+					alert("An error occurred generating or sending the PDF.");
+				} finally {
+					btn.innerText = originalText;
+					btn.disabled = false;
+				}
 			});
 
 			printBtn.addEventListener('click', () => {
@@ -696,10 +767,10 @@
 					</div>
 					
 					<div class="mt-8">
-						<p>I accept _________ (or) I decline _________ the above appointment.</p>
+						<p>I accept _________ <span style="color:white; font-size:1px;">\\check_accept\\</span> (or) I decline _________ <span style="color:white; font-size:1px;">\\check_decline\\</span> the above appointment.</p>
 						<div class="flex gap-8 mt-4">
-							<div><div class="signature-line"></div><p class="text-xs">Signature of Prospective ASE</p></div>
-							<div><div class="signature-line" style="width: 100px;"></div><p class="text-xs">Date Signed</p></div>
+							<div><div class="signature-line"></div><p class="text-xs">Signature of Prospective ASE <span style="color:white; font-size:1px;">\\sig1\\</span></p></div>
+							<div><div class="signature-line" style="width: 100px;"></div><p class="text-xs">Date Signed <span style="color:white; font-size:1px;">\\date1\\</span></p></div>
 						</div>
 					</div>
 				</div>`;
@@ -770,10 +841,10 @@
 					</div>
 					
 					<div class="mt-8">
-						<p>I accept _________ (or) I decline _________ the above appointment.</p>
+						<p>I accept _________ <span style="color:white; font-size:1px;">\\check_accept\\</span> (or) I decline _________ <span style="color:white; font-size:1px;">\\check_decline\\</span> the above appointment.</p>
 						<div class="flex gap-8 mt-4">
-							<div><div class="signature-line"></div><p class="text-xs">Signature of Prospective GSR</p></div>
-							<div><div class="signature-line" style="width: 100px;"></div><p class="text-xs">Date Signed</p></div>
+							<div><div class="signature-line"></div><p class="text-xs">Signature of Prospective GSR <span style="color:white; font-size:1px;">\\sig1\\</span></p></div>
+							<div><div class="signature-line" style="width: 100px;"></div><p class="text-xs">Date Signed <span style="color:white; font-size:1px;">\\date1\\</span></p></div>
 						</div>
 					</div>
 				</div>`;
