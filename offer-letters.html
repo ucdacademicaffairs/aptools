@@ -107,55 +107,71 @@
 			</div>
 
 			<!-- Global Metadata Section -->
-			<div class="card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-				<div class="col-span-1 md:col-span-2 lg:col-span-3">
+			<div class="card space-y-6">
+				<div>
 					<h3 class="text-xl font-bold text-gray-800 mb-2">Global Information</h3>
-					<p class="text-sm text-gray-600 mb-4">These fields will be shared across all generated letters.</p>
+					<p class="text-sm text-gray-600">These fields will be shared across all generated letters.</p>
 				</div>
-				<div>
-					<label class="block text-sm font-semibold text-gray-700">Student Full Name</label>
-					<input type="text" id="global-student-name" class="w-full p-2 border rounded mt-1" placeholder="Fulanah Doe">
+
+				<!-- Student Information Panel -->
+				<div class="bg-gray-50/50 border rounded-lg p-5 shadow-sm">
+					<h4 class="font-bold text-gray-800 mb-4 text-xs tracking-widest uppercase">Student Information</h4>
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+						<div>
+							<label class="block text-sm font-semibold text-gray-700">Student Full Name</label>
+							<input type="text" id="global-student-name" class="w-full h-10 px-3 border rounded mt-1" placeholder="Fulanah Doe">
+						</div>
+						<div>
+							<label class="block text-sm font-semibold text-gray-700">Student Email</label>
+							<input type="email" id="global-student-email" class="w-full h-10 px-3 border rounded mt-1" placeholder="student@ucdavis.edu">
+						</div>
+					</div>
 				</div>
-				<div>
-					<label class="block text-sm font-semibold text-gray-700">Student Email</label>
-					<input type="email" id="global-student-email" class="w-full p-2 border rounded mt-1" placeholder="student@ucdavis.edu">
+
+				<!-- Hiring Department Information Panel -->
+				<div class="bg-gray-50/50 border rounded-lg p-5 shadow-sm">
+					<h4 class="font-bold text-gray-800 mb-4 text-xs tracking-widest uppercase">Hiring Department Information</h4>
+					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-5">
+						<div class="lg:col-span-3">
+							<label class="block text-sm font-semibold text-gray-700">Hiring Department</label>
+							<input type="text" id="global-dept-name" class="w-full h-10 px-3 border rounded mt-1" placeholder="Department of History">
+						</div>
+						<div class="lg:col-span-3">
+							<label class="block text-sm font-semibold text-gray-700">Head of Hiring Dept/Unit</label>
+							<input type="text" id="global-head-of-dept" class="w-full h-10 px-3 border rounded mt-1" placeholder="Dr. Sarah Smith, Chair">
+						</div>
+						<div class="md:col-span-2 lg:col-span-2">
+							<label class="block text-sm font-semibold text-gray-700">Dept Contact Name</label>
+							<input type="text" id="global-contact-name" class="w-full h-10 px-3 border rounded mt-1" placeholder="Max Mustermann">
+						</div>
+						<div class="lg:col-span-2">
+							<label class="block text-sm font-semibold text-gray-700">Dept Contact Phone</label>
+							<input type="text" id="global-contact-phone" class="w-full h-10 px-3 border rounded mt-1" placeholder="(530) 752-XXXX">
+						</div>
+						<div class="lg:col-span-2">
+							<label class="block text-sm font-semibold text-gray-700">Dept Contact Email</label>
+							<input type="email" id="global-contact-email" class="w-full h-10 px-3 border rounded mt-1" placeholder="mmuster@ucdavis.edu">
+						</div>
+					</div>
 				</div>
-				<div>
-					<label class="block text-sm font-semibold text-gray-700">Hiring Department</label>
-					<input type="text" id="global-dept-name" class="w-full p-2 border rounded mt-1"
-						placeholder="Department of History">
-				</div>
-				<div>
-					<label class="block text-sm font-semibold text-gray-700">Head of Hiring Dept/Unit</label>
-					<input type="text" id="global-head-of-dept" class="w-full p-2 border rounded mt-1"
-						placeholder="Dr. Sarah Smith, Chair">
-				</div>
-				<div>
-					<label class="block text-sm font-semibold text-gray-700">Dept Contact Name</label>
-					<input type="text" id="global-contact-name" class="w-full p-2 border rounded mt-1"
-						placeholder="Max Mustermann">
-				</div>
-				<div>
-					<label class="block text-sm font-semibold text-gray-700">Dept Contact Phone</label>
-					<input type="text" id="global-contact-phone" class="w-full p-2 border rounded mt-1"
-						placeholder="(530) 752-XXXX">
-				</div>
-				<div>
-					<label class="block text-sm font-semibold text-gray-700">Dept Contact Email</label>
-					<input type="email" id="global-contact-email" class="w-full p-2 border rounded mt-1"
-						placeholder="mmuster@ucdavis.edu">
-				</div>
-				<div>
-					<label class="block text-sm font-semibold text-gray-700">Academic Year</label>
-					<select id="global-year" class="w-full p-2 border rounded mt-1">
-						<option value="2025">2025-2026</option>
-						<option value="2026" selected>2026-2027</option>
-						<option value="2027">2027-2028</option>
-					</select>
-				</div>
-				<div>
-					<label class="block text-sm font-semibold text-gray-700">Response Deadline</label>
-					<input type="date" id="global-deadline" class="w-full p-2 border rounded mt-1">
+
+				<!-- Letter Details Panel -->
+				<div class="bg-gray-50/50 border rounded-lg p-5 shadow-sm">
+					<h4 class="font-bold text-gray-800 mb-4 text-xs tracking-widest uppercase">Letter Details</h4>
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+						<div>
+							<label class="block text-sm font-semibold text-gray-700">Academic Year</label>
+							<select id="global-year" class="w-full h-10 px-3 border rounded mt-1">
+								<option value="2025">2025-2026</option>
+								<option value="2026" selected>2026-2027</option>
+								<option value="2027">2027-2028</option>
+							</select>
+						</div>
+						<div>
+							<label class="block text-sm font-semibold text-gray-700">Response Deadline</label>
+							<input type="date" id="global-deadline" class="w-full h-10 px-3 border rounded mt-1">
+						</div>
+					</div>
 				</div>
 			</div>
 
