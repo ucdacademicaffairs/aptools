@@ -605,29 +605,25 @@
 					};
 
 					const worker = html2pdf().set(opt).from(printContainer);
-					// Output as Base64 string
-					const rawDataUri = await worker.outputPdf('datauristring');
-					
-					// Zapier's DocuSign integration has a bug where it crashes on pure binary file uploads (LazyFile serialization error).
-					// To fix this, we must send a JSON string formatted exactly like a Zapier-hydrated file: `data:[mime];name=[name];base64,[data]`
-					const base64Data = rawDataUri.split('base64,')[1];
-					const zapierFriendlyFileString = `data:application/pdf;name=Offer_Letter.pdf;base64,${base64Data}`;
+					// Output as a raw binary Blob
+					const pdfBlob = await worker.outputPdf('blob');
 
 					btn.innerText = 'Dispatching to Zapier...';
 
-					const payload = {
-						studentName: studentName || 'Student',
-						studentEmail: studentEmail,
-						contactEmail: contactEmail || '',
-						contactName: contactName || 'Department Contact',
-						documentFile: zapierFriendlyFileString
-					};
+					// Use FormData to send a true file payload to Zapier
+					const formData = new FormData();
+					formData.append('studentName', studentName || 'Student');
+					formData.append('studentEmail', studentEmail);
+					formData.append('contactEmail', contactEmail || '');
+					formData.append('contactName', contactName || 'Department Contact');
+					// Append the blob explicitly as a file with a name
+					formData.append('document', pdfBlob, 'Offer_Letter.pdf');
 
 					await fetch(ZAPIER_WEBHOOK_URL, {
 						method: 'POST',
 						mode: 'no-cors',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify(payload)
+						// Do NOT set Content-Type. The browser automatically sets multipart/form-data
+						body: formData
 					});
 
 					alert("Success! The fully packaged PDF has been sent to your Zapier webhook for routing.");
