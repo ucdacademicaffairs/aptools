@@ -359,6 +359,7 @@
 						step: '1',
 						percentTime: type === 'reader' ? '110' : '50',
 						supervisor: '',
+						hideSupervisor: false,
 						workDuties: type === 'gsr' ? 'Conducting research related to...' : ''
 					},
 					costs: {}
@@ -417,8 +418,16 @@
 								</select>
 							</div>
 							<div class="col-span-1 md:col-span-2 lg:col-span-3">
-								<label class="block text-xs font-semibold">Supervisor / Instructor</label>
-								<input type="text" data-calc="supervisor" class="w-full p-1 border rounded" value="${appt.values.supervisor}" placeholder="Name of Supervisor">
+								<label class="block text-xs font-semibold flex justify-between">
+									<span>Supervisor / Instructor</span>
+									${appt.type !== 'gsr' ? `
+									<label class="inline-flex items-center">
+										<input type="checkbox" data-calc="hideSupervisor" class="w-3 h-3 mr-1" ${appt.values.hideSupervisor ? 'checked' : ''}>
+										<span class="text-[10px] font-normal leading-none cursor-pointer text-gray-500">Omit from letter</span>
+									</label>
+									` : ''}
+								</label>
+								<input type="text" data-calc="supervisor" class="w-full p-1 border rounded mt-1" value="${appt.values.supervisor}" placeholder="Name of Supervisor">
 							</div>
 							${dutiesHtml}
 						</div>
@@ -462,12 +471,13 @@
 
 				const formattedDeadline = deadline ? new Date(deadline).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '[DATE]';
 
-				// Group appointments by Quarter + Type
+				// Group identical appointments to combine quarters
 				const groups = {};
 				appointments.forEach(appt => {
-					const key = `${appt.values.quarter}-${appt.type}`;
-					if (!groups[key]) groups[key] = [];
-					groups[key].push(appt);
+					// Group by type, step, percentTime, and workDuties
+					const profileKey = `${appt.type}-${appt.values.step}-${appt.values.percentTime}-${appt.values.workDuties || ''}`;
+					if (!groups[profileKey]) groups[profileKey] = [];
+					groups[profileKey].push(appt);
 				});
 
 				let allLettersHtml = '';
@@ -475,23 +485,37 @@
 				Object.keys(groups).sort().forEach(key => {
 					const groupAppts = groups[key];
 					const sampleAppt = groupAppts[0];
-					const quarter = sampleAppt.values.quarter;
 					const type = sampleAppt.type;
 
-					// Average/Sum values if multiple appts in same group?
-					// Usually it's just one, but we'll combine FTE if multiple.
-					const totalFte = groupAppts.reduce((sum, a) => sum + parseFloat(a.values.percentTime || 0), 0);
-					const supervisor = groupAppts.map(a => a.values.supervisor).filter(s => s).join(', ') || '[SUPERVISOR]';
-					const monthlySal = sampleAppt.costs.monthlyActual; // Note: if different steps, this is tricky. We'll use the first one's step.
+					// Sort group appointments by Quarter order
+					const qOrder = { 'Fall': 1, 'Winter': 2, 'Spring': 3 };
+					groupAppts.sort((a,b) => qOrder[a.values.quarter] - qOrder[b.values.quarter]);
+					
+					// Extract quarters ensuring no duplicates
+					const quartersSet = new Set(groupAppts.map(a => a.values.quarter));
+					const quartersArr = Array.from(quartersSet);
+					
+					let quarterString = quartersArr[0];
+					if (quartersArr.length === 2) {
+						quarterString = quartersArr.join(' and ');
+					} else if (quartersArr.length === 3) {
+						quarterString = 'Fall, Winter, and Spring';
+					}
+
+					// We take the FTE of the sample appointment directly (don't sum across combined quarters)
+					const totalFte = parseFloat(sampleAppt.values.percentTime || 0);
+					const supervisor = sampleAppt.values.supervisor || '[SUPERVISOR]';
+					const monthlySal = sampleAppt.costs.monthlyActual;
+					const hideSupervisor = quartersArr.length > 1 || groupAppts.some(a => a.values.hideSupervisor);
 
 					// Derive Pay Dates
-					const payDates = getPayDates(quarter);
+					const payDates = getCombinedPayDatesList(quartersArr);
 
 					if (type === 'gsr') {
 						allLettersHtml += generateGsrLetter({
 							studentName, deptName, headOfDept, contactName, contactPhone, contactEmail,
 							deadline: formattedDeadline,
-							quarter, totalFte, supervisor, monthlySal, payDates,
+							quarter: quarterString, totalFte, supervisor, monthlySal, payDates, hideSupervisor,
 							duties: sampleAppt.values.workDuties,
 							year: parseInt(document.getElementById('global-year').value)
 						});
@@ -499,7 +523,7 @@
 						allLettersHtml += generateAseLetter({
 							studentName, deptName, headOfDept, contactName, contactPhone, contactEmail,
 							deadline: formattedDeadline,
-							quarter, totalFte, supervisor, monthlySal, payDates, type,
+							quarter: quarterString, totalFte, supervisor, monthlySal, payDates, type, hideSupervisor,
 							year: parseInt(document.getElementById('global-year').value)
 						});
 					}
@@ -557,12 +581,24 @@
 				URL.revokeObjectURL(url);
 			}
 
-			function getPayDates(quarter) {
+			function getPayDatesArray(quarter, startYear) {
+				if (quarter === 'Fall') return [`November 1, ${startYear}`, `December 1, ${startYear}`, `January 1, ${startYear + 1}`];
+				if (quarter === 'Winter') return [`February 1, ${startYear + 1}`, `March 1, ${startYear + 1}`, `April 1, ${startYear + 1}`];
+				if (quarter === 'Spring') return [`May 1, ${startYear + 1}`, `June 1, ${startYear + 1}`, `July 1, ${startYear + 1}`];
+				return [];
+			}
+
+			function getCombinedPayDatesList(quarters) {
 				const startYear = parseInt(document.getElementById('global-year').value);
-				if (quarter === 'Fall') return `November 1, ${startYear}, December 1, ${startYear}, and January 1, ${startYear + 1}`;
-				if (quarter === 'Winter') return `February 1, ${startYear + 1}, March 1, ${startYear + 1}, and April 1, ${startYear + 1}`;
-				if (quarter === 'Spring') return `May 1, ${startYear + 1}, June 1, ${startYear + 1}, and July 1, ${startYear + 1}`;
-				return '[PAY DATES]';
+				let allDates = [];
+				quarters.forEach(q => {
+					allDates = allDates.concat(getPayDatesArray(q, startYear));
+				});
+				if (allDates.length === 0) return '[PAY DATES]';
+				if (allDates.length === 1) return allDates[0];
+				if (allDates.length === 2) return allDates.join(' and ');
+				const last = allDates.pop();
+				return allDates.join(', ') + ', and ' + last;
 			}
 
 			function formatCurrency(val) {
@@ -596,7 +632,7 @@
 					
 					<p>Dear ${data.studentName.split(' ')[0]},</p>
 					
-					<p>I am pleased to offer you an appointment as a <b>${title}</b> in the <b>${data.deptName}</b> for the <b>${data.quarter} ${data.year}-${data.year + 1}</b>. Your supervisor for this appointment will be <b>${data.supervisor}</b>.</p>
+					<p>I am pleased to offer you an appointment as a <b>${title}</b> in the <b>${data.deptName}</b> for the <b>${data.quarter} ${data.year}-${data.year + 1}</b>.${data.hideSupervisor ? ' Your supervisor will be noted on the Description of Duties form you receive prior to the quarter.' : ` Your supervisor for this appointment will be <b>${data.supervisor}</b>.`}</p>
 					
 					<p>This appointment is at <b>${fteDisplay}</b>. You will be paid ${salaryLine}. Your paychecks will be issued on <b>${data.payDates}</b>.</p>
 					
@@ -665,7 +701,7 @@
 					
 					<p>Dear ${data.studentName.split(' ')[0]},</p>
 					
-					<p>I am pleased to offer you an appointment as a <b>Graduate Student Researcher</b> in the <b>${data.deptName}</b> for the <b>${data.quarter} ${data.year}-${data.year + 1}</b>. Your PI/Supervisor for this appointment will be <b>${data.supervisor}</b>.</p>
+					<p>I am pleased to offer you an appointment as a <b>Graduate Student Researcher</b> in the <b>${data.deptName}</b> for the <b>${data.quarter} ${data.year}-${data.year + 1}</b>.${data.hideSupervisor ? ' Your supervisor will be noted on the Description of Duties form you receive prior to the quarter.' : ` Your PI/Supervisor for this appointment will be <b>${data.supervisor}</b>.`}</p>
 					
 					<p>This appointment is at <b>${fteDisplay}</b>. You will be paid at a monthly rate of <b>${formatCurrency(data.monthlySal)}</b> (based on a full-time monthly rate of ${formatCurrency(data.monthlySal * (100 / data.totalFte))}). Your paychecks will be issued on <b>${data.payDates}</b>.</p>
 					
