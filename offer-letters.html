@@ -393,22 +393,24 @@
 					<div class="appointment-row p-4 bg-gray-50 rounded-lg mb-4" data-id="${appt.id}">
 						<div class="flex justify-between items-start mb-4">
 							<h4 class="font-bold text-lg text-[#002855]">${typeName} Appointment</h4>
-							<button class="btn btn-delete w-8 h-8 p-0" data-id="${appt.id}">×</button>
+							<button class="btn btn-delete w-8 h-8 p-0 flex items-center justify-center" data-id="${appt.id}" aria-label="Delete Appointment">
+								<svg class="w-5 h-5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+							</button>
 						</div>
 						<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
 							<div>
 								<label class="block text-xs font-semibold">Quarter</label>
-								<select data-calc="quarter" class="w-full p-1 border rounded">${quarterOptions}</select>
+								<select data-calc="quarter" class="w-full p-1 mt-1 h-[30px] border rounded leading-none">${quarterOptions}</select>
 							</div>
 							${appt.type !== 'reader' ? `
 							<div>
 								<label class="block text-xs font-semibold">${stepLabel}</label>
-								<select data-calc="step" class="w-full p-1 border rounded">${scaleOptions}</select>
+								<select data-calc="step" class="w-full p-1 mt-1 h-[30px] border rounded leading-none">${scaleOptions}</select>
 							</div>
 							` : ''}
 							<div>
 								<label class="block text-xs font-semibold">% Time / Hours</label>
-								<select data-calc="percentTime" class="w-full p-1 border rounded">
+								<select data-calc="percentTime" class="w-full p-1 mt-1 h-[30px] border rounded leading-none">
 									${[25, 50, 75].map(v => {
 										const hrs = Math.round(v * 4.4);
 										const val = appt.type === 'reader' ? hrs : v;
@@ -420,9 +422,9 @@
 							<div class="col-span-1 md:col-span-2 lg:col-span-3">
 								<label class="block text-xs font-semibold">Supervisor / Instructor</label>
 								<div class="flex gap-2 mt-1">
-									<input type="text" data-calc="supervisor" class="flex-grow p-1 border rounded" value="${appt.values.supervisor}" placeholder="Name of Supervisor">
+									<input type="text" data-calc="supervisor" class="flex-grow p-1 h-[30px] border rounded leading-none" value="${appt.values.supervisor}" placeholder="Name of Supervisor">
 									${appt.type !== 'gsr' ? `
-									<label class="inline-flex items-center justify-center px-2 bg-gray-50 border rounded cursor-pointer shrink-0 hover:bg-gray-100 transition-colors">
+									<label class="inline-flex items-center justify-center px-2 h-[30px] bg-gray-50 border rounded cursor-pointer shrink-0 hover:bg-gray-100 transition-colors">
 										<input type="checkbox" data-calc="hideSupervisor" class="w-3.5 h-3.5 mr-1.5 cursor-pointer" ${appt.values.hideSupervisor ? 'checked' : ''}>
 										<span class="text-[11px] font-medium text-gray-600 whitespace-nowrap">Omit from letter</span>
 									</label>
