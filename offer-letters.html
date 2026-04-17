@@ -604,22 +604,16 @@
 						jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
 					};
 
-					//slip-behind
-					const tempDiv = document.createElement('div');
-					tempDiv.innerHTML = printContainer.innerHTML;
-					tempDiv.style.position = 'absolute';
-					tempDiv.style.top = '0';
-					tempDiv.style.left = '0';
-					tempDiv.style.width = '8.5in';
-					tempDiv.style.zIndex = '-9999';
-					tempDiv.style.backgroundColor = 'white';
-					document.body.appendChild(tempDiv);
+					let cleanHtml = printContainer.innerHTML.replace(/letter-preview/g, ''); // Removes the gray shadow/borders
 
-					const worker = html2pdf().set(opt).from(tempDiv);
+					const isolatedHtml = `
+						<div style="font-family: 'Times New Roman', serif; font-size: 11pt; line-height: 1.4; color: black; background: white; width: 8in; max-width: 100%;">
+							${cleanHtml}
+						</div>
+					`;
+
+					const worker = html2pdf().set(opt).from(isolatedHtml);
 					const pdfBlob = await worker.outputPdf('blob');
-
-					// Clean up the decoy DOM node instantly
-					document.body.removeChild(tempDiv);
 
 					btn.innerText = 'Dispatching to Zapier...';
 
