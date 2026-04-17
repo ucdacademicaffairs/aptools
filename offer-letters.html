@@ -418,16 +418,16 @@
 								</select>
 							</div>
 							<div class="col-span-1 md:col-span-2 lg:col-span-3">
-								<label class="block text-xs font-semibold flex justify-between">
-									<span>Supervisor / Instructor</span>
+								<label class="block text-xs font-semibold">Supervisor / Instructor</label>
+								<div class="flex gap-2 mt-1">
+									<input type="text" data-calc="supervisor" class="flex-grow p-1 border rounded" value="${appt.values.supervisor}" placeholder="Name of Supervisor">
 									${appt.type !== 'gsr' ? `
-									<label class="inline-flex items-center">
-										<input type="checkbox" data-calc="hideSupervisor" class="w-3 h-3 mr-1" ${appt.values.hideSupervisor ? 'checked' : ''}>
-										<span class="text-[10px] font-normal leading-none cursor-pointer text-gray-500">Omit from letter</span>
+									<label class="inline-flex items-center justify-center px-2 bg-gray-50 border rounded cursor-pointer shrink-0 hover:bg-gray-100 transition-colors">
+										<input type="checkbox" data-calc="hideSupervisor" class="w-3.5 h-3.5 mr-1.5 cursor-pointer" ${appt.values.hideSupervisor ? 'checked' : ''}>
+										<span class="text-[11px] font-medium text-gray-600 whitespace-nowrap">Omit from letter</span>
 									</label>
 									` : ''}
-								</label>
-								<input type="text" data-calc="supervisor" class="w-full p-1 border rounded mt-1" value="${appt.values.supervisor}" placeholder="Name of Supervisor">
+								</div>
 							</div>
 							${dutiesHtml}
 						</div>
@@ -632,7 +632,7 @@
 					
 					<p>Dear ${data.studentName.split(' ')[0]},</p>
 					
-					<p>I am pleased to offer you an appointment as a <b>${title}</b> in the <b>${data.deptName}</b> for the <b>${data.quarter} ${data.year}-${data.year + 1}</b>.${data.hideSupervisor ? ' Your supervisor will be noted on the Description of Duties form you receive prior to the quarter.' : ` Your supervisor for this appointment will be <b>${data.supervisor}</b>.`}</p>
+					<p>I am pleased to offer you an appointment as a <b>${title}</b> in the <b>${data.deptName}</b> for the <b>${data.quarter} quarter(s) of ${data.year}-${data.year + 1}</b>.${data.hideSupervisor ? ' Your supervisor will be noted on the Description of Duties form you receive prior to the quarter.' : ` Your supervisor for this appointment will be <b>${data.supervisor}</b>.`}</p>
 					
 					<p>This appointment is at <b>${fteDisplay}</b>. You will be paid ${salaryLine}. Your paychecks will be issued on <b>${data.payDates}</b>.</p>
 					
@@ -701,7 +701,7 @@
 					
 					<p>Dear ${data.studentName.split(' ')[0]},</p>
 					
-					<p>I am pleased to offer you an appointment as a <b>Graduate Student Researcher</b> in the <b>${data.deptName}</b> for the <b>${data.quarter} ${data.year}-${data.year + 1}</b>.${data.hideSupervisor ? ' Your supervisor will be noted on the Description of Duties form you receive prior to the quarter.' : ` Your PI/Supervisor for this appointment will be <b>${data.supervisor}</b>.`}</p>
+					<p>I am pleased to offer you an appointment as a <b>Graduate Student Researcher</b> in the <b>${data.deptName}</b> for the <b>${data.quarter} quarter(s) of ${data.year}-${data.year + 1}</b>.${data.hideSupervisor ? ' Your supervisor will be noted on the Description of Duties form you receive prior to the quarter.' : ` Your PI/Supervisor for this appointment will be <b>${data.supervisor}</b>.`}</p>
 					
 					<p>This appointment is at <b>${fteDisplay}</b>. You will be paid at a monthly rate of <b>${formatCurrency(data.monthlySal)}</b> (based on a full-time monthly rate of ${formatCurrency(data.monthlySal * (100 / data.totalFte))}). Your paychecks will be issued on <b>${data.payDates}</b>.</p>
 					
