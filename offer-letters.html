@@ -613,24 +613,23 @@
 					`;
 
 					const worker = html2pdf().set(opt).from(isolatedHtml);
-					const pdfBlob = await worker.outputPdf('blob');
+					// Output as clean Base64 string (no data: URI prefix)
+					const pdfBase64 = await worker.outputPdf('base64');
 
 					btn.innerText = 'Dispatching to Zapier...';
 
-					// Use FormData to send a true file payload to Zapier
-					const formData = new FormData();
-					formData.append('studentName', studentName || 'Student');
-					formData.append('studentEmail', studentEmail);
-					formData.append('contactEmail', contactEmail || '');
-					formData.append('contactName', contactName || 'Department Contact');
-					// Append the blob explicitly as a file with a name
-					formData.append('document', pdfBlob, 'Offer_Letter.pdf');
+					const payload = {
+						studentName: studentName || 'Student',
+						studentEmail: studentEmail,
+						contactEmail: contactEmail || '',
+						contactName: contactName || 'Department Contact',
+						pdfBase64: pdfBase64
+					};
 
 					await fetch(ZAPIER_WEBHOOK_URL, {
 						method: 'POST',
-						mode: 'no-cors',
-						// Do NOT set Content-Type. The browser automatically sets multipart/form-data
-						body: formData
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify(payload)
 					});
 
 					alert("Success! The fully packaged PDF has been sent to a webhook for routing.");
