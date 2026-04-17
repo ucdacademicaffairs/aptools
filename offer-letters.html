@@ -604,9 +604,20 @@
 						jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
 					};
 
+					// html2canvas completely ignores elements with "display: none". 
+					// We must temporarily un-hide the print container off-screen so the engine can 'see' the text to draw it!
+					printContainer.classList.remove('hidden');
+					printContainer.style.position = 'absolute';
+					printContainer.style.left = '-9999px';
+
 					const worker = html2pdf().set(opt).from(printContainer);
 					// Output as a raw binary Blob
 					const pdfBlob = await worker.outputPdf('blob');
+
+					// Re-hide the container immediately
+					printContainer.classList.add('hidden');
+					printContainer.style.position = '';
+					printContainer.style.left = '';
 
 					btn.innerText = 'Dispatching to Zapier...';
 
