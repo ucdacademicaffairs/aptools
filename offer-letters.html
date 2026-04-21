@@ -597,15 +597,22 @@
 					const opt = {
 						margin: 0.25,
 						filename: 'Offer_Letter.pdf',
-						image: { type: 'jpeg', quality: 1.0 },
-						html2canvas: { scale: 4 },
+						image: { type: 'png' },
+						html2canvas: { 
+							scale: 3, 
+							useCORS: true, 
+							width: 816,
+							height: null,
+							scrollY: 0,
+							windowWidth: 1024
+						},
 						jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
 					};
 
-					let cleanHtml = printContainer.innerHTML.replace(/letter-preview/g, ''); // Removes the gray shadow/borders
+					let cleanHtml = printContainer.innerHTML.replace(/letter-preview/g, ''); 
 
 					const isolatedHtml = `
-						<div style="font-family: 'Times New Roman', serif; font-size: 11pt; line-height: 1.4; color: black; background: white; width: 8in; max-width: 100%;">
+						<div style="font-family: 'Times New Roman', serif; font-size: 11pt; line-height: 1.4; color: black; background: white; width: 816px; margin: 0 auto; box-sizing: border-box;">
 							${cleanHtml}
 						</div>
 					`;
@@ -774,10 +781,10 @@
 					</div>
 					
 					<div class="mt-8">
-						<p>I accept _________ <span style="color:white; font-size:12pt;">[[c|1]]</span> (or) I decline _________ <span style="color:white; font-size:12pt;">[[c|1]]</span> the above appointment.</p>
+						<p>I accept _________ <span style="color:white; font-size:10pt;">[[c|1]]</span> (or) I decline _________ <span style="color:white; font-size:10pt;">[[c|1]]</span> the above appointment.</p>
 						<div class="flex gap-8 mt-4">
-							<div><div class="signature-line"></div><p class="text-xs">Signature of Prospective ASE <span style="color:white; font-size:12pt;">[[s|1]]</span></p></div>
-							<div><div class="signature-line" style="width: 100px;"></div><p class="text-xs">Date Signed <span style="color:white; font-size:12pt;">[[d|1]]</span></p></div>
+							<div><div class="signature-line"></div><p class="text-xs">Signature of Prospective ASE <span style="color:white; font-size:10pt;">/s1/ [[s|1]]</span></p></div>
+							<div><div class="signature-line" style="width: 100px;"></div><p class="text-xs">Date Signed <span style="color:white; font-size:10pt;">/d1/ [[d|1]]</span></p></div>
 						</div>
 					</div>
 				</div>`;
@@ -848,10 +855,10 @@
 					</div>
 					
 					<div class="mt-8">
-						<p>I accept _________ <span style="color:white; font-size:12pt;">[[c|1]]</span> (or) I decline _________ <span style="color:white; font-size:12pt;">[[c|1]]</span> the above appointment.</p>
+						<p>I accept _________ <span style="color:white; font-size:10pt;">[[c|1]]</span> (or) I decline _________ <span style="color:white; font-size:10pt;">[[c|1]]</span> the above appointment.</p>
 						<div class="flex gap-8 mt-4">
-							<div><div class="signature-line"></div><p class="text-xs">Signature of Prospective GSR <span style="color:white; font-size:12pt;">[[s|1]]</span></p></div>
-							<div><div class="signature-line" style="width: 100px;"></div><p class="text-xs">Date Signed <span style="color:white; font-size:12pt;">[[d|1]]</span></p></div>
+							<div><div class="signature-line"></div><p class="text-xs">Signature of Prospective GSR <span style="color:white; font-size:10pt;">/s1/ [[s|1]]</span></p></div>
+							<div><div class="signature-line" style="width: 100px;"></div><p class="text-xs">Date Signed <span style="color:white; font-size:10pt;">/d1/ [[d|1]]</span></p></div>
 						</div>
 					</div>
 				</div>`;
