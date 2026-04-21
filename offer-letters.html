@@ -602,7 +602,7 @@
 							scale: 2, 
 							useCORS: true, 
 							scrollY: 0,
-							windowWidth: 1024
+							scrollX: 0
 						},
 						jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
 					};
@@ -610,7 +610,7 @@
 					// 7.5 inches at 96 DPI is 720px. This fits perfectly in a 0.5in margined PDF.
 					const cleanHtml = printContainer.innerHTML.replace(/letter-preview/g, ''); 
 					const isolatedHtml = `
-						<div style="width: 720px; background: white; font-family: 'Times New Roman', serif;">
+						<div style="width: 720px; margin: 0; padding: 0; background: white; font-family: 'Times New Roman', serif;">
 							${cleanHtml}
 						</div>
 					`;
@@ -657,14 +657,14 @@
 							scale: 2.5, 
 							useCORS: true, 
 							scrollY: 0,
-							windowWidth: 1024
+							scrollX: 0
 						},
 						jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
 					};
 
 					const cleanHtml = printContainer.innerHTML.replace(/letter-preview/g, ''); 
 					const isolatedHtml = `
-						<div style="width: 720px; background: white; font-family: 'Times New Roman', serif;">
+						<div style="width: 720px; margin: 0; padding: 0; background: white; font-family: 'Times New Roman', serif;">
 							${cleanHtml}
 						</div>
 					`;
