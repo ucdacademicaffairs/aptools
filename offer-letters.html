@@ -595,7 +595,7 @@
 
 				try {
 					const opt = {
-						margin: 0.25,
+						margin: 0,
 						filename: 'Offer_Letter.pdf',
 						image: { type: 'jpeg', quality: 0.98 },
 						html2canvas: { 
@@ -608,10 +608,10 @@
 						jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
 					};
 
-					// Using a cleaner string-based capture which is more stable for this tool
+					// Using a cleaner string-based capture with internal margins handled by CSS
 					const cleanHtml = printContainer.innerHTML.replace(/letter-preview/g, ''); 
 					const isolatedHtml = `
-						<div style="width: 816px; background: white; padding: 2px; font-family: 'Times New Roman', serif;">
+						<div style="width: 816px; background: white; padding: 0.5in; box-sizing: border-box; font-family: 'Times New Roman', serif;">
 							${cleanHtml}
 						</div>
 					`;
@@ -651,7 +651,7 @@
 
 				try {
 					const opt = {
-						margin: 0.25,
+						margin: 0,
 						filename: 'Offer_Letter.pdf',
 						image: { type: 'jpeg', quality: 0.98 },
 						html2canvas: { 
@@ -666,7 +666,7 @@
 
 					const cleanHtml = printContainer.innerHTML.replace(/letter-preview/g, ''); 
 					const isolatedHtml = `
-						<div style="width: 816px; background: white; padding: 2px; font-family: 'Times New Roman', serif;">
+						<div style="width: 816px; background: white; padding: 0.5in; box-sizing: border-box; font-family: 'Times New Roman', serif;">
 							${cleanHtml}
 						</div>
 					`;
