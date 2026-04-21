@@ -222,7 +222,8 @@
 			<div class="p-4 bg-white border-b flex flex-wrap gap-4 justify-between items-center">
 				<h3 class="text-xl font-bold">Letter Preview</h3>
 				<div class="flex flex-wrap gap-2">
-					<button id="send-zapier-btn" class="btn bg-purple-600 hover:bg-purple-700 text-white">Send via SignRequest</button>
+					<button id="send-zapier-btn" class="btn bg-purple-600 hover:bg-purple-700 text-white">Send via DocuSign</button>
+					<button id="download-pdf-btn" class="btn bg-gray-700 hover:bg-gray-800 text-white">Download PDF</button>
 					<button id="download-word-btn" class="btn bg-blue-700 hover:bg-blue-800 text-white">Download .doc (Word)</button>
 					<button id="print-letters-btn" class="btn bg-blue-700 hover:bg-blue-800 text-white">Print to PDF</button>
 					<button id="close-modal-btn" class="btn bg-red-600 hover:bg-red-700 text-white">Close Preview</button>
@@ -620,7 +621,7 @@
 					const worker = html2pdf().set(opt).from(isolatedHtml);
 					const pdfBlob = await worker.outputPdf('blob');
 
-					btn.innerText = 'Dispatching to SignRequest...';
+					btn.innerText = 'Dispatching to DocuSign...';
 
 					const formData = new FormData();
 					formData.append('studentName', studentName || 'Student');
@@ -632,14 +633,51 @@
 
 					await fetch(ZAPIER_WEBHOOK_URL, {
 						method: 'POST',
-						// Do NOT set Content-Type header; let the browser set multipart/form-data with boundary
 						body: formData
 					});
 
-					alert("Success! The fully packaged PDF has been sent to a webhook for routing.");
+					alert("Success! The PDF has been sent to your DocuSign flow.");
 				} catch (e) {
 					console.error(e);
 					alert("An error occurred generating or sending the PDF.");
+				} finally {
+					btn.innerText = originalText;
+					btn.disabled = false;
+				}
+			});
+
+			document.getElementById('download-pdf-btn').addEventListener('click', async () => {
+				const btn = document.getElementById('download-pdf-btn');
+				const originalText = btn.innerText;
+				btn.innerText = 'Generating...';
+				btn.disabled = true;
+
+				try {
+					const opt = {
+						margin: 0.25,
+						filename: 'Offer_Letter.pdf',
+						image: { type: 'png' },
+						html2canvas: { 
+							scale: 3, 
+							useCORS: true, 
+							width: 816,
+							scrollY: 0,
+							windowWidth: 1024
+						},
+						jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+					};
+
+					let cleanHtml = printContainer.innerHTML.replace(/letter-preview/g, ''); 
+					const isolatedHtml = `
+						<div style="font-family: 'Times New Roman', serif; font-size: 11pt; line-height: 1.4; color: black; background: white; width: 816px; margin: 0 auto; box-sizing: border-box;">
+							${cleanHtml}
+						</div>
+					`;
+
+					await html2pdf().set(opt).from(isolatedHtml).save();
+				} catch (e) {
+					console.error(e);
+					alert("Error generating PDF.");
 				} finally {
 					btn.innerText = originalText;
 					btn.disabled = false;
@@ -731,7 +769,7 @@
 					
 					<p><b>To:</b> ${data.studentName}</p>
 					<p><b>From:</b> ${data.headOfDept}</p>
-					<p><b>Subject:</b> Notification of Academic Student Employee Appointment</p>
+					<p><b>Subject:</b> Notification of Academic Student Employee Appointment (via DocuSign)</p>
 					
 					<p>Dear ${data.studentName.split(' ')[0]},</p>
 					
@@ -800,7 +838,7 @@
 					
 					<p><b>To:</b> ${data.studentName}</p>
 					<p><b>From:</b> ${data.headOfDept}</p>
-					<p><b>Subject:</b> Notification of Graduate Student Researcher Appointment</p>
+					<p><b>Subject:</b> Notification of Graduate Student Researcher Appointment (via DocuSign)</p>
 					
 					<p>Dear ${data.studentName.split(' ')[0]},</p>
 					
