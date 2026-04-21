@@ -595,23 +595,22 @@
 
 				try {
 					const opt = {
-						margin: 0,
+						margin: 0.5,
 						filename: 'Offer_Letter.pdf',
 						image: { type: 'jpeg', quality: 0.98 },
 						html2canvas: { 
 							scale: 2, 
 							useCORS: true, 
-							width: 816,
 							scrollY: 0,
 							windowWidth: 1024
 						},
 						jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
 					};
 
-					// Using a cleaner string-based capture with internal margins handled by CSS
+					// 7.5 inches at 96 DPI is 720px. This fits perfectly in a 0.5in margined PDF.
 					const cleanHtml = printContainer.innerHTML.replace(/letter-preview/g, ''); 
 					const isolatedHtml = `
-						<div style="width: 816px; background: white; padding: 0.5in; box-sizing: border-box; font-family: 'Times New Roman', serif;">
+						<div style="width: 720px; background: white; font-family: 'Times New Roman', serif;">
 							${cleanHtml}
 						</div>
 					`;
@@ -651,13 +650,12 @@
 
 				try {
 					const opt = {
-						margin: 0,
+						margin: 0.5,
 						filename: 'Offer_Letter.pdf',
 						image: { type: 'jpeg', quality: 0.98 },
 						html2canvas: { 
 							scale: 2.5, 
 							useCORS: true, 
-							width: 816,
 							scrollY: 0,
 							windowWidth: 1024
 						},
@@ -666,7 +664,7 @@
 
 					const cleanHtml = printContainer.innerHTML.replace(/letter-preview/g, ''); 
 					const isolatedHtml = `
-						<div style="width: 816px; background: white; padding: 0.5in; box-sizing: border-box; font-family: 'Times New Roman', serif;">
+						<div style="width: 720px; background: white; font-family: 'Times New Roman', serif;">
 							${cleanHtml}
 						</div>
 					`;
