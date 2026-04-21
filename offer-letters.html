@@ -225,7 +225,6 @@
 					<button id="send-zapier-btn" class="btn bg-purple-600 hover:bg-purple-700 text-white">Send via DocuSign</button>
 					<button id="download-pdf-btn" class="btn bg-gray-700 hover:bg-gray-800 text-white">Download PDF</button>
 					<button id="download-word-btn" class="btn bg-blue-700 hover:bg-blue-800 text-white">Download .doc (Word)</button>
-					<button id="print-letters-btn" class="btn bg-blue-700 hover:bg-blue-800 text-white">Print to PDF</button>
 					<button id="close-modal-btn" class="btn bg-red-600 hover:bg-red-700 text-white">Close Preview</button>
 				</div>
 			</div>
@@ -599,10 +598,6 @@
 						margin: 0.25,
 						filename: 'Offer_Letter.pdf',
 						image: { type: 'png' },
-					const opt = {
-						margin: 0.25,
-						filename: 'Offer_Letter.pdf',
-						image: { type: 'png' },
 						html2canvas: { 
 							scale: 2, 
 							useCORS: true, 
@@ -648,7 +643,7 @@
 				} catch (e) {
 					console.error(e);
 					alert("An error occurred generating or sending the PDF.");
-					if (window.tempDiv && window.tempDiv.parentNode) document.body.removeChild(window.tempDiv);
+					if (tempDiv && tempDiv.parentNode) document.body.removeChild(tempDiv);
 				} finally {
 					btn.innerText = originalText;
 					btn.disabled = false;
@@ -693,7 +688,7 @@
 				} catch (e) {
 					console.error(e);
 					alert("Error generating PDF.");
-					if (window.tempDiv && window.tempDiv.parentNode) document.body.removeChild(window.tempDiv);
+					if (tempDiv && tempDiv.parentNode) document.body.removeChild(tempDiv);
 				} finally {
 					btn.innerText = originalText;
 					btn.disabled = false;
