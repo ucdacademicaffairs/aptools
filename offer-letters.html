@@ -599,26 +599,33 @@
 						margin: 0.25,
 						filename: 'Offer_Letter.pdf',
 						image: { type: 'png' },
+					const opt = {
+						margin: 0.25,
+						filename: 'Offer_Letter.pdf',
+						image: { type: 'png' },
 						html2canvas: { 
-							scale: 3, 
+							scale: 2, 
 							useCORS: true, 
 							width: 816,
-							height: null,
 							scrollY: 0,
 							windowWidth: 1024
 						},
 						jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
 					};
 
-					let cleanHtml = printContainer.innerHTML.replace(/letter-preview/g, ''); 
+					const tempDiv = document.createElement('div');
+					tempDiv.style.position = 'absolute';
+					tempDiv.style.left = '-9999px';
+					tempDiv.style.top = '0';
+					tempDiv.style.width = '816px';
+					tempDiv.style.background = 'white';
+					tempDiv.style.fontFamily = "'Times New Roman', serif";
+					tempDiv.style.fontSize = "11pt";
+					tempDiv.style.lineHeight = "1.4";
+					tempDiv.innerHTML = printContainer.innerHTML.replace(/letter-preview/g, ''); 
+					document.body.appendChild(tempDiv);
 
-					const isolatedHtml = `
-						<div style="font-family: 'Times New Roman', serif; font-size: 11pt; line-height: 1.4; color: black; background: white; width: 816px; margin: 0 auto; box-sizing: border-box;">
-							${cleanHtml}
-						</div>
-					`;
-
-					const worker = html2pdf().set(opt).from(isolatedHtml);
+					const worker = html2pdf().set(opt).from(tempDiv);
 					const pdfBlob = await worker.outputPdf('blob');
 
 					btn.innerText = 'Dispatching to DocuSign...';
@@ -636,10 +643,12 @@
 						body: formData
 					});
 
+					document.body.removeChild(tempDiv);
 					alert("Success! The PDF has been sent to your DocuSign flow.");
 				} catch (e) {
 					console.error(e);
 					alert("An error occurred generating or sending the PDF.");
+					if (window.tempDiv && window.tempDiv.parentNode) document.body.removeChild(window.tempDiv);
 				} finally {
 					btn.innerText = originalText;
 					btn.disabled = false;
@@ -658,7 +667,7 @@
 						filename: 'Offer_Letter.pdf',
 						image: { type: 'png' },
 						html2canvas: { 
-							scale: 3, 
+							scale: 2, 
 							useCORS: true, 
 							width: 816,
 							scrollY: 0,
@@ -667,17 +676,24 @@
 						jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
 					};
 
-					let cleanHtml = printContainer.innerHTML.replace(/letter-preview/g, ''); 
-					const isolatedHtml = `
-						<div style="font-family: 'Times New Roman', serif; font-size: 11pt; line-height: 1.4; color: black; background: white; width: 816px; margin: 0 auto; box-sizing: border-box;">
-							${cleanHtml}
-						</div>
-					`;
+					const tempDiv = document.createElement('div');
+					tempDiv.style.position = 'absolute';
+					tempDiv.style.left = '-9999px';
+					tempDiv.style.top = '0';
+					tempDiv.style.width = '816px';
+					tempDiv.style.background = 'white';
+					tempDiv.style.fontFamily = "'Times New Roman', serif";
+					tempDiv.style.fontSize = "11pt";
+					tempDiv.style.lineHeight = "1.4";
+					tempDiv.innerHTML = printContainer.innerHTML.replace(/letter-preview/g, ''); 
+					document.body.appendChild(tempDiv);
 
-					await html2pdf().set(opt).from(isolatedHtml).save();
+					await html2pdf().set(opt).from(tempDiv).save();
+					document.body.removeChild(tempDiv);
 				} catch (e) {
 					console.error(e);
 					alert("Error generating PDF.");
+					if (window.tempDiv && window.tempDiv.parentNode) document.body.removeChild(window.tempDiv);
 				} finally {
 					btn.innerText = originalText;
 					btn.disabled = false;
