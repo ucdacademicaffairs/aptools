@@ -614,7 +614,7 @@
 						</html>
 					`;
 					
-					const docBlob = new Blob(['\ufeff', html], { type: 'application/msword' });
+					const htmlBlob = new Blob(['\ufeff', html], { type: 'text/html' });
 
 					btn.innerText = 'Dispatching to DocuSign...';
 
@@ -623,8 +623,8 @@
 					formData.append('studentEmail', studentEmail);
 					formData.append('contactEmail', contactEmail || '');
 					formData.append('contactName', contactName || 'Department Contact');
-					// Append the blob explicitly as a file with a .doc extension
-					formData.append('document', docBlob, 'Offer_Letter.doc');
+					// Append the blob explicitly as a file with a .html extension
+					formData.append('document', htmlBlob, 'Offer_Letter.html');
 
 					await fetch(ZAPIER_WEBHOOK_URL, {
 						method: 'POST',
