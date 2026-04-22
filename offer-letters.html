@@ -599,22 +599,83 @@
 				btn.disabled = true;
 
 				try {
-					const content = letterPreviewContainer.innerHTML.replace(/\n|\t/g, ' ');
-					const html = `
-						<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-						<head><meta charset='utf-8'><title>Offer Letters</title>
-						<style>
-							body { font-family: "Times New Roman", serif; font-size: 11pt; }
-							.letter-page { page-break-after: always; margin-bottom: 2in; }
-							p { margin-bottom: 11pt; }
-							.signature-line { border-top: 1px solid black; width: 250px; display: inline-block; }
-						</style>
-						</head>
-						<body>${content}</body>
-						</html>
-					`;
+					const printContainer = document.getElementById('print-container');
 					
-					const htmlBlob = new Blob(['\ufeff', html], { type: 'text/html' });
+					// Re-generate the clean HTML identically
+					const cleanHtml = printContainer.innerHTML.replace(/letter-preview/g, '');
+					const wrapper = document.createElement('div');
+					wrapper.style.width = '720px';
+					wrapper.style.margin = '0';
+					wrapper.style.padding = '0';
+					wrapper.style.background = 'white';
+					wrapper.style.fontFamily = "'Times New Roman', serif";
+					wrapper.innerHTML = cleanHtml;
+					
+					// Temporarily append wrapper to body to get real pixel offsets
+					wrapper.style.position = 'absolute';
+					wrapper.style.left = '-9999px';
+					wrapper.style.top = '0';
+					document.body.appendChild(wrapper);
+
+					const tagsToInject = [];
+					const spans = wrapper.querySelectorAll('span');
+					spans.forEach(span => {
+						const text = span.innerText.trim();
+						if (text.includes('/s1/') || text.includes('/d1/') || text.includes('[[c|1]]') || text.includes('[[s|1]]') || text.includes('[[d|1]]')) {
+							let el = span;
+							let yOffset = 0;
+							let xOffset = 0;
+							while (el && el !== wrapper) {
+								yOffset += el.offsetTop;
+								xOffset += el.offsetLeft;
+								el = el.offsetParent;
+							}
+							tagsToInject.push({ text: text, x: xOffset, y: yOffset });
+						}
+					});
+
+					const opt = {
+						margin: 0.5,
+						filename: 'Offer_Letter.pdf',
+						image: { type: 'jpeg', quality: 0.98 },
+						html2canvas: {
+							scale: 2,
+							useCORS: true,
+							scrollY: 0,
+							scrollX: 0
+						},
+						jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+					};
+
+					const worker = html2pdf().set(opt).from(wrapper).toPdf();
+					
+					const pdfBlob = await worker.get('pdf').then(pdf => {
+						// Inject invisible machine-readable text into the PDF
+						pdf.setTextColor(255, 255, 255); // White text
+						pdf.setFontSize(10);
+						
+						const pxPerInch = 96;
+						const usableHeightPx = 10 * pxPerInch; // 960px of vertical space per page
+
+						tagsToInject.forEach(tag => {
+							const pageNum = Math.floor(tag.y / usableHeightPx) + 1;
+							const yOnPagePx = tag.y % usableHeightPx;
+							
+							// Map HTML pixel coordinates to PDF inch coordinates (adding 0.5in margins and slight baseline adjustment)
+							const pdfX = (tag.x / pxPerInch) + 0.5;
+							const pdfY = (yOnPagePx / pxPerInch) + 0.5 + 0.1;
+							
+							const totalPages = pdf.internal.getNumberOfPages();
+							if (pageNum <= totalPages) {
+								pdf.setPage(pageNum);
+								pdf.text(tag.text, pdfX, pdfY);
+							}
+						});
+						
+						return pdf.output('blob');
+					});
+
+					document.body.removeChild(wrapper);
 
 					btn.innerText = 'Dispatching to DocuSign...';
 
@@ -623,15 +684,16 @@
 					formData.append('studentEmail', studentEmail);
 					formData.append('contactEmail', contactEmail || '');
 					formData.append('contactName', contactName || 'Department Contact');
-					// Append the blob explicitly as a file with a .html extension
-					formData.append('document', htmlBlob, 'Offer_Letter.html');
+					
+					// Append the PDF blob properly
+					formData.append('document', pdfBlob, 'Offer_Letter.pdf');
 
 					await fetch(ZAPIER_WEBHOOK_URL, {
 						method: 'POST',
 						body: formData
 					});
 
-					alert("Success! The Document has been sent to your DocuSign flow.");
+					alert("Success! The PDF has been perfectly packaged and dispatched to Zapier.");
 				} catch (e) {
 					console.error(e);
 					alert("An error occurred generating or sending the PDF.");
