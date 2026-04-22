@@ -599,8 +599,6 @@
 				btn.disabled = true;
 
 				try {
-					const printContainer = document.getElementById('print-container');
-					
 					// Re-generate the clean HTML identically
 					const cleanHtml = printContainer.innerHTML.replace(/letter-preview/g, '');
 					const wrapper = document.createElement('div');
