@@ -222,10 +222,14 @@
 			<div class="p-4 bg-white border-b flex flex-wrap gap-4 justify-between items-center">
 				<h3 class="text-xl font-bold">Letter Preview</h3>
 				<div class="flex flex-wrap gap-2">
-					<button id="send-zapier-btn" class="btn bg-purple-600 hover:bg-purple-700 text-white">Send via DocuSign</button>
-					<button id="download-pdf-btn" class="btn bg-gray-700 hover:bg-gray-800 text-white">Download PDF</button>
-					<button id="download-word-btn" class="btn bg-blue-700 hover:bg-blue-800 text-white">Download .doc (Word)</button>
-					<button id="close-modal-btn" class="btn bg-red-600 hover:bg-red-700 text-white">Close Preview</button>
+					<button id="send-zapier-btn" class="btn bg-purple-600 hover:bg-purple-700 text-white">Send via
+						DocuSign</button>
+					<button id="download-pdf-btn" class="btn bg-gray-700 hover:bg-gray-800 text-white">Download
+						PDF</button>
+					<button id="download-word-btn" class="btn bg-blue-700 hover:bg-blue-800 text-white">Download .doc
+						(Word)</button>
+					<button id="close-modal-btn" class="btn bg-red-600 hover:bg-red-700 text-white">Close
+						Preview</button>
 				</div>
 			</div>
 			<div id="letter-preview-container" class="flex-grow overflow-y-auto p-4 md:p-8 bg-gray-200">
@@ -235,7 +239,8 @@
 	</div>
 
 	<!-- Invisible container for printing -->
-	<div id="letter-print-container" class="fixed top-0 left-0 -z-50 opacity-0 pointer-events-none print:static print:opacity-100 print:z-0"></div>
+	<div id="letter-print-container"
+		class="fixed top-0 left-0 -z-50 opacity-0 pointer-events-none print:static print:opacity-100 print:z-0"></div>
 
 	<script>
 		document.addEventListener('DOMContentLoaded', function () {
@@ -594,22 +599,28 @@
 				btn.disabled = true;
 
 				try {
-					const content = letterPreviewContainer.innerHTML.replace(/\n|\t/g, ' ');
-					const html = `
-						<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-						<head><meta charset='utf-8'><title>Offer Letters</title>
-						<style>
-							body { font-family: "Times New Roman", serif; font-size: 11pt; }
-							.letter-page { page-break-after: always; margin-bottom: 2in; }
-							p { margin-bottom: 11pt; }
-							.signature-line { border-top: 1px solid black; width: 250px; display: inline-block; }
-						</style>
-						</head>
-						<body>${content}</body>
-						</html>
+					const opt = {
+						margin: 0.5,
+						filename: 'Offer_Letter.pdf',
+						image: { type: 'jpeg', quality: 0.98 },
+						html2canvas: {
+							scale: 2,
+							useCORS: true,
+							scrollY: 0,
+							scrollX: 0
+						},
+						jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+					};
+
+					// 7.5 inches at 96 DPI is 720px. This fits perfectly in a 0.5in margined PDF.
+					const cleanHtml = printContainer.innerHTML.replace(/letter-preview/g, '');
+					const isolatedHtml = `
+						<div style="width: 720px; margin: 0; padding: 0; background: white; font-family: 'Times New Roman', serif;">
+							${cleanHtml}
+						</div>
 					`;
-					
-					const docBlob = new Blob(['\ufeff', html], { type: 'application/msword' });
+
+					const pdfBlob = await html2pdf().set(opt).from(isolatedHtml).outputPdf('blob');
 
 					btn.innerText = 'Dispatching to DocuSign...';
 
@@ -619,17 +630,17 @@
 					formData.append('contactEmail', contactEmail || '');
 					formData.append('contactName', contactName || 'Department Contact');
 					// Append the blob explicitly as a file with a name
-					formData.append('document', docBlob, 'Offer_Letter.doc');
+					formData.append('document', pdfBlob, 'Offer_Letter.pdf');
 
 					await fetch(ZAPIER_WEBHOOK_URL, {
 						method: 'POST',
 						body: formData
 					});
 
-					alert("Success! The Document has been sent to your DocuSign flow.");
+					alert("Success! The PDF has been sent to your DocuSign flow.");
 				} catch (e) {
 					console.error(e);
-					alert("An error occurred generating or sending the document.");
+					alert("An error occurred generating or sending the PDF.");
 				} finally {
 					btn.innerText = originalText;
 					btn.disabled = false;
@@ -647,16 +658,16 @@
 						margin: 0.5,
 						filename: 'Offer_Letter.pdf',
 						image: { type: 'jpeg', quality: 0.98 },
-						html2canvas: { 
-							scale: 2.5, 
-							useCORS: true, 
+						html2canvas: {
+							scale: 2.5,
+							useCORS: true,
 							scrollY: 0,
 							scrollX: 0
 						},
 						jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
 					};
 
-					const cleanHtml = printContainer.innerHTML.replace(/letter-preview/g, ''); 
+					const cleanHtml = printContainer.innerHTML.replace(/letter-preview/g, '');
 					const isolatedHtml = `
 						<div style="width: 720px; margin: 0; padding: 0; background: white; font-family: 'Times New Roman', serif;">
 							${cleanHtml}
