@@ -599,28 +599,22 @@
 				btn.disabled = true;
 
 				try {
-					const opt = {
-						margin: 0.5,
-						filename: 'Offer_Letter.pdf',
-						image: { type: 'jpeg', quality: 0.98 },
-						html2canvas: {
-							scale: 2,
-							useCORS: true,
-							scrollY: 0,
-							scrollX: 0
-						},
-						jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-					};
-
-					// 7.5 inches at 96 DPI is 720px. This fits perfectly in a 0.5in margined PDF.
-					const cleanHtml = printContainer.innerHTML.replace(/letter-preview/g, '');
-					const isolatedHtml = `
-						<div style="width: 720px; margin: 0; padding: 0; background: white; font-family: 'Times New Roman', serif;">
-							${cleanHtml}
-						</div>
+					const content = letterPreviewContainer.innerHTML.replace(/\n|\t/g, ' ');
+					const html = `
+						<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+						<head><meta charset='utf-8'><title>Offer Letters</title>
+						<style>
+							body { font-family: "Times New Roman", serif; font-size: 11pt; }
+							.letter-page { page-break-after: always; margin-bottom: 2in; }
+							p { margin-bottom: 11pt; }
+							.signature-line { border-top: 1px solid black; width: 250px; display: inline-block; }
+						</style>
+						</head>
+						<body>${content}</body>
+						</html>
 					`;
-
-					const pdfBlob = await html2pdf().set(opt).from(isolatedHtml).outputPdf('blob');
+					
+					const docBlob = new Blob(['\ufeff', html], { type: 'application/msword' });
 
 					btn.innerText = 'Dispatching to DocuSign...';
 
@@ -629,15 +623,15 @@
 					formData.append('studentEmail', studentEmail);
 					formData.append('contactEmail', contactEmail || '');
 					formData.append('contactName', contactName || 'Department Contact');
-					// Append the blob explicitly as a file with a name
-					formData.append('document', pdfBlob, 'Offer_Letter.pdf');
+					// Append the blob explicitly as a file with a .doc extension
+					formData.append('document', docBlob, 'Offer_Letter.doc');
 
 					await fetch(ZAPIER_WEBHOOK_URL, {
 						method: 'POST',
 						body: formData
 					});
 
-					alert("Success! The PDF has been sent to your DocuSign flow.");
+					alert("Success! The Document has been sent to your DocuSign flow.");
 				} catch (e) {
 					console.error(e);
 					alert("An error occurred generating or sending the PDF.");
