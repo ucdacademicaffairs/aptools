@@ -649,7 +649,7 @@
 
 					const worker = html2pdf().set(opt).from(wrapper).toPdf();
 					
-					const pdfBlob = await worker.get('pdf').then(pdf => {
+					await worker.get('pdf').then(pdf => {
 						// Inject invisible machine-readable text into the PDF
 						pdf.setTextColor(255, 255, 255); // White text
 						pdf.setFontSize(10);
@@ -661,7 +661,7 @@
 							const pageNum = Math.floor(tag.y / usableHeightPx) + 1;
 							const yOnPagePx = tag.y % usableHeightPx;
 							
-							// Map HTML pixel coordinates to PDF inch coordinates (adding 0.5in margins and slight baseline adjustment)
+							// Map HTML pixel coordinates to PDF inch coordinates
 							const pdfX = (tag.x / pxPerInch) + 0.5;
 							const pdfY = (yOnPagePx / pxPerInch) + 0.5 + 0.1;
 							
@@ -671,11 +671,15 @@
 								pdf.text(tag.text, pdfX, pdfY);
 							}
 						});
-						
-						return pdf.output('blob');
 					});
 
-					document.body.removeChild(wrapper);
+					const pdfBlob = await worker.outputPdf('blob');
+
+					try {
+						document.body.removeChild(wrapper);
+					} catch (removeErr) {
+						console.log("Wrapper already removed", removeErr);
+					}
 
 					btn.innerText = 'Dispatching to DocuSign...';
 
@@ -696,7 +700,7 @@
 					alert("Success! The PDF has been perfectly packaged and dispatched to Zapier.");
 				} catch (e) {
 					console.error(e);
-					alert("An error occurred generating or sending the PDF.");
+					alert("JS Error: " + e.message + "\\nLine: " + e.lineNumber);
 				} finally {
 					btn.innerText = originalText;
 					btn.disabled = false;
