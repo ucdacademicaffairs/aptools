@@ -611,8 +611,9 @@
 					
 					// Temporarily append wrapper to body to get real pixel offsets
 					wrapper.style.position = 'absolute';
-					wrapper.style.left = '-9999px';
+					wrapper.style.left = '0';
 					wrapper.style.top = '0';
+					wrapper.style.zIndex = '-9999';
 					document.body.appendChild(wrapper);
 
 					const tagsToInject = [];
@@ -632,11 +633,6 @@
 						}
 					});
 
-					// Remove wrapper immediately after calculation
-					try {
-						document.body.removeChild(wrapper);
-					} catch (removeErr) {}
-
 					const opt = {
 						margin: 0.5,
 						filename: 'Offer_Letter.pdf',
@@ -650,14 +646,8 @@
 						jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
 					};
 
-					// Render using the exact same isolated HTML string that successfully produced the PDF previously
-					const isolatedHtml = `
-						<div style="width: 720px; margin: 0; padding: 0; background: white; font-family: 'Times New Roman', serif;">
-							${cleanHtml}
-						</div>
-					`;
-
-					const worker = html2pdf().set(opt).from(isolatedHtml).toPdf();
+					// Render using the exact wrapper element we just measured to guarantee perfect visual alignment
+					const worker = html2pdf().set(opt).from(wrapper).toPdf();
 					
 					await worker.get('pdf').then(pdf => {
 						// Inject machine-readable text into the PDF
@@ -669,31 +659,28 @@
 						const usableHeightPx = 10 * pxPerInch; // 960px of vertical space per page
 
 						tagsToInject.forEach(tag => {
-							let exactTag = "";
-							if (tag.text.includes('/s1/')) exactTag = "/s1/";
-							else if (tag.text.includes('/d1/')) exactTag = "/d1/";
-							else if (tag.text.includes('[[c|1]]')) exactTag = "[[c|1]]";
-							else if (tag.text.includes('[[s|1]]')) exactTag = "[[s|1]]";
-							else if (tag.text.includes('[[d|1]]')) exactTag = "[[d|1]]";
+							const pageNum = Math.floor(tag.y / usableHeightPx) + 1;
+							const yOnPagePx = tag.y % usableHeightPx;
 							
-							if (exactTag) {
-								const pageNum = Math.floor(tag.y / usableHeightPx) + 1;
-								const yOnPagePx = tag.y % usableHeightPx;
-								
-								// Map HTML pixel coordinates to PDF inch coordinates
-								const pdfX = (tag.x / pxPerInch) + 0.5;
-								const pdfY = (yOnPagePx / pxPerInch) + 0.5 + 0.05; // Tightened baseline offset
-								
-								const totalPages = pdf.internal.getNumberOfPages();
-								if (pageNum <= totalPages) {
-									pdf.setPage(pageNum);
-									pdf.text(exactTag, pdfX, pdfY);
-								}
+							// Map HTML pixel coordinates to PDF inch coordinates
+							const pdfX = (tag.x / pxPerInch) + 0.5;
+							const pdfY = (yOnPagePx / pxPerInch) + 0.5;
+							
+							const totalPages = pdf.internal.getNumberOfPages();
+							if (pageNum <= totalPages) {
+								pdf.setPage(pageNum);
+								// Inject the full text so either /s1/ or [[s|1]] triggers
+								pdf.text(tag.text, pdfX, pdfY);
 							}
 						});
 					});
 
 					const pdfBlob = await worker.outputPdf('blob');
+					
+					// Remove wrapper after the PDF is fully generated
+					try {
+						document.body.removeChild(wrapper);
+					} catch (removeErr) {}
 
 					btn.innerText = 'Dispatching to DocuSign...';
 
