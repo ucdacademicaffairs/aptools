@@ -644,8 +644,10 @@
 						html2canvas: {
 							scale: 2,
 							useCORS: true,
-							scrollY: 0,
-							scrollX: 0
+							width: 720,
+							windowWidth: 720,
+							scrollX: 0,
+							scrollY: 0
 						},
 						jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
 					};
@@ -661,24 +663,34 @@
 					
 					await worker.get('pdf').then(pdf => {
 						// Inject invisible machine-readable text into the PDF
-						pdf.setTextColor(255, 255, 255); // White text
+						// Use #FEFEFE to bypass DocuSign's pure white text anti-fraud filter
+						pdf.setTextColor(254, 254, 254);
 						pdf.setFontSize(10);
 						
 						const pxPerInch = 96;
 						const usableHeightPx = 10 * pxPerInch; // 960px of vertical space per page
 
 						tagsToInject.forEach(tag => {
-							const pageNum = Math.floor(tag.y / usableHeightPx) + 1;
-							const yOnPagePx = tag.y % usableHeightPx;
+							let exactTag = "";
+							if (tag.text.includes('/s1/')) exactTag = "/s1/";
+							else if (tag.text.includes('/d1/')) exactTag = "/d1/";
+							else if (tag.text.includes('[[c|1]]')) exactTag = "[[c|1]]";
+							else if (tag.text.includes('[[s|1]]')) exactTag = "[[s|1]]";
+							else if (tag.text.includes('[[d|1]]')) exactTag = "[[d|1]]";
 							
-							// Map HTML pixel coordinates to PDF inch coordinates
-							const pdfX = (tag.x / pxPerInch) + 0.5;
-							const pdfY = (yOnPagePx / pxPerInch) + 0.5 + 0.1;
-							
-							const totalPages = pdf.internal.getNumberOfPages();
-							if (pageNum <= totalPages) {
-								pdf.setPage(pageNum);
-								pdf.text(tag.text, pdfX, pdfY);
+							if (exactTag) {
+								const pageNum = Math.floor(tag.y / usableHeightPx) + 1;
+								const yOnPagePx = tag.y % usableHeightPx;
+								
+								// Map HTML pixel coordinates to PDF inch coordinates
+								const pdfX = (tag.x / pxPerInch) + 0.5;
+								const pdfY = (yOnPagePx / pxPerInch) + 0.5 + 0.05; // Tightened baseline offset
+								
+								const totalPages = pdf.internal.getNumberOfPages();
+								if (pageNum <= totalPages) {
+									pdf.setPage(pageNum);
+									pdf.text(exactTag, pdfX, pdfY);
+								}
 							}
 						});
 					});
