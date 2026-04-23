@@ -599,32 +599,18 @@
 				btn.disabled = true;
 
 				try {
-					// Re-generate the clean HTML identically
-					const cleanHtml = printContainer.innerHTML.replace(/letter-preview/g, '');
-					const wrapper = document.createElement('div');
-					wrapper.style.width = '720px';
-					wrapper.style.margin = '0';
-					wrapper.style.padding = '0';
-					wrapper.style.background = 'white';
-					wrapper.style.fontFamily = "'Times New Roman', serif";
-					wrapper.innerHTML = cleanHtml;
+					const printContainer = document.getElementById('letter-print-container');
 					
-					// Temporarily append wrapper to body to get real pixel offsets
-					wrapper.style.position = 'absolute';
-					wrapper.style.left = '0';
-					wrapper.style.top = '0';
-					wrapper.style.zIndex = '-9999';
-					document.body.appendChild(wrapper);
-
+					// Measure AutoPlace tags directly from the existing off-screen print container
 					const tagsToInject = [];
-					const spans = wrapper.querySelectorAll('span');
+					const spans = printContainer.querySelectorAll('span');
 					spans.forEach(span => {
 						const text = span.innerText.trim();
 						if (text.includes('/s1/') || text.includes('/d1/') || text.includes('[[c|1]]') || text.includes('[[s|1]]') || text.includes('[[d|1]]')) {
 							let el = span;
 							let yOffset = 0;
 							let xOffset = 0;
-							while (el && el !== wrapper) {
+							while (el && el !== printContainer) {
 								yOffset += el.offsetTop;
 								xOffset += el.offsetLeft;
 								el = el.offsetParent;
@@ -632,6 +618,14 @@
 							tagsToInject.push({ text: text, x: xOffset, y: yOffset });
 						}
 					});
+
+					// Re-generate the clean HTML identically, using the exact format that the download button uses
+					const cleanHtml = printContainer.innerHTML.replace(/letter-preview/g, '');
+					const isolatedHtml = `
+						<div style="width: 720px; margin: 0; padding: 0; background: white; font-family: 'Times New Roman', serif;">
+							${cleanHtml}
+						</div>
+					`;
 
 					const opt = {
 						margin: 0.5,
@@ -646,8 +640,8 @@
 						jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
 					};
 
-					// Render using the exact wrapper element we just measured to guarantee perfect visual alignment
-					const worker = html2pdf().set(opt).from(wrapper).toPdf();
+					// Render using the exact same isolated HTML string that successfully produced the PDF previously
+					const worker = html2pdf().set(opt).from(isolatedHtml).toPdf();
 					
 					await worker.get('pdf').then(pdf => {
 						// Inject machine-readable text into the PDF
@@ -676,11 +670,6 @@
 					});
 
 					const pdfBlob = await worker.outputPdf('blob');
-					
-					// Remove wrapper after the PDF is fully generated
-					try {
-						document.body.removeChild(wrapper);
-					} catch (removeErr) {}
 
 					btn.innerText = 'Dispatching to DocuSign...';
 
