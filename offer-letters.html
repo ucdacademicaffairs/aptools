@@ -632,6 +632,11 @@
 						}
 					});
 
+					// Remove wrapper immediately after calculation
+					try {
+						document.body.removeChild(wrapper);
+					} catch (removeErr) {}
+
 					const opt = {
 						margin: 0.5,
 						filename: 'Offer_Letter.pdf',
@@ -645,7 +650,14 @@
 						jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
 					};
 
-					const worker = html2pdf().set(opt).from(wrapper).toPdf();
+					// Render using the exact same isolated HTML string that successfully produced the PDF previously
+					const isolatedHtml = `
+						<div style="width: 720px; margin: 0; padding: 0; background: white; font-family: 'Times New Roman', serif;">
+							${cleanHtml}
+						</div>
+					`;
+
+					const worker = html2pdf().set(opt).from(isolatedHtml).toPdf();
 					
 					await worker.get('pdf').then(pdf => {
 						// Inject invisible machine-readable text into the PDF
@@ -672,12 +684,6 @@
 					});
 
 					const pdfBlob = await worker.outputPdf('blob');
-
-					try {
-						document.body.removeChild(wrapper);
-					} catch (removeErr) {
-						console.log("Wrapper already removed", removeErr);
-					}
 
 					btn.innerText = 'Dispatching to DocuSign...';
 
