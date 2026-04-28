@@ -591,67 +591,58 @@
 				if (!studentEmail) {
 					alert("Please provide the Student Email in the Global Information panel before sending.");
 					return;
-				}
-
 				const btn = document.getElementById('send-zapier-btn');
 				const originalText = btn.innerText;
 				btn.innerText = 'Packaging PDF...';
-				btn.disabled = true;
-
 				try {
+					const studentName = document.getElementById('global-student-name').value;
+					const studentEmail = document.getElementById('global-student-email').value;
+					const contactEmail = document.getElementById('global-contact-email').value;
+					const contactName = document.getElementById('global-contact-name').value;
+
+					if (!studentEmail) {
+						alert("Please provide the Student Email before sending.");
+						btn.innerText = 'Send via DocuSign';
+						btn.disabled = false;
+						return;
+					}
+
+					const opt = {
+						margin: 0.5,
+						filename: 'Offer_Letter.pdf',
+						image: { type: 'jpeg', quality: 0.98 },
+						html2canvas: {
+							scale: 2,
+							useCORS: true,
+							width: 700,
+							windowWidth: 700,
+						},
+						jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+					};
+
 					const printContainer = document.getElementById('letter-print-container');
-					// Replace standard page breaks with strict MSO Word page breaks
-					const cleanHtml = printContainer.innerHTML
-						.replace(/letter-preview/g, '')
-						.replace(/<div class="letter-page">/g, '<br clear="all" style="mso-special-character:line-break;page-break-before:always" /><div>');
-					
-					// Wrap in strict Microsoft Office (MSO) HTML5 boilerplate to guarantee formatting
-					const fullHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
-<head>
-<meta charset="UTF-8">
-<style>
-	@page WordSection1 {
-		size: 8.5in 11.0in;
-		margin: 0.5in 0.5in 0.5in 0.5in;
-		mso-header-margin: 0.5in;
-		mso-footer-margin: 0.5in;
-		mso-paper-source: 0;
-	}
-	div.WordSection1 { page: WordSection1; }
-	body { font-family: 'Times New Roman', serif; font-size: 11pt; }
-	p { margin-bottom: 11pt; margin-top: 0; }
-	.signature-line { border-top: 1px solid black; width: 250px; display: inline-block; }
-</style>
-</head>
-<body>
-	<div class="WordSection1">
-		${cleanHtml}
-	</div>
-</body>
-</html>`;
+					// Replace standard page breaks just in case, but keep it clean
+					const cleanHtmlContent = printContainer.innerHTML.replace(/letter-preview/g, '');
+					const cleanHtml = `<div style="width:700px;margin:0 auto;background:white;font-family:'Times New Roman',serif;">${cleanHtmlContent}</div>`;
 
-					const docBlob = new Blob([fullHtml], { type: 'application/msword' });
+					// Generate PDF as blob instead of saving
+					const pdfBlob = await html2pdf().set(opt).from(cleanHtml).outputPdf('blob');
 
-					btn.innerText = 'Dispatching to DocuSign...';
+					btn.innerText = 'Sending to DocuSign...';
 
 					const formData = new FormData();
 					formData.append('studentName', studentName || 'Student');
 					formData.append('studentEmail', studentEmail);
 					formData.append('contactEmail', contactEmail || '');
 					formData.append('contactName', contactName || 'Department Contact');
-					
-					// Append the native DOC blob properly
-					formData.append('document', docBlob, 'Offer_Letter.doc');
+					formData.append('document', pdfBlob, 'Offer_Letter.pdf');  // <-- PDF, not .doc
 
-					await fetch(ZAPIER_WEBHOOK_URL, {
-						method: 'POST',
-						body: formData
-					});
+					await fetch(ZAPIER_WEBHOOK_URL, { method: 'POST', body: formData });
+					alert("Sent! Check DocuSign.");
 
-					alert("Success! The .doc document has been properly formatted and dispatched to Zapier.");
-				} catch (e) {
+				} catch(e) {
 					console.error(e);
-					alert("JS Error: " + e.message + "\\nLine: " + e.lineNumber);
+					alert("Error: " + e.message);
 				} finally {
 					btn.innerText = originalText;
 					btn.disabled = false;
@@ -832,10 +823,10 @@
 					</div>
 					
 					<div class="mt-8">
-						<p>I accept _________ <span style="color:#FEFEFE; font-size:5pt;">[[c|1]]</span> (or) I decline _________ <span style="color:#FEFEFE; font-size:5pt;">[[c|1]]</span> the above appointment.</p>
+						<p>I accept _________ <span style="color:#FFFFFF; font-size:6pt;">[[c|1]]</span> (or) I decline _________ <span style="color:#FFFFFF; font-size:6pt;">[[c|1]]</span> the above appointment.</p>
 						<div class="flex gap-8 mt-4">
-							<div><div class="signature-line"></div><p class="text-xs">Signature of Prospective ASE <span style="color:#FEFEFE; font-size:5pt;">/s1/ [[s|1]]</span></p></div>
-							<div><div class="signature-line" style="width: 100px;"></div><p class="text-xs">Date Signed <span style="color:#FEFEFE; font-size:5pt;">/d1/ [[d|1]]</span></p></div>
+							<div><div class="signature-line"></div><p class="text-xs">Signature of Prospective ASE <span style="color:#FFFFFF; font-size:6pt;">/s1/</span></p></div>
+							<div><div class="signature-line" style="width: 100px;"></div><p class="text-xs">Date Signed <span style="color:#FFFFFF; font-size:6pt;">/d1/</span></p></div>
 						</div>
 					</div>
 				</div>`;
@@ -906,10 +897,10 @@
 					</div>
 					
 					<div class="mt-8">
-						<p>I accept _________ <span style="color:#FEFEFE; font-size:5pt;">[[c|1]]</span> (or) I decline _________ <span style="color:#FEFEFE; font-size:5pt;">[[c|1]]</span> the above appointment.</p>
+						<p>I accept _________ <span style="color:#FFFFFF; font-size:6pt;">[[c|1]]</span> (or) I decline _________ <span style="color:#FFFFFF; font-size:6pt;">[[c|1]]</span> the above appointment.</p>
 						<div class="flex gap-8 mt-4">
-							<div><div class="signature-line"></div><p class="text-xs">Signature of Prospective GSR <span style="color:#FEFEFE; font-size:5pt;">/s1/ [[s|1]]</span></p></div>
-							<div><div class="signature-line" style="width: 100px;"></div><p class="text-xs">Date Signed <span style="color:#FEFEFE; font-size:5pt;">/d1/ [[d|1]]</span></p></div>
+							<div><div class="signature-line"></div><p class="text-xs">Signature of Prospective GSR <span style="color:#FFFFFF; font-size:6pt;">/s1/</span></p></div>
+							<div><div class="signature-line" style="width: 100px;"></div><p class="text-xs">Date Signed <span style="color:#FFFFFF; font-size:6pt;">/d1/</span></p></div>
 						</div>
 					</div>
 				</div>`;
