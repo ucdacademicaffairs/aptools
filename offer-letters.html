@@ -6,7 +6,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Offer Letter Generator</title>
 	<script src="https://cdn.tailwindcss.com"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+	<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&display=swap" rel="stylesheet">
@@ -24,24 +24,6 @@
 			cursor: not-allowed;
 		}
 
-		@media print {
-			body * {
-				visibility: hidden;
-			}
-
-			#letter-print-container,
-			#letter-print-container * {
-				visibility: visible;
-			}
-
-			#letter-print-container {
-				position: absolute;
-				left: 0;
-				top: 0;
-				width: 100%;
-			}
-		}
-
 		.letter-preview {
 			font-family: 'Times New Roman', Times, serif;
 			font-size: 11pt;
@@ -55,85 +37,24 @@
 			margin: 0 auto;
 		}
 
-		/* These styles are what jsPDF's html() renderer will see */
-		#pdf-source {
-			position: absolute;
-			left: -9999px;
-			top: 0;
-			width: 750px;
-			/* ~7.5in content width at 100dpi */
-			background: white;
-			font-family: 'Times New Roman', Times, serif;
-			font-size: 12px;
-			line-height: 1.5;
-			color: #000000;
+		.letter-preview p {
+			margin-bottom: 0.8rem;
 		}
 
-		#pdf-source p {
-			margin: 0 0 10px 0;
-			font-family: 'Times New Roman', Times, serif;
-			font-size: 12px;
-			color: #000000;
-		}
-
-		#pdf-source b,
-		#pdf-source strong {
-			font-weight: bold;
-		}
-
-		#pdf-source .letter-block {
-			padding: 40px;
-			page-break-after: always;
-		}
-
-		#pdf-source .letter-date {
-			text-align: right;
-			margin-bottom: 24px;
-		}
-
-		#pdf-source .sig-section {
-			margin-top: 24px;
-		}
-
-		#pdf-source .sig-line {
+		.letter-preview .sig-line {
 			display: inline-block;
-			width: 200px;
-			border-top: 1px solid #000;
-			margin-top: 32px;
+			width: 220px;
+			border-top: 1px solid black;
+			margin-top: 2.5rem;
+			vertical-align: bottom;
 		}
 
-		#pdf-source .sig-line-short {
+		.letter-preview .sig-line-short {
 			display: inline-block;
 			width: 100px;
-			border-top: 1px solid #000;
-			margin-top: 32px;
-		}
-
-		/* Anchor text — white, tiny, but real text in the PDF */
-		#pdf-source .anchor {
-			color: #FFFFFF;
-			font-size: 6px;
-			font-family: 'Times New Roman', Times, serif;
-		}
-
-		.letter-page p {
-			margin-bottom: 1rem;
-		}
-
-		.letter-header {
-			text-align: right;
-			margin-bottom: 2rem;
-		}
-
-		.letter-footer {
-			margin-top: 2rem;
-		}
-
-		.signature-line {
-			margin-top: 3rem;
 			border-top: 1px solid black;
-			width: 250px;
-			display: inline-block;
+			margin-top: 2.5rem;
+			vertical-align: bottom;
 		}
 	</style>
 </head>
@@ -274,14 +195,6 @@
 		</div>
 	</div>
 
-	<!--
-		This hidden div is what jsPDF's html() renderer reads.
-		It uses real HTML/CSS text — NOT a canvas screenshot —
-		so the output PDF has a real searchable text layer.
-		DocuSign anchor tabs can find /s1/, /d1/, \ac1\, \dc1\ in it.
-	-->
-	<div id="pdf-source"></div>
-
 	<script>
 		document.addEventListener('DOMContentLoaded', function () {
 
@@ -320,7 +233,6 @@
 			const generateBtn = document.getElementById('generate-letters-btn');
 			const letterModal = document.getElementById('letter-modal');
 			const letterPreviewContainer = document.getElementById('letter-preview-container');
-			const pdfSource = document.getElementById('pdf-source');
 
 			// ── Persistence ───────────────────────────────────────────────────────────
 			persistentFields.forEach(id => {
@@ -473,197 +385,7 @@
 				});
 			}
 
-			// ── PDF generation via jsPDF html() ──────────────────────────────────────
-			// jsPDF's html() renderer walks the DOM and writes REAL TEXT into the PDF.
-			// This gives us a searchable text layer that DocuSign anchor tabs can find.
-			// The anchor spans (/s1/, /d1/, \ac1\, \dc1\) are white 6px text —
-			// invisible to readers but present and searchable in the PDF.
-
-			function generatePdfBlob(htmlContent) {
-				return new Promise((resolve, reject) => {
-					// Populate the hidden pdf-source div
-					pdfSource.innerHTML = htmlContent;
-
-					const { jsPDF } = window.jspdf;
-					const doc = new jsPDF({
-						orientation: 'portrait',
-						unit: 'pt',
-						format: 'letter'   // 612 x 792 pt
-					});
-
-					doc.html(pdfSource, {
-						callback: function (doc) {
-							const blob = doc.output('blob');
-							pdfSource.innerHTML = '';
-							resolve(blob);
-						},
-						x: 40,          // ~0.55in left margin
-						y: 40,          // ~0.55in top margin
-						width: 532,     // content width in pts (~7.4in)
-						windowWidth: 750,
-						autoPaging: 'text',
-						margin: [40, 40, 40, 40]
-					});
-				});
-			}
-
-			// ── Collect letter data ───────────────────────────────────────────────────
-			function collectLetterData() {
-				const get = id => document.getElementById(id).value;
-				const deadline = get('global-deadline');
-				return {
-					studentName: get('global-student-name') || '[STUDENT NAME]',
-					studentEmail: get('global-student-email') || '',
-					deptName: get('global-dept-name') || '[DEPARTMENT NAME]',
-					headOfDept: get('global-head-of-dept') || '[HEAD OF DEPT]',
-					contactName: get('global-contact-name') || '[CONTACT NAME]',
-					contactPhone: get('global-contact-phone') || '[CONTACT PHONE]',
-					contactEmail: get('global-contact-email') || '[CONTACT EMAIL]',
-					year: parseInt(get('global-year')),
-					formattedDeadline: deadline
-						? new Date(deadline).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-						: '[DATE]'
-				};
-			}
-
-			function buildAllLettersHtml(d) {
-				const groups = {};
-				appointments.forEach(appt => {
-					const key = `${appt.type}-${appt.values.step}-${appt.values.percentTime}-${appt.values.workDuties || ''}`;
-					(groups[key] = groups[key] || []).push(appt);
-				});
-
-				let html = '';
-				const qOrder = { Fall: 1, Winter: 2, Spring: 3 };
-
-				Object.keys(groups).sort().forEach(key => {
-					const group = groups[key];
-					const sample = group[0];
-					group.sort((a, b) => qOrder[a.values.quarter] - qOrder[b.values.quarter]);
-					const quartersArr = [...new Set(group.map(a => a.values.quarter))];
-					const quarterString = quartersArr.length === 3 ? 'Fall, Winter, and Spring'
-						: quartersArr.length === 2 ? quartersArr.join(' and ') : quartersArr[0];
-					const shared = {
-						...d,
-						quarter: quarterString,
-						totalFte: parseFloat(sample.values.percentTime || 0),
-						supervisor: sample.values.supervisor || '[SUPERVISOR]',
-						monthlySal: sample.costs.monthlyActual,
-						hideSupervisor: quartersArr.length > 1 || group.some(a => a.values.hideSupervisor),
-						payDates: getCombinedPayDatesList(quartersArr)
-					};
-					html += sample.type === 'gsr'
-						? generateGsrLetter({ ...shared, duties: sample.values.workDuties })
-						: generateAseLetter({ ...shared, type: sample.type });
-				});
-				return html;
-			}
-
-			// ── Generate & preview ────────────────────────────────────────────────────
-			generateBtn.addEventListener('click', () => {
-				const d = collectLetterData();
-				const allLettersHtml = buildAllLettersHtml(d);
-				if (!allLettersHtml) { alert('Please add at least one appointment.'); return; }
-
-				// Preview uses the same HTML but with visible styling
-				letterPreviewContainer.innerHTML = `<div style="font-family:'Times New Roman',serif;font-size:11pt;line-height:1.5;">${allLettersHtml}</div>`;
-				letterModal.classList.remove('hidden');
-			});
-
-			document.getElementById('close-modal-btn').addEventListener('click', () => letterModal.classList.add('hidden'));
-
-			// ── Send via DocuSign ─────────────────────────────────────────────────────
-			document.getElementById('send-zapier-btn').addEventListener('click', async () => {
-				const d = collectLetterData();
-				if (!d.studentEmail) { alert("Please provide the Student Email before sending."); return; }
-
-				const btn = document.getElementById('send-zapier-btn');
-				const orig = btn.innerText;
-				btn.disabled = true;
-
-				try {
-					// 1. Build HTML and generate PDF with real text layer
-					btn.innerText = 'Generating PDF…';
-					const allLettersHtml = buildAllLettersHtml(d);
-					const safeFilename = `Offer_Letter_${(d.studentName || 'Student').replace(/\s+/g, '_')}.pdf`;
-					const pdfBlob = await generatePdfBlob(allLettersHtml);
-
-					// 2. Upload to tmpfiles.org — CORS-friendly temp host
-					btn.innerText = 'Uploading PDF…';
-					const uploadForm = new FormData();
-					uploadForm.append('file', new File([pdfBlob], safeFilename, { type: 'application/pdf' }));
-					const uploadRes = await fetch('https://tmpfiles.org/api/v1/upload', { method: 'POST', body: uploadForm });
-					const uploadJson = await uploadRes.json();
-					if (!uploadJson.data?.url) throw new Error('tmpfiles.org upload failed: ' + JSON.stringify(uploadJson));
-
-					// Insert /dl/ for direct download URL
-					const pdfUrl = uploadJson.data.url.replace('https://tmpfiles.org/', 'https://tmpfiles.org/dl/');
-					console.log('PDF URL:', pdfUrl);
-
-					// 3. Send to Zapier as FormData (no Content-Type header = no CORS preflight)
-					btn.innerText = 'Sending to Zapier…';
-					const zapierForm = new FormData();
-					zapierForm.append('studentName', d.studentName);
-					zapierForm.append('studentEmail', d.studentEmail);
-					zapierForm.append('contactEmail', d.contactEmail);
-					zapierForm.append('contactName', d.contactName);
-					zapierForm.append('filename', safeFilename);
-					zapierForm.append('documentUrl', pdfUrl);
-
-					const zapierRes = await fetch(ZAPIER_WEBHOOK_URL, { method: 'POST', body: zapierForm });
-					if (zapierRes.ok) {
-						alert("Sent! The letter is on its way to DocuSign.");
-					} else {
-						alert(`Zapier returned status ${zapierRes.status}. Check your Zap history.`);
-					}
-
-				} catch (e) {
-					console.error(e);
-					alert("Error: " + e.message);
-				} finally {
-					btn.innerText = orig;
-					btn.disabled = false;
-				}
-			});
-
-			// ── Download PDF ──────────────────────────────────────────────────────────
-			document.getElementById('download-pdf-btn').addEventListener('click', async () => {
-				const btn = document.getElementById('download-pdf-btn');
-				const orig = btn.innerText;
-				btn.innerText = 'Generating…'; btn.disabled = true;
-				try {
-					const d = collectLetterData();
-					const safeFilename = `Offer_Letter_${(d.studentName || 'Student').replace(/\s+/g, '_')}.pdf`;
-					const pdfBlob = await generatePdfBlob(buildAllLettersHtml(d));
-					const url = URL.createObjectURL(pdfBlob);
-					const a = document.createElement('a');
-					a.href = url; a.download = safeFilename; a.click();
-					URL.revokeObjectURL(url);
-				} catch (e) { console.error(e); alert("Error generating PDF."); }
-				finally { btn.innerText = orig; btn.disabled = false; }
-			});
-
-			// ── Download Word ─────────────────────────────────────────────────────────
-			document.getElementById('download-word-btn').addEventListener('click', () => {
-				const d = collectLetterData();
-				const content = letterPreviewContainer.innerHTML.replace(/\n|\t/g, ' ');
-				const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-			<head><meta charset='utf-8'><title>Offer Letters</title>
-			<style>body{font-family:"Times New Roman",serif;font-size:11pt;}p{margin-bottom:11pt;}.signature-line{border-top:1px solid black;width:250px;display:inline-block;}</style>
-			</head><body>${content}</body></html>`;
-				const name = d.studentName || 'Student';
-				downloadBlob(html, `Offer_Letter_${name.replace(/\s+/g, '_')}.doc`, 'application/msword');
-			});
-
-			function downloadBlob(content, filename, type) {
-				const blob = new Blob(['\ufeff', content], { type });
-				const url = URL.createObjectURL(blob);
-				const a = document.createElement('a');
-				a.href = url; a.download = filename; a.click();
-				URL.revokeObjectURL(url);
-			}
-
-			// ── Pay date helpers ──────────────────────────────────────────────────────
+			// ── Helpers ───────────────────────────────────────────────────────────────
 			function getPayDatesArray(quarter, startYear) {
 				if (quarter === 'Fall') return [`November 1, ${startYear}`, `December 1, ${startYear}`, `January 1, ${startYear + 1}`];
 				if (quarter === 'Winter') return [`February 1, ${startYear + 1}`, `March 1, ${startYear + 1}`, `April 1, ${startYear + 1}`];
@@ -686,140 +408,504 @@
 				return val.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 			}
 
-			// ── Anchor text ───────────────────────────────────────────────────────────
-			// These are real text characters in the PDF (not images).
-			// DocuSign anchor tab strings to configure in OfferBot template:
-			//   Signature field   → /s1/
-			//   Date Signed field → /d1/
-			//   Accept checkbox   → \ac1\
-			//   Decline checkbox  → \dc1\
-			function anchor(text) {
-				return `<span class="anchor">${text}</span>`;
+			function collectLetterData() {
+				const get = id => document.getElementById(id).value;
+				const deadline = get('global-deadline');
+				return {
+					studentName: get('global-student-name') || '[STUDENT NAME]',
+					studentEmail: get('global-student-email') || '',
+					deptName: get('global-dept-name') || '[DEPARTMENT NAME]',
+					headOfDept: get('global-head-of-dept') || '[HEAD OF DEPT]',
+					contactName: get('global-contact-name') || '[CONTACT NAME]',
+					contactPhone: get('global-contact-phone') || '[CONTACT PHONE]',
+					contactEmail: get('global-contact-email') || '[CONTACT EMAIL]',
+					year: parseInt(get('global-year')),
+					formattedDeadline: deadline
+						? new Date(deadline).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+						: '[DATE]'
+				};
 			}
 
-			function signatureBlock(role) {
-				return `
-			<div class="sig-section">
-				<p>I accept _________ ${anchor('\\ac1\\')} &nbsp;&nbsp; (or) &nbsp;&nbsp; I decline _________ ${anchor('\\dc1\\')} the above appointment.</p>
-				<div style="display:flex;gap:48px;margin-top:8px;">
-					<div>
-						<div class="sig-line"></div>
-						<p style="font-size:9px;margin-top:4px;">Signature of Prospective ${role} ${anchor('/s1/')}</p>
+			function buildLetterGroups() {
+				const groups = {};
+				appointments.forEach(appt => {
+					const key = `${appt.type}-${appt.values.step}-${appt.values.percentTime}-${appt.values.workDuties || ''}`;
+					(groups[key] = groups[key] || []).push(appt);
+				});
+				const qOrder = { Fall: 1, Winter: 2, Spring: 3 };
+				return Object.keys(groups).sort().map(key => {
+					const group = groups[key];
+					const sample = group[0];
+					group.sort((a, b) => qOrder[a.values.quarter] - qOrder[b.values.quarter]);
+					const quartersArr = [...new Set(group.map(a => a.values.quarter))];
+					const quarterString = quartersArr.length === 3 ? 'Fall, Winter, and Spring'
+						: quartersArr.length === 2 ? quartersArr.join(' and ') : quartersArr[0];
+					return {
+						type: sample.type,
+						quarter: quarterString,
+						totalFte: parseFloat(sample.values.percentTime || 0),
+						supervisor: sample.values.supervisor || '[SUPERVISOR]',
+						monthlySal: sample.costs.monthlyActual,
+						hideSupervisor: quartersArr.length > 1 || group.some(a => a.values.hideSupervisor),
+						payDates: getCombinedPayDatesList(quartersArr),
+						duties: sample.values.workDuties || '',
+						step: sample.values.step
+					};
+				});
+			}
+
+			// ── HTML preview builder ──────────────────────────────────────────────────
+			function buildPreviewHtml(d, groups) {
+				return groups.map(g => {
+					const isGsr = g.type === 'gsr';
+					const isHourly = g.type === 'reader';
+					const title = g.type === 'ta' ? 'Teaching Assistant'
+						: g.type === 'ai' ? 'Associate Instructor'
+							: g.type === 'reader' ? 'Reader/Tutor' : 'Graduate Student Researcher';
+					const fteDisplay = isHourly
+						? `${Math.round(g.totalFte / 4.4)}% / ${g.totalFte} hours`
+						: `${g.totalFte}% / ${Math.round(g.totalFte * 4.4)} hours`;
+					const salaryLine = isHourly
+						? `at an hourly rate of ${formatCurrency(g.monthlySal)} per hour`
+						: isGsr
+							? `at a monthly rate of <strong>${formatCurrency(g.monthlySal)}</strong> (based on a full-time monthly rate of ${formatCurrency(g.monthlySal * (100 / g.totalFte))})`
+							: `at a monthly salary of ${formatCurrency(g.monthlySal)} (based on a full-time monthly rate of ${formatCurrency(g.monthlySal * (100 / g.totalFte))})`;
+					const supervisorLine = g.hideSupervisor
+						? ' Your supervisor will be noted on the Description of Duties form you receive prior to the quarter.'
+						: isGsr
+							? ` Your PI/Supervisor for this appointment will be <strong>${g.supervisor}</strong>.`
+							: ` Your supervisor for this appointment will be <strong>${g.supervisor}</strong>.`;
+					const subject = isGsr
+						? 'Notification of Graduate Student Researcher Appointment (via DocuSign)'
+						: 'Notification of Academic Student Employee Appointment (via DocuSign)';
+
+					return `<div class="letter-preview mb-12">
+					<p style="text-align:right;">${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+					<p><strong>To:</strong> ${d.studentName}</p>
+					<p><strong>From:</strong> ${d.headOfDept}</p>
+					<p><strong>Subject:</strong> ${subject}</p>
+					<p>Dear ${d.studentName.split(' ')[0]},</p>
+					<p>I am pleased to offer you an appointment as a <strong>${title}</strong> in the <strong>${d.deptName}</strong> for the <strong>${g.quarter} quarter(s) of ${d.year}-${d.year + 1}</strong>.${supervisorLine}</p>
+					<p>This appointment is at <strong>${fteDisplay}</strong>. You will be paid ${salaryLine}. Your paychecks will be issued on <strong>${g.payDates}</strong>.</p>
+					${isGsr ? `<p><strong>Short Statement of Required Work Duties:</strong> ${g.duties}</p>` : ''}
+					<p><em>[Letter body — see full text in generated PDF]</em></p>
+					<p>Please sign and date below to indicate you understand and accept the terms of your appointment. Failure to return a signed letter by <strong>${d.formattedDeadline}</strong> constitutes rejection of this offer.</p>
+					<p><strong>Hiring Department/Unit Contact:</strong><br>${d.contactName}<br>${d.contactPhone}<br>${d.contactEmail}</p>
+					<p>Sincerely,</p><p><strong>${d.headOfDept}</strong></p><p>Cc: Employment File</p>
+					<div style="margin-top:2rem;">
+						<p>I accept _________ &nbsp;&nbsp; (or) &nbsp;&nbsp; I decline _________ the above appointment.</p>
+						<div style="display:flex;gap:3rem;margin-top:1rem;">
+							<div><div class="sig-line"></div><p style="font-size:9pt;margin-top:4px;">Signature of Prospective ${isGsr ? 'GSR' : 'ASE'}</p></div>
+							<div><div class="sig-line-short"></div><p style="font-size:9pt;margin-top:4px;">Date Signed</p></div>
+						</div>
 					</div>
-					<div>
-						<div class="sig-line-short"></div>
-						<p style="font-size:9px;margin-top:4px;">Date Signed ${anchor('/d1/')}</p>
-					</div>
-				</div>
-			</div>`;
+				</div>`;
+				}).join('<hr style="margin:2rem 0;">');
 			}
 
-			// ── Shared letter fragments ───────────────────────────────────────────────
-			function lh(data, subjectLine) { // letter header
-				return `
-			<div class="letter-date">
-				<p>${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
-			</div>
-			<p><b>To:</b> ${data.studentName}</p>
-			<p><b>From:</b> ${data.headOfDept}</p>
-			<p><b>Subject:</b> ${subjectLine}</p>
-			<p>Dear ${data.studentName.split(' ')[0]},</p>`;
+			// ── pdf-lib PDF builder ───────────────────────────────────────────────────
+			// Uses pdf-lib to write REAL TEXT directly into the PDF.
+			// No canvas, no screenshots. Every character is a real glyph.
+			// DocuSign anchor tabs (/s1/, /d1/, \ac1\, \dc1\) are written as
+			// white text — invisible but searchable.
+
+			async function buildPdfBlob(d, groups) {
+				const { PDFDocument, StandardFonts, rgb } = PDFLib;
+
+				const pdfDoc = await PDFDocument.create();
+				const regular = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+				const bold = await pdfDoc.embedFont(StandardFonts.TimesRomanBold);
+				const italic = await pdfDoc.embedFont(StandardFonts.TimesRomanItalic);
+
+				// Page dimensions (letter: 612 x 792 pts)
+				const PW = 612, PH = 792;
+				const ML = 54, MR = 54, MT = 54, MB = 54; // margins
+				const CW = PW - ML - MR; // content width = 504
+				const NORMAL = 11, SMALL = 9, TINY = 6;
+				const LINE_H = NORMAL * 1.45;
+
+				// White color for invisible anchor text
+				const white = rgb(1, 1, 1);
+				const black = rgb(0, 0, 0);
+
+				// ── Text layout engine ──────────────────────────────────────────────
+				// Wraps text to content width, returns array of lines.
+				function wrapText(text, font, size, maxWidth) {
+					const words = text.split(' ');
+					const lines = [];
+					let current = '';
+					for (const word of words) {
+						const test = current ? current + ' ' + word : word;
+						if (font.widthOfTextAtSize(test, size) <= maxWidth) {
+							current = test;
+						} else {
+							if (current) lines.push(current);
+							current = word;
+						}
+					}
+					if (current) lines.push(current);
+					return lines;
+				}
+
+				// ── Page manager ────────────────────────────────────────────────────
+				// Tracks current page and Y position, adds new pages automatically.
+				let page, y;
+
+				function newPage() {
+					page = pdfDoc.addPage([PW, PH]);
+					y = PH - MT;
+				}
+
+				function ensureSpace(needed) {
+					if (y - needed < MB) newPage();
+				}
+
+				// Draw a line of text. Returns height used.
+				function drawLine(text, font, size, x, color) {
+					if (!text) return;
+					page.drawText(text, { x, y, font, size, color: color || black });
+				}
+
+				// Draw a paragraph (wraps automatically, advances y).
+				// segments: [{text, bold}] for mixed bold/normal in one paragraph
+				function drawParagraph(text, opts = {}) {
+					const font = opts.bold ? bold : (opts.italic ? italic : regular);
+					const size = opts.size || NORMAL;
+					const lh = size * 1.45;
+					const indent = opts.indent || ML;
+					const maxW = CW - (indent - ML);
+					const color = opts.color || black;
+					const lines = wrapText(text, font, size, maxW);
+					ensureSpace(lines.length * lh + (opts.spaceBefore || 0));
+					if (opts.spaceBefore) y -= opts.spaceBefore;
+					for (const line of lines) {
+						drawLine(line, font, size, indent, color);
+						y -= lh;
+					}
+					if (opts.spaceAfter !== undefined) y -= opts.spaceAfter;
+					else y -= lh * 0.3; // default small gap after paragraph
+				}
+
+				// Draw a mixed bold/normal paragraph.
+				// parts: [{text, bold}]
+				function drawMixed(parts, opts = {}) {
+					// Flatten to single string for wrapping purposes,
+					// then re-render with correct fonts per word.
+					// Simple approach: concatenate and draw bold words in bold.
+					// This is an approximation — for complex mixing use separate calls.
+					const lh = (opts.size || NORMAL) * 1.45;
+					const size = opts.size || NORMAL;
+					const indent = opts.indent || ML;
+
+					// Build a flat list of words with their font
+					const words = [];
+					for (const part of parts) {
+						const f = part.bold ? bold : regular;
+						for (const w of part.text.split(' ')) {
+							if (w) words.push({ w, f });
+						}
+					}
+
+					// Layout words into lines
+					const lines = [[]]; // array of arrays of {w, f}
+					for (const wobj of words) {
+						const curLine = lines[lines.length - 1];
+						const lineText = [...curLine, wobj].map(o => o.w).join(' ');
+						const lineW = lineText.split(' ').reduce((acc, word, i) => {
+							const fo = [...curLine, wobj][i]?.f || regular;
+							return acc + fo.widthOfTextAtSize(word, size) + (i > 0 ? regular.widthOfTextAtSize(' ', size) : 0);
+						}, 0);
+						if (lineW <= CW - (indent - ML) || curLine.length === 0) {
+							curLine.push(wobj);
+						} else {
+							lines.push([wobj]);
+						}
+					}
+
+					ensureSpace(lines.length * lh + (opts.spaceBefore || 0));
+					if (opts.spaceBefore) y -= opts.spaceBefore;
+
+					for (const line of lines) {
+						let x = indent;
+						for (let i = 0; i < line.length; i++) {
+							const { w, f } = line[i];
+							drawLine(w, f, size, x, opts.color || black);
+							x += f.widthOfTextAtSize(w, size) + regular.widthOfTextAtSize(' ', size);
+						}
+						y -= lh;
+					}
+					if (opts.spaceAfter !== undefined) y -= opts.spaceAfter;
+					else y -= lh * 0.3;
+				}
+
+				function drawBlankLine(lines = 1) {
+					y -= LINE_H * lines;
+				}
+
+				function drawHRule() {
+					ensureSpace(20);
+					page.drawLine({ start: { x: ML, y }, end: { x: PW - MR, y }, thickness: 0.5, color: black });
+					y -= 10;
+				}
+
+				// ── Boilerplate paragraphs ──────────────────────────────────────────
+				const ASE_BOILERPLATE = [
+					{ bold: true, label: 'Academic Eligibility Standards', text: ' - The UC Davis Office of Graduate Studies is the administrative home for graduate students. Your appointment is subject to regular review by the Graduate Division. University policy for graduate student employment requires that you meet and maintain all academic eligibility standards appropriate to this appointment (such as, enrollment, GPA, units of incomplete grades, academic progress, etc.). Further information regarding eligibility, restrictions and benefits may be found in the Academic Personnel Manual UCD Appendix II-B and on the web at https://grad.ucdavis.edu/student-employment.' },
+					{ bold: false, label: null, text: 'If you are an international graduate student or a permanent resident who is not a citizen of a country where English is the primary or dominant language, as endorsed by the UC Davis Graduate Council, this appointment is contingent upon your demonstration of oral English proficiency by passing one of the English Language Proficiency Exams listed on the Graduate Studies website: https://grad.ucdavis.edu/policies.' },
+					{ bold: true, label: 'Represented Position', text: ' - Your position is covered by a collective bargaining agreement between the University of California and the United Automobile, Aerospace, and Agricultural Implement Workers of America (UAW). A copy of the collective bargaining agreement is available at: https://ucnet.universityofcalifornia.edu/labor/bargaining-units/bx/contract.html. Should you require assistance, you may contact the UAW. The University is required to release names and department addresses of all ASEs to the UAW each academic term. A UAW membership election form can be found at: https://uaw2865.org/join/' },
+					{ bold: true, label: 'Employment Standing', text: " - This offer of employment is contingent on remaining in good employment standing. Appointments are dependent on maintaining satisfactory performance and adherence to the provisions of the collective bargaining agreement, including, but not limited to No-Strikes, Non-Discrimination, and Respectful Work Environment articles as well as University policies, procedures, and conduct standards applicable to your position. More information on such University policies can be found here: UC Davis Academic Personnel Manual and the Human Resources Policy & Procedure Manual (PPM)." },
+					{ bold: true, label: 'Disclosure Requirement', text: ' - This offer is contingent upon you clearing an Employment Misconduct Disclosure review where you will be required to disclose any final administrative or judicial decisions within the last seven years determining that you committed any misconduct and provide information related to investigations and appeals.' },
+					{ bold: true, label: 'New Employee Orientation', text: ' - All first-time Teaching Assistants at UC Davis are required to attend a campuswide TA orientation https://cee.ucdavis.edu/tao. This orientation introduces new TAs to teaching at UC Davis, what is expected of TAs, and what TAs can expect in terms of instructional support and TA training.' },
+					{ bold: true, label: 'Employment File', text: ' - The University of California will establish and maintain a file that will contain information related to your employment. New material may be added to your file over the course of your employment. Should you wish to review your employment file, please contact Hiring Department/Unit Contact listed below.' },
+					{ bold: true, label: 'Fee Remissions', text: ' - Pursuant to Article 11 - Fee Remission, eligible graduate student employees appointed at 25% or greater are entitled to 100% remission of tuition and eligible fees charged. The fees included in the fee remission are the: (1) Student Services Fee, (2) premium for the Student Health Insurance Program (SHIP), and (3) 100% partial fee remission toward campus fees as set forth in the collective bargaining agreement. UC will cover Nonresident Supplemental Tuition for up to three (3) years for eligible ASEs enrolled in a doctoral program and employed at 25% or greater who have advanced to candidacy in their degree program. ASEs hired from the self-supporting graduate programs are not eligible for fee remissions greater than the state-supported equivalent rates. https://grad.ucdavis.edu/tuition-and-fee-remission' },
+					{ bold: true, label: 'Childcare Benefit', text: ' - Pursuant to Article 4 - Childcare, ASEs with an eligible appointment shall be eligible to participate in the Childcare Reimbursement Program. Information and related forms can be found at: https://hr.ucdavis.edu/departments/worklife-wellness/student-parent/ucd-grant' },
+					{ bold: true, label: 'Accommodations', text: ' - Academic Student Employees who are disabled or become disabled should notify their supervisor or department to request reasonable accommodations, in advance of their start date or any time during their appointment, in accordance with Article 24 - Reasonable Accommodation. An ASE who anticipates a need for access to an all-gender restroom or lactation room during the course of their appointment should refer to Article 21- Non-Discrimination in Employment and contact their hiring department/unit contact listed below or UC Davis Employee & Labor Relations as soon as possible after receiving this written notice of appointment.' },
+					{ bold: true, label: 'Work Authorization', text: ' - This offer of employment is contingent upon your ability to prove that you are authorized to work in the United States, as required by the Immigration Reform and Control Act of 1986. Also, the State of California requires that we inform all academic appointees of the Political Reform Act of 1974. This Act prohibits public officials from participating in governmental decisions when personal financial interests may be affected by those decisions. The Act requires that all government employees and officials disqualify themselves from participating in a governmental decision when a financial conflict of interest is present.' },
+					{ bold: true, label: 'Direct Deposit', text: ' - Please note that direct deposit information expires 60 days following an employee\'s separation date and is not reactivated upon reappointment. All employees who are rehired or reappointed are encouraged to review their direct deposit information regularly via UCPath to avoid any delays in processing your paycheck.' },
+				];
+
+				const GSR_BOILERPLATE = [
+					{ bold: true, label: 'Leaves of Absences', text: ' - Leaves of absences, including short-term and long-term leave, are governed by Article 17 - Leaves. Requests for any leave of absence must meet the eligibility criteria, and in some cases, must be approved by your PI/supervisor or department in advance. More information can be found here: UC Davis Family and Medical Leave for Funded Graduate Students.' },
+					{ bold: true, label: 'Personal Time Off', text: ' - Eligible GSRs shall have the ability to request the use of Personal Time Off (PTO) days, in accordance with Article 23 - Personal Time Off.' },
+					{ bold: true, label: 'Reporting in Time and Attendance System', text: ' - You are responsible for honestly and accurately reporting the use of any PTO or leaves of absences on the appropriate leave-reporting form and/or through your campus time and attendance system each month, in accordance with established local procedures. Failure to report an absence from work in any circumstance may result in an overpayment of public or research funds requiring your repayment. Submitting erroneous information in the time and attendance system will be subject to your submission being overridden and pay withheld for the time not worked. Failing to accurately report leave in any way and receiving an overpayment of funds is a serious violation of university policy that may result in disciplinary action, up to and including dismissal. If you have no absences or leave to report, you must still submit a report acknowledging no absences or leaves to report in your local time and attendance system by the submission deadline as set by your campus. See information on UC Davis Time Reporting System (TRS)' },
+					{ bold: true, label: 'Academic Eligibility Standards', text: ' - The UC Davis Office of Graduate Studies is the administrative home for graduate students. Your appointment is subject to regular review by the Graduate Division. University policy for graduate student employment requires that you meet and maintain all academic eligibility standards appropriate to this appointment (such as, enrollment, GPA, units of incomplete grades, academic progress, etc.). Further information regarding eligibility, restrictions and benefits may be found in the Academic Personnel Manual UCD Appendix II-B and on the web at https://grad.ucdavis.edu/student-employment.' },
+					{ bold: true, label: 'Represented Position', text: ' - Your position is covered by a collective bargaining agreement between the University of California and the United Automobile, Aerospace, and Agricultural Implement Workers of America (UAW). A copy of the collective bargaining agreement is available at: https://ucnet.universityofcalifornia.edu/resources/employment-policies-contracts/bargaining-units/graduate-student-researchers/contract/. Should you require assistance, you may contact the UAW. The University is required to release names and department addresses of all GSRs to the UAW each academic term. A UAW membership election form can be found at: https://uaw2865.org/join/.' },
+					{ bold: true, label: 'Employment Standing', text: " - This offer of employment is contingent on remaining in good employment standing. Appointments are dependent on maintaining satisfactory performance and adherence to the provisions of the collective bargaining agreement, including, but not limited to No-Strikes, Non-Discrimination, and Respectful Work Environment articles as well as University policies, procedures, and conduct standards applicable to your position. More information on such University policies can be found here: UC Davis Academic Personnel Manual and the Human Resources Policy & Procedure Manual (PPM)." },
+					{ bold: true, label: 'Disclosure Requirement', text: ' - This offer is contingent upon you clearing an Employment Misconduct Disclosure review where you will be required to disclose any final administrative or judicial decisions within the last seven years determining that you committed any misconduct and provide information related to investigations and appeals.' },
+					{ bold: true, label: 'Employment File', text: ' - The University of California will establish and maintain a file that will contain information related to your employment. New material may be added to your file over the course of your employment. Should you wish to review your employment file, please contact Hiring Department/Unit Contact listed below.' },
+					{ bold: true, label: 'Fee Remissions', text: ' - Pursuant to Article 10 - Fee Remission, eligible graduate student employees appointed at 25% or greater are entitled to 100% remission of tuition and eligible fees charged. The fees included in the fee remission are the: (1) Student Services Fee, (2) premium for the Student Health Insurance Program (SHIP), and (3) 100% partial fee remission toward campus fees as set forth in the collective bargaining agreement. A UC Davis registered graduate student with a GSR appointment totaling 25% or greater of full-time for an entire given quarter is eligible to participate in the university\'s Fee Remission Program for remission of fees as noted above and nonresident supplemental tuition (NRST if applicable) in accordance with the university policy. However, early termination of the appointment may result in a reduced fee and tuition remission. GSRs hired from the self-supporting graduate programs are not eligible for fee remissions greater than the state-supported equivalent rates.' },
+					{ bold: true, label: 'Childcare Benefit', text: ' - Pursuant to Article 4 - Childcare, GSRs with an eligible appointment shall be eligible to participate in the Childcare Reimbursement Program. Information and related forms can be found at: https://hr.ucdavis.edu/departments/worklife-wellness/student-parent/ucd-grant' },
+					{ bold: true, label: 'Accommodations', text: ' - Graduate Student Researchers who are disabled or become disabled should notify their PI/supervisor or department to request reasonable accommodations, in advance of their start date or any time during their appointment, in accordance with Article 24 - Reasonable Accommodation. A GSR who anticipates a need for access to an all-gender restroom or lactation room during the course of their appointment should refer to Article 20- Non-Discrimination in Employment and contact their hiring department/unit contact listed below or UC Davis Employee & Labor Relations as soon as possible after receiving this written notice of appointment.' },
+					{ bold: true, label: 'Work Authorization', text: ' - This offer of employment is contingent upon your ability to prove that you are authorized to work in the United States, as required by the Immigration Reform and Control Act of 1986. Also, the State of California requires that we inform all academic appointees of the Political Reform Act of 1974. This Act prohibits public officials from participating in governmental decisions when personal financial interests may be affected by those decisions. The Act requires that all government employees and officials disqualify themselves from participating in a governmental decision when a financial conflict of interest is present.' },
+					{ bold: true, label: 'Direct Deposit', text: ' - Please note that direct deposit information expires 60 days following an employee\'s separation date and is not reactivated upon reappointment. All employees who are rehired or reappointed are encouraged to review their direct deposit information regularly via UCPath to avoid any delays in processing your paycheck.' },
+				];
+
+				function drawBoilerplate(items) {
+					for (const item of items) {
+						if (item.label) {
+							drawMixed([
+								{ text: item.label, bold: true },
+								{ text: item.text, bold: false }
+							]);
+						} else {
+							drawParagraph(item.text);
+						}
+					}
+				}
+
+				// ── Draw each letter ────────────────────────────────────────────────
+				for (let li = 0; li < groups.length; li++) {
+					const g = groups[li];
+					newPage();
+
+					const isGsr = g.type === 'gsr';
+					const isHourly = g.type === 'reader';
+					const title = g.type === 'ta' ? 'Teaching Assistant'
+						: g.type === 'ai' ? 'Associate Instructor'
+							: g.type === 'reader' ? 'Reader/Tutor' : 'Graduate Student Researcher';
+
+					const fteDisplay = isHourly
+						? `${Math.round(g.totalFte / 4.4)}% / ${g.totalFte} hours`
+						: `${g.totalFte}% / ${Math.round(g.totalFte * 4.4)} hours`;
+
+					// ── Header ──────────────────────────────────────────────────────
+					const dateStr = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+					const dateW = regular.widthOfTextAtSize(dateStr, NORMAL);
+					drawLine(dateStr, regular, NORMAL, PW - MR - dateW);
+					y -= LINE_H * 2;
+
+					drawMixed([{ text: 'To: ', bold: true }, { text: d.studentName, bold: false }]);
+					drawMixed([{ text: 'From: ', bold: true }, { text: d.headOfDept, bold: false }]);
+					const subject = isGsr
+						? 'Notification of Graduate Student Researcher Appointment (via DocuSign)'
+						: 'Notification of Academic Student Employee Appointment (via DocuSign)';
+					drawMixed([{ text: 'Subject: ', bold: true }, { text: subject, bold: false }]);
+					drawBlankLine();
+
+					drawParagraph(`Dear ${d.studentName.split(' ')[0]},`);
+					drawBlankLine(0.5);
+
+					// ── Opening paragraph ───────────────────────────────────────────
+					const supervisorText = g.hideSupervisor
+						? ' Your supervisor will be noted on the Description of Duties form you receive prior to the quarter.'
+						: isGsr
+							? ` Your PI/Supervisor for this appointment will be ${g.supervisor}.`
+							: ` Your supervisor for this appointment will be ${g.supervisor}.`;
+
+					drawParagraph(`I am pleased to offer you an appointment as a ${title} in the ${d.deptName} for the ${g.quarter} quarter(s) of ${d.year}-${d.year + 1}.${supervisorText}`);
+
+					// ── Pay paragraph ───────────────────────────────────────────────
+					const salaryText = isHourly
+						? `at an hourly rate of ${formatCurrency(g.monthlySal)} per hour`
+						: `at a monthly ${isGsr ? 'rate' : 'salary'} of ${formatCurrency(g.monthlySal)} (based on a full-time monthly rate of ${formatCurrency(g.monthlySal * (100 / g.totalFte))})`;
+					drawParagraph(`This appointment is at ${fteDisplay}. You will be paid ${salaryText}. Your paychecks will be issued on ${g.payDates}.`);
+
+					// ── GSR duties ──────────────────────────────────────────────────
+					if (isGsr) {
+						drawMixed([{ text: 'Short Statement of Required Work Duties: ', bold: true }, { text: g.duties, bold: false }]);
+					}
+
+					// ── Time reporting ──────────────────────────────────────────────
+					if (isHourly) {
+						drawParagraph('You are responsible for honestly and accurately reporting your hours worked on an affirmative basis, including any leaves of absence taken. Such reporting must be done through the appropriate time and attendance reporting form and/or through your campus time and attendance system, by the submission deadline and procedures as set by your campus. Failure to accurately report work hours or an absence from work in any circumstance may result in an overpayment of public funds requiring your repayment. Submitting erroneous information in the time and attendance system will be subject to your submission being overridden and pay withheld for the time not worked. Failing to accurately report work hours or absences in any way and receiving an overpayment of funds is a serious violation of university policy that may result in disciplinary action, up to and including dismissal. See information on UC Davis Time Reporting System (TRS)');
+					} else if (!isGsr) {
+						drawMixed([
+							{ text: 'Reporting in Time and Attendance System', bold: true },
+							{ text: ' - You are responsible for honestly and accurately reporting the use of any leave or absences from work each month on the appropriate leave-reporting form and/or through your campus time and attendance system each month, in accordance with established local procedures. Failure to report an absence from work in any circumstance may result in an overpayment of public funds requiring your repayment. Submitting erroneous information in the time and attendance system will be subject to your submission being overridden and pay withheld for the time not worked. Failing to accurately report absences in any way and receiving an overpayment of funds is a serious violation of university policy that may result in disciplinary action, up to and including dismissal. If you have no absences or leave to report, you must still submit a report acknowledging no absences or leave to report in your local time and attendance system by the submission deadline as set by your campus. See information on UC Davis Time Reporting System (TRS)', bold: false }
+						]);
+					}
+
+					// ── Boilerplate ─────────────────────────────────────────────────
+					drawBoilerplate(isGsr ? GSR_BOILERPLATE : ASE_BOILERPLATE);
+
+					// ── Closing paragraph ───────────────────────────────────────────
+					drawParagraph(`Please sign and date below to indicate you understand and accept the terms of your appointment and return one copy to your hiring contact listed below. Failure to return a signed letter by ${d.formattedDeadline} constitutes rejection of this offer.`);
+
+					// ── Footer / contact ────────────────────────────────────────────
+					drawBlankLine(0.5);
+					drawParagraph('Hiring Department/Unit Contact:', { bold: true, spaceAfter: 0 });
+					drawParagraph(d.contactName, { spaceAfter: 0 });
+					drawParagraph(d.contactPhone, { spaceAfter: 0 });
+					drawParagraph(d.contactEmail);
+					drawBlankLine(0.5);
+					drawParagraph('Sincerely,');
+					drawBlankLine(2);
+					drawParagraph(d.headOfDept, { bold: true, spaceAfter: 0 });
+					drawParagraph('Cc: Employment File');
+
+					// ── Signature block ─────────────────────────────────────────────
+					ensureSpace(120);
+					drawBlankLine(1);
+
+					// Accept/decline line with INVISIBLE anchor text for DocuSign
+					// \ac1\ and \dc1\ are written in white — real text, invisible to readers
+					const role = isGsr ? 'GSR' : 'ASE';
+					drawLine('I accept _________  (or)  I decline _________  the above appointment.', regular, NORMAL, ML);
+
+					// Write anchor spans in white (invisible but searchable)
+					const acceptX = ML + regular.widthOfTextAtSize('I accept _________ ', NORMAL);
+					page.drawText('\\ac1\\', { x: acceptX, y, font: regular, size: TINY, color: white });
+
+					const declineX = ML + regular.widthOfTextAtSize('I accept _________  (or)  I decline _________ ', NORMAL);
+					page.drawText('\\dc1\\', { x: declineX, y, font: regular, size: TINY, color: white });
+
+					y -= LINE_H * 2.5;
+
+					// Signature line
+					ensureSpace(60);
+					page.drawLine({ start: { x: ML, y }, end: { x: ML + 220, y }, thickness: 0.5, color: black });
+					// /s1/ anchor in white, just after the line
+					page.drawText('/s1/', { x: ML + 225, y, font: regular, size: TINY, color: white });
+					y -= 4;
+					drawLine(`Signature of Prospective ${role}`, regular, SMALL, ML);
+					y -= LINE_H * 0.5;
+
+					// Date line
+					const dateLineX = ML + 260;
+					page.drawLine({ start: { x: dateLineX, y: y + LINE_H * 2 }, end: { x: dateLineX + 100, y: y + LINE_H * 2 }, thickness: 0.5, color: black });
+					page.drawText('/d1/', { x: dateLineX + 105, y: y + LINE_H * 2, font: regular, size: TINY, color: white });
+					// Draw "Date Signed" label below the line
+					page.drawText('Date Signed', { x: dateLineX, y: y + LINE_H * 2 - LINE_H - 2, font: regular, size: SMALL, color: black });
+				}
+
+				const pdfBytes = await pdfDoc.save();
+				return new Blob([pdfBytes], { type: 'application/pdf' });
 			}
 
-			function lf(data) { // letter footer
-				return `
-			<div style="margin-top:16px;">
-				<div style="margin-bottom:10px;">
-					<p style="margin:0;"><b>Hiring Department/Unit Contact:</b></p>
-					<p style="margin:0;">${data.contactName}</p>
-					<p style="margin:0;">${data.contactPhone}</p>
-					<p style="margin:0;">${data.contactEmail}</p>
-				</div>
-				<p>Sincerely,</p>
-				<p style="height:10px;margin:0;"></p>
-				<p style="margin-bottom:0;"><b>${data.headOfDept}</b></p>
-				<p>Cc: Employment File</p>
-			</div>`;
-			}
+			// ── Generate & preview ────────────────────────────────────────────────────
+			generateBtn.addEventListener('click', () => {
+				const d = collectLetterData();
+				const groups = buildLetterGroups();
+				if (!groups.length) { alert('Please add at least one appointment.'); return; }
+				letterPreviewContainer.innerHTML = buildPreviewHtml(d, groups);
+				// Store for later use by download/send buttons
+				letterPreviewContainer.dataset.ready = '1';
+				letterModal.classList.remove('hidden');
+			});
 
-			// ── ASE letter ────────────────────────────────────────────────────────────
-			function generateAseLetter(data) {
-				const isHourly = data.type === 'reader';
-				const title = data.type === 'ta' ? 'Teaching Assistant'
-					: data.type === 'ai' ? 'Associate Instructor' : 'Reader/Tutor';
-				const fteDisplay = isHourly
-					? `${Math.round(data.totalFte / 4.4)}% / ${data.totalFte} hours`
-					: `${data.totalFte}% / ${Math.round(data.totalFte * 4.4)} hours`;
-				const salaryLine = isHourly
-					? `at an hourly rate of ${formatCurrency(data.monthlySal)} per hour`
-					: `at a monthly salary of ${formatCurrency(data.monthlySal)} (based on a full-time monthly rate of ${formatCurrency(data.monthlySal * (100 / data.totalFte))})`;
-				const supervisorLine = data.hideSupervisor
-					? ' Your supervisor will be noted on the Description of Duties form you receive prior to the quarter.'
-					: ` Your supervisor for this appointment will be <b>${data.supervisor}</b>.`;
-				const timeReporting = isHourly ? `
-				<p>You are responsible for honestly and accurately reporting your hours worked on an affirmative basis, including any leaves of absence taken. Such reporting must be done through the appropriate time and attendance reporting form and/or through your campus time and attendance system, by the submission deadline and procedures as set by your campus. Failure to accurately report work hours or an absence from work in any circumstance may result in an overpayment of public funds requiring your repayment. Submitting erroneous information in the time and attendance system will be subject to your submission being overridden and pay withheld for the time not worked. Failing to accurately report work hours or absences in any way and receiving an overpayment of funds is a serious violation of university policy that may result in disciplinary action, up to and including dismissal. See information on UC Davis Time Reporting System (TRS)</p>
-			` : `
-				<p><b>Reporting in Time and Attendance System</b> - You are responsible for honestly and accurately reporting the use of any leave or absences from work each month on the appropriate leave-reporting form and/or through your campus time and attendance system each month, in accordance with established local procedures. Failure to report an absence from work in any circumstance may result in an overpayment of public funds requiring your repayment. Submitting erroneous information in the time and attendance system will be subject to your submission being overridden and pay withheld for the time not worked. Failing to accurately report absences in any way and receiving an overpayment of funds is a serious violation of university policy that may result in disciplinary action, up to and including dismissal. If you have no absences or leave to report, you must still submit a report acknowledging no absences or leave to report in your local time and attendance system by the submission deadline as set by your campus. See information on UC Davis Time Reporting System (TRS)</p>
-			`;
+			document.getElementById('close-modal-btn').addEventListener('click', () => letterModal.classList.add('hidden'));
 
-				return `
-			<div class="letter-block">
-				${lh(data, 'Notification of Academic Student Employee Appointment (via DocuSign)')}
-				<p>I am pleased to offer you an appointment as a <b>${title}</b> in the <b>${data.deptName}</b> for the <b>${data.quarter} quarter(s) of ${data.year}-${data.year + 1}</b>.${supervisorLine}</p>
-				<p>This appointment is at <b>${fteDisplay}</b>. You will be paid ${salaryLine}. Your paychecks will be issued on <b>${data.payDates}</b>.</p>
-				${timeReporting}
-				<p><b>Academic Eligibility Standards</b> - The UC Davis Office of Graduate Studies is the administrative home for graduate students. Your appointment is subject to regular review by the Graduate Division. University policy for graduate student employment requires that you meet and maintain all academic eligibility standards appropriate to this appointment (such as, enrollment, GPA, units of incomplete grades, academic progress, etc.). Further information regarding eligibility, restrictions and benefits may be found in the Academic Personnel Manual UCD Appendix II-B and on the web at https://grad.ucdavis.edu/student-employment.</p>
-				<p>If you are an international graduate student or a permanent resident who is not a citizen of a country where English is the primary or dominant language, as endorsed by the UC Davis Graduate Council, this appointment is contingent upon your demonstration of oral English proficiency by passing one of the English Language Proficiency Exams listed on the Graduate Studies website: https://grad.ucdavis.edu/policies.</p>
-				<p><b>Represented Position</b> - Your position is covered by a collective bargaining agreement between the University of California and the United Automobile, Aerospace, and Agricultural Implement Workers of America (UAW). A copy of the collective bargaining agreement is available at: https://ucnet.universityofcalifornia.edu/labor/bargaining-units/bx/contract.html. Should you require assistance, you may contact the UAW. The University is required to release names and department addresses of all ASEs to the UAW each academic term. A UAW membership election form can be found at: https://uaw2865.org/join/</p>
-				<p><b>Employment Standing</b> - This offer of employment is contingent on remaining in good employment standing. Appointments are dependent on maintaining satisfactory performance and adherence to the provisions of the collective bargaining agreement, including, but not limited to No-Strikes, Non-Discrimination, and Respectful Work Environment articles as well as University policies, procedures, and conduct standards applicable to your position. More information on such University policies can be found here: UC Davis Academic Personnel Manual and the Human Resources Policy &amp; Procedure Manual (PPM).</p>
-				<p><b>Disclosure Requirement</b> - This offer is contingent upon you clearing an Employment Misconduct Disclosure review where you will be required to disclose any final administrative or judicial decisions within the last seven years determining that you committed any misconduct and provide information related to investigations and appeals.</p>
-				<p><b>New Employee Orientation</b> - All first-time Teaching Assistants at UC Davis are required to attend a campuswide TA orientation https://cee.ucdavis.edu/tao. This orientation introduces new TAs to teaching at UC Davis, what is expected of TAs, and what TAs can expect in terms of instructional support and TA training.</p>
-				<p><b>Employment File</b> - The University of California will establish and maintain a file that will contain information related to your employment. New material may be added to your file over the course of your employment. Should you wish to review your employment file, please contact Hiring Department/Unit Contact listed below.</p>
-				<p><b>Fee Remissions</b> - Pursuant to Article 11 - Fee Remission, eligible graduate student employees appointed at 25% or greater are entitled to 100% remission of tuition and eligible fees charged. The fees included in the fee remission are the: (1) Student Services Fee, (2) premium for the Student Health Insurance Program (SHIP), and (3) 100% partial fee remission toward campus fees as set forth in the collective bargaining agreement. UC will cover Nonresident Supplemental Tuition for up to three (3) years for eligible ASEs enrolled in a doctoral program and employed at 25% or greater who have advanced to candidacy in their degree program. ASEs hired from the self-supporting graduate programs are not eligible for fee remissions greater than the state-supported equivalent rates. https://grad.ucdavis.edu/tuition-and-fee-remission</p>
-				<p><b>Childcare Benefit</b> - Pursuant to Article 4 - Childcare, ASEs with an eligible appointment shall be eligible to participate in the Childcare Reimbursement Program. Information and related forms can be found at: https://hr.ucdavis.edu/departments/worklife-wellness/student-parent/ucd-grant</p>
-				<p><b>Accommodations</b> - Academic Student Employees who are disabled or become disabled should notify their supervisor or department to request reasonable accommodations, in advance of their start date or any time during their appointment, in accordance with Article 24 - Reasonable Accommodation. An ASE who anticipates a need for access to an all-gender restroom or lactation room during the course of their appointment should refer to Article 21- Non-Discrimination in Employment and contact their hiring department/unit contact listed below or UC Davis Employee &amp; Labor Relations as soon as possible after receiving this written notice of appointment.</p>
-				<p><b>Work Authorization</b> - This offer of employment is contingent upon your ability to prove that you are authorized to work in the United States, as required by the Immigration Reform and Control Act of 1986. Also, the State of California requires that we inform all academic appointees of the Political Reform Act of 1974. This Act prohibits public officials from participating in governmental decisions when personal financial interests may be affected by those decisions. The Act requires that all government employees and officials disqualify themselves from participating in a governmental decision when a financial conflict of interest is present.</p>
-				<p><b>Direct Deposit</b> - Please note that direct deposit information expires 60 days following an employee's separation date and is not reactivated upon reappointment. All employees who are rehired or reappointed are encouraged to review their direct deposit information regularly via UCPath to avoid any delays in processing your paycheck.</p>
-				<p>Please sign and date below to indicate you understand and accept the terms of your appointment and return one copy to your hiring contact listed below. Failure to return a signed letter by <b>${data.formattedDeadline}</b> constitutes rejection of this offer.</p>
-				${lf(data)}
-				${signatureBlock('ASE')}
-			</div>`;
-			}
+			// ── Download PDF ──────────────────────────────────────────────────────────
+			document.getElementById('download-pdf-btn').addEventListener('click', async () => {
+				const btn = document.getElementById('download-pdf-btn');
+				const orig = btn.innerText;
+				btn.innerText = 'Generating…'; btn.disabled = true;
+				try {
+					const d = collectLetterData();
+					const groups = buildLetterGroups();
+					const blob = await buildPdfBlob(d, groups);
+					const name = (d.studentName || 'Student').replace(/\s+/g, '_');
+					const url = URL.createObjectURL(blob);
+					const a = document.createElement('a');
+					a.href = url; a.download = `Offer_Letter_${name}.pdf`; a.click();
+					URL.revokeObjectURL(url);
+				} catch (e) { console.error(e); alert('Error generating PDF: ' + e.message); }
+				finally { btn.innerText = orig; btn.disabled = false; }
+			});
 
-			// ── GSR letter ────────────────────────────────────────────────────────────
-			function generateGsrLetter(data) {
-				const fteDisplay = `${data.totalFte}% / ${Math.round(data.totalFte * 4.4)} hours`;
-				const supervisorLine = data.hideSupervisor
-					? ' Your supervisor will be noted on the Description of Duties form you receive prior to the quarter.'
-					: ` Your PI/Supervisor for this appointment will be <b>${data.supervisor}</b>.`;
+			// ── Send via DocuSign ─────────────────────────────────────────────────────
+			document.getElementById('send-zapier-btn').addEventListener('click', async () => {
+				const d = collectLetterData();
+				if (!d.studentEmail) { alert("Please provide the Student Email before sending."); return; }
 
-				return `
-			<div class="letter-block">
-				${lh(data, 'Notification of Graduate Student Researcher Appointment (via DocuSign)')}
-				<p>I am pleased to offer you an appointment as a <b>Graduate Student Researcher</b> in the <b>${data.deptName}</b> for the <b>${data.quarter} quarter(s) of ${data.year}-${data.year + 1}</b>.${supervisorLine}</p>
-				<p>This appointment is at <b>${fteDisplay}</b>. You will be paid at a monthly rate of <b>${formatCurrency(data.monthlySal)}</b> (based on a full-time monthly rate of ${formatCurrency(data.monthlySal * (100 / data.totalFte))}). Your paychecks will be issued on <b>${data.payDates}</b>.</p>
-				<div style="margin-bottom:10px;">
-					<p style="margin:0;"><b>Short Statement of Required Work Duties:</b></p>
-					<p style="margin:0;">${data.duties.replace(/\n/g, '</p><p style="margin:0;">')}</p>
-				</div>
-				<p><b>Leaves of Absences</b> - Leaves of absences, including short-term and long-term leave, are governed by Article 17 - Leaves. Requests for any leave of absence must meet the eligibility criteria, and in some cases, must be approved by your PI/supervisor or department in advance. More information can be found here: UC Davis Family and Medical Leave for Funded Graduate Students.</p>
-				<p><b>Personal Time Off</b> - Eligible GSRs shall have the ability to request the use of Personal Time Off (PTO) days, in accordance with Article 23 - Personal Time Off.</p>
-				<p><b>Reporting in Time and Attendance System</b> - You are responsible for honestly and accurately reporting the use of any PTO or leaves of absences on the appropriate leave-reporting form and/or through your campus time and attendance system each month, in accordance with established local procedures. Failure to report an absence from work in any circumstance may result in an overpayment of public or research funds requiring your repayment. Submitting erroneous information in the time and attendance system will be subject to your submission being overridden and pay withheld for the time not worked. Failing to accurately report leave in any way and receiving an overpayment of funds is a serious violation of university policy that may result in disciplinary action, up to and including dismissal. If you have no absences or leave to report, you must still submit a report acknowledging no absences or leaves to report in your local time and attendance system by the submission deadline as set by your campus. See information on UC Davis Time Reporting System (TRS)</p>
-				<p><b>Academic Eligibility Standards</b> - The UC Davis Office of Graduate Studies is the administrative home for graduate students. Your appointment is subject to regular review by the Graduate Division. University policy for graduate student employment requires that you meet and maintain all academic eligibility standards appropriate to this appointment (such as, enrollment, GPA, units of incomplete grades, academic progress, etc.). Further information regarding eligibility, restrictions and benefits may be found in the Academic Personnel Manual UCD Appendix II-B and on the web at https://grad.ucdavis.edu/student-employment.</p>
-				<p><b>Represented Position</b> - Your position is covered by a collective bargaining agreement between the University of California and the United Automobile, Aerospace, and Agricultural Implement Workers of America (UAW). A copy of the collective bargaining agreement is available at: https://ucnet.universityofcalifornia.edu/resources/employment-policies-contracts/bargaining-units/graduate-student-researchers/contract/. Should you require assistance, you may contact the UAW. The University is required to release names and department addresses of all GSRs to the UAW each academic term. A UAW membership election form can be found at: https://uaw2865.org/join/.</p>
-				<p><b>Employment Standing</b> - This offer of employment is contingent on remaining in good employment standing. Appointments are dependent on maintaining satisfactory performance and adherence to the provisions of the collective bargaining agreement, including, but not limited to No-Strikes, Non-Discrimination, and Respectful Work Environment articles as well as University policies, procedures, and conduct standards applicable to your position. More information on such University policies can be found here: UC Davis Academic Personnel Manual and the Human Resources Policy &amp; Procedure Manual (PPM).</p>
-				<p><b>Disclosure Requirement</b> - This offer is contingent upon you clearing an Employment Misconduct Disclosure review where you will be required to disclose any final administrative or judicial decisions within the last seven years determining that you committed any misconduct and provide information related to investigations and appeals.</p>
-				<p><b>Employment File</b> - The University of California will establish and maintain a file that will contain information related to your employment. New material may be added to your file over the course of your employment. Should you wish to review your employment file, please contact Hiring Department/Unit Contact listed below.</p>
-				<p><b>Fee Remissions</b> - Pursuant to Article 10 - Fee Remission, eligible graduate student employees appointed at 25% or greater are entitled to 100% remission of tuition and eligible fees charged. The fees included in the fee remission are the: (1) Student Services Fee, (2) premium for the Student Health Insurance Program (SHIP), and (3) 100% partial fee remission toward campus fees as set forth in the collective bargaining agreement. A UC Davis registered graduate student with a GSR appointment totaling 25% or greater of full-time for an entire given quarter is eligible to participate in the university's Fee Remission Program for remission of fees as noted above and nonresident supplemental tuition (NRST if applicable) in accordance with the university policy. However, early termination of the appointment may result in a reduced fee and tuition remission. GSRs hired from the self-supporting graduate programs are not eligible for fee remissions greater than the state-supported equivalent rates.</p>
-				<p><b>Childcare Benefit</b> - Pursuant to Article 4 - Childcare, GSRs with an eligible appointment shall be eligible to participate in the Childcare Reimbursement Program. Information and related forms can be found at: https://hr.ucdavis.edu/departments/worklife-wellness/student-parent/ucd-grant</p>
-				<p><b>Accommodations</b> - Graduate Student Researchers who are disabled or become disabled should notify their PI/supervisor or department to request reasonable accommodations, in advance of their start date or any time during their appointment, in accordance with Article 24 - Reasonable Accommodation. A GSR who anticipates a need for access to an all-gender restroom or lactation room during the course of their appointment should refer to Article 20- Non-Discrimination in Employment and contact their hiring department/unit contact listed below or UC Davis Employee &amp; Labor Relations as soon as possible after receiving this written notice of appointment.</p>
-				<p><b>Work Authorization</b> - This offer of employment is contingent upon your ability to prove that you are authorized to work in the United States, as required by the Immigration Reform and Control Act of 1986. Also, the State of California requires that we inform all academic appointees of the Political Reform Act of 1974. This Act prohibits public officials from participating in governmental decisions when personal financial interests may be affected by those decisions. The Act requires that all government employees and officials disqualify themselves from participating in a governmental decision when a financial conflict of interest is present.</p>
-				<p><b>Direct Deposit</b> - Please note that direct deposit information expires 60 days following an employee's separation date and is not reactivated upon reappointment. All employees who are rehired or reappointed are encouraged to review their direct deposit information regularly via UCPath to avoid any delays in processing your paycheck.</p>
-				<p>Please sign and date below to indicate you understand and accept the terms of your appointment and return one copy to your hiring contact listed below. Failure to return a signed letter by <b>${data.formattedDeadline}</b> constitutes rejection of this offer.</p>
-				${lf(data)}
-				${signatureBlock('GSR')}
-			</div>`;
-			}
+				const btn = document.getElementById('send-zapier-btn');
+				const orig = btn.innerText;
+				btn.disabled = true;
+
+				try {
+					btn.innerText = 'Generating PDF…';
+					const groups = buildLetterGroups();
+					const safeFilename = `Offer_Letter_${(d.studentName || 'Student').replace(/\s+/g, '_')}.pdf`;
+					const pdfBlob = await buildPdfBlob(d, groups);
+
+					btn.innerText = 'Uploading PDF…';
+					const uploadForm = new FormData();
+					uploadForm.append('file', new File([pdfBlob], safeFilename, { type: 'application/pdf' }));
+					const uploadRes = await fetch('https://tmpfiles.org/api/v1/upload', { method: 'POST', body: uploadForm });
+					const uploadJson = await uploadRes.json();
+					if (!uploadJson.data?.url) throw new Error('tmpfiles.org upload failed: ' + JSON.stringify(uploadJson));
+					const pdfUrl = uploadJson.data.url.replace('https://tmpfiles.org/', 'https://tmpfiles.org/dl/');
+					console.log('PDF URL:', pdfUrl);
+
+					btn.innerText = 'Sending to Zapier…';
+					const zapierForm = new FormData();
+					zapierForm.append('studentName', d.studentName);
+					zapierForm.append('studentEmail', d.studentEmail);
+					zapierForm.append('contactEmail', d.contactEmail);
+					zapierForm.append('contactName', d.contactName);
+					zapierForm.append('filename', safeFilename);
+					zapierForm.append('documentUrl', pdfUrl);
+					const zapierRes = await fetch(ZAPIER_WEBHOOK_URL, { method: 'POST', body: zapierForm });
+
+					if (zapierRes.ok) {
+						alert("Sent! The letter is on its way to DocuSign.");
+					} else {
+						alert(`Zapier returned status ${zapierRes.status}. Check your Zap history.`);
+					}
+				} catch (e) {
+					console.error(e);
+					alert("Error: " + e.message);
+				} finally {
+					btn.innerText = orig;
+					btn.disabled = false;
+				}
+			});
+
+			// ── Download Word ─────────────────────────────────────────────────────────
+			document.getElementById('download-word-btn').addEventListener('click', () => {
+				const d = collectLetterData();
+				const content = letterPreviewContainer.innerHTML.replace(/\n|\t/g, ' ');
+				const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+			<head><meta charset='utf-8'><title>Offer Letters</title>
+			<style>body{font-family:"Times New Roman",serif;font-size:11pt;}p{margin-bottom:11pt;}</style>
+			</head><body>${content}</body></html>`;
+				const name = (d.studentName || 'Student').replace(/\s+/g, '_');
+				const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.href = url; a.download = `Offer_Letter_${name}.doc`; a.click();
+				URL.revokeObjectURL(url);
+			});
 
 		});
 	</script>
