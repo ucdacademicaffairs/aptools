@@ -32,7 +32,6 @@
 			cursor: not-allowed;
 		}
 
-		/* Print Styles for Letters */
 		@media print {
 			body * {
 				visibility: hidden;
@@ -215,7 +214,7 @@
 		</div>
 	</main>
 
-	<!-- Letter Preview Modal/Container -->
+	<!-- Letter Preview Modal -->
 	<div id="letter-modal"
 		class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4 md:p-8 no-print">
 		<div class="bg-gray-100 w-full max-w-5xl h-full flex flex-col rounded-xl overflow-hidden shadow-2xl">
@@ -233,14 +232,15 @@
 				</div>
 			</div>
 			<div id="letter-preview-container" class="flex-grow overflow-y-auto p-4 md:p-8 bg-gray-200">
-				<!-- Letters will be injected here -->
+				<!-- Letters injected here -->
 			</div>
 		</div>
 	</div>
 
 	<!--
-		Print/PDF container: positioned off-screen to the left (not fixed) so html2canvas
-		does not pick up any scroll offset, and sized to exactly 816px (8.5in @ 96dpi).
+		Off-screen container for PDF generation.
+		position:absolute (not fixed) so html2canvas has no scroll offset.
+		Width 816px = 8.5in @ 96dpi.
 	-->
 	<div id="letter-print-container"
 		style="position:absolute;left:-9999px;top:0;width:816px;background:white;pointer-events:none;z-index:-1;">
@@ -248,13 +248,13 @@
 
 	<script>
 		document.addEventListener('DOMContentLoaded', function () {
+
 			const ZAPIER_WEBHOOK_URL = 'https://hooks.zapier.com/hooks/catch/27268773/uj1leu5/';
 
 			let COST_DATA = {};
 			let appointments = [];
 			let appointmentCounter = 0;
 
-			// Persistent Fields
 			const persistentFields = [
 				'global-dept-name',
 				'global-head-of-dept',
@@ -263,33 +263,32 @@
 				'global-contact-email'
 			];
 
+			// ── Init ──────────────────────────────────────────────────────────────────
 			async function initialize() {
 				try {
-					const configResponse = await fetch('annual-config.json');
-					const configJson = await configResponse.json();
-					COST_DATA = configJson;
-				} catch (error) {
-					console.error("Could not load annual configuration:", error);
-					alert("There was an error loading the configuration. Please refresh.");
+					const res = await fetch('annual-config.json');
+					COST_DATA = await res.json();
+				} catch (e) {
+					console.error("Could not load annual-config.json:", e);
+					alert("Error loading configuration. Please refresh.");
 					return;
 				}
 
-				persistentFields.forEach(fieldId => {
-					const saved = localStorage.getItem(fieldId);
-					if (saved) document.getElementById(fieldId).value = saved;
+				persistentFields.forEach(id => {
+					const saved = localStorage.getItem(id);
+					if (saved) document.getElementById(id).value = saved;
 				});
 
-				const deadlineInput = document.getElementById('global-deadline');
 				const twoWeeks = new Date();
 				twoWeeks.setDate(twoWeeks.getDate() + 14);
-				deadlineInput.value = twoWeeks.toISOString().split('T')[0];
+				document.getElementById('global-deadline').value = twoWeeks.toISOString().split('T')[0];
 
 				fullRender();
 			}
 
 			initialize();
 
-			// DOM Elements
+			// ── DOM refs ──────────────────────────────────────────────────────────────
 			const addButtonsContainer = document.getElementById('add-buttons');
 			const appointmentsContainer = document.getElementById('appointments-container');
 			const clearAllBtn = document.getElementById('clear-all-btn');
@@ -299,77 +298,65 @@
 			const letterPreviewContainer = document.getElementById('letter-preview-container');
 			const printContainer = document.getElementById('letter-print-container');
 
-			// Persistence Listeners
-			persistentFields.forEach(fieldId => {
-				document.getElementById(fieldId).addEventListener('input', (e) => {
-					localStorage.setItem(fieldId, e.target.value);
+			// ── Persistence ───────────────────────────────────────────────────────────
+			persistentFields.forEach(id => {
+				document.getElementById(id).addEventListener('input', e => {
+					localStorage.setItem(id, e.target.value);
 				});
 			});
 
-			// Phone number formatting
+			// ── Phone formatting ──────────────────────────────────────────────────────
 			document.getElementById('global-contact-phone').addEventListener('input', function (e) {
-				var x = e.target.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,3})(\d{0,4})/);
+				const x = e.target.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,3})(\d{0,4})/);
 				e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
 			});
 
+			// ── FTE warnings ──────────────────────────────────────────────────────────
 			function updateWarnings() {
-				let errorText = '';
-				let warningText = '';
-				let hasError = false;
+				let errorText = '', warningText = '', hasError = false;
 
 				['Fall', 'Winter', 'Spring'].forEach(quarter => {
-					let totalFte = 0;
-					appointments.filter(a => a.values.quarter === quarter).forEach(appt => {
-						if (appt.type === 'reader') {
-							totalFte += (parseFloat(appt.values.percentTime) || 0) / 4.4;
-						} else {
-							totalFte += parseFloat(appt.values.percentTime) || 0;
-						}
+					let total = 0;
+					appointments.filter(a => a.values.quarter === quarter).forEach(a => {
+						total += a.type === 'reader'
+							? (parseFloat(a.values.percentTime) || 0) / 4.4
+							: (parseFloat(a.values.percentTime) || 0);
 					});
-
-					if (totalFte > 75) {
-						errorText += `<p><strong>Error:</strong> Total appointment for ${quarter} exceeds 75% (${totalFte.toFixed(1)}%). This is not permitted.</p>`;
+					if (total > 75) {
+						errorText += `<p><strong>Error:</strong> ${quarter} total exceeds 75% (${total.toFixed(1)}%). Not permitted.</p>`;
 						hasError = true;
-					} else if (totalFte > 50) {
-						warningText += `<p><strong>Caution:</strong> Total appointment for ${quarter} exceeds 50% (${totalFte.toFixed(1)}%). Caution advised.</p>`;
+					} else if (total > 50) {
+						warningText += `<p><strong>Caution:</strong> ${quarter} total exceeds 50% (${total.toFixed(1)}%).</p>`;
 					}
 				});
 
-				const warningCard = document.getElementById('fte-warning-card');
+				const card = document.getElementById('fte-warning-card');
 				if (errorText || warningText) {
-					warningCard.innerHTML = errorText + warningText;
-					warningCard.className = `card ${hasError ? 'bg-red-100 border-red-400 text-red-700' : 'bg-yellow-100 border-yellow-400 text-yellow-800'} block`;
+					card.innerHTML = errorText + warningText;
+					card.className = `card ${hasError ? 'bg-red-100 border-red-400 text-red-700' : 'bg-yellow-100 border-yellow-400 text-yellow-800'} block`;
 					generateBtn.disabled = hasError;
 				} else {
-					warningCard.className = "card bg-yellow-100 border-yellow-400 text-yellow-800 hidden";
+					card.className = 'card bg-yellow-100 border-yellow-400 text-yellow-800 hidden';
 					generateBtn.disabled = false;
 				}
 			}
 
+			// ── Add / remove appointments ─────────────────────────────────────────────
 			addButtonsContainer.addEventListener('click', e => {
 				if (e.target.classList.contains('btn')) addAppointment(e.target.dataset.type);
 			});
 
 			clearAllBtn.addEventListener('click', () => {
-				if (confirm('Are you sure you want to clear all appointments?')) {
-					appointments = [];
-					fullRender();
-				}
+				if (confirm('Clear all appointments?')) { appointments = []; fullRender(); }
 			});
 
 			appointmentsContainer.addEventListener('input', e => {
-				const target = e.target;
-				const row = target.closest('.appointment-row');
+				const row = e.target.closest('.appointment-row');
 				if (!row) return;
-				const id = parseInt(row.dataset.id, 10);
-				const appt = appointments.find(a => a.id === id);
+				const appt = appointments.find(a => a.id === parseInt(row.dataset.id, 10));
 				if (!appt) return;
-				const key = target.dataset.calc;
-				if (target.type === 'checkbox') {
-					appt.values[key] = target.checked;
-				} else {
-					appt.values[key] = target.value;
-				}
+				const key = e.target.dataset.calc;
+				appt.values[key] = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
 				calculateAllCosts();
 				updateWarnings();
 			});
@@ -377,16 +364,15 @@
 			appointmentsContainer.addEventListener('click', e => {
 				if (e.target.classList.contains('btn-delete')) {
 					const id = parseInt(e.target.dataset.id, 10);
-					appointments = appointments.filter(appt => appt.id !== id);
+					appointments = appointments.filter(a => a.id !== id);
 					fullRender();
 				}
 			});
 
 			function addAppointment(type) {
-				appointmentCounter++;
-				const newAppt = {
-					id: appointmentCounter,
-					type: type,
+				appointments.push({
+					id: ++appointmentCounter,
+					type,
 					values: {
 						quarter: 'Fall',
 						step: '1',
@@ -396,115 +382,114 @@
 						workDuties: type === 'gsr' ? 'Conducting research related to...' : ''
 					},
 					costs: {}
-				};
-				appointments.push(newAppt);
+				});
 				fullRender();
 			}
 
+			// ── Render appointments list ──────────────────────────────────────────────
 			function fullRender() {
 				calculateAllCosts();
 				updateWarnings();
-				appointmentsContainer.innerHTML = appointments.length === 0
-					? '<p class="text-gray-500">No appointments added yet. Click a button above to begin.</p>'
-					: appointments.map(appt => {
-						const typeName = appt.type.toUpperCase();
-						const quarterOptions = ['Fall', 'Winter', 'Spring'].map(q =>
-							`<option ${q === appt.values.quarter ? 'selected' : ''}>${q}</option>`
-						).join('');
 
-						let scaleOptions = '';
-						if (appt.type === 'gsr') scaleOptions = Object.keys(COST_DATA.GSR_SCALE).map(step => `<option value="${step}" ${step === appt.values.step ? 'selected' : ''}>Step ${step}</option>`).join('');
-						if (appt.type === 'ta') scaleOptions = Object.keys(COST_DATA.TA_SCALE).map(step => `<option value="${step}" ${step === appt.values.step ? 'selected' : ''}>Step ${step}</option>`).join('');
-						if (appt.type === 'ai') scaleOptions = Object.keys(COST_DATA.AI_SCALE).map(step => `<option value="${step}" ${step === appt.values.step ? 'selected' : ''}>Point ${step}</option>`).join('');
+				if (appointments.length === 0) {
+					appointmentsContainer.innerHTML = '<p class="text-gray-500">No appointments added yet. Click a button above to begin.</p>';
+					return;
+				}
 
-						const dutiesHtml = appt.type === 'gsr' ? `
-							<div class="col-span-full">
-								<label class="block text-xs font-semibold">Brief Statement of Work Duties</label>
-								<textarea data-calc="workDuties" class="w-full p-2 border rounded mt-1 text-sm" rows="2">${appt.values.workDuties}</textarea>
+				appointmentsContainer.innerHTML = appointments.map(appt => {
+					const typeName = appt.type.toUpperCase();
+					const quarterOptions = ['Fall', 'Winter', 'Spring'].map(q =>
+						`<option ${q === appt.values.quarter ? 'selected' : ''}>${q}</option>`
+					).join('');
+
+					let scaleOptions = '';
+					if (appt.type === 'gsr') scaleOptions = Object.keys(COST_DATA.GSR_SCALE).map(s => `<option value="${s}" ${s === appt.values.step ? 'selected' : ''}>Step ${s}</option>`).join('');
+					if (appt.type === 'ta') scaleOptions = Object.keys(COST_DATA.TA_SCALE).map(s => `<option value="${s}" ${s === appt.values.step ? 'selected' : ''}>Step ${s}</option>`).join('');
+					if (appt.type === 'ai') scaleOptions = Object.keys(COST_DATA.AI_SCALE).map(s => `<option value="${s}" ${s === appt.values.step ? 'selected' : ''}>Point ${s}</option>`).join('');
+
+					const stepLabel = appt.type === 'ai' ? 'Point' : 'Step';
+					const dutiesHtml = appt.type === 'gsr' ? `
+						<div class="col-span-full">
+							<label class="block text-xs font-semibold">Brief Statement of Work Duties</label>
+							<textarea data-calc="workDuties" class="w-full p-2 border rounded mt-1 text-sm" rows="2">${appt.values.workDuties}</textarea>
+						</div>` : '';
+
+					return `
+					<div class="appointment-row p-4 bg-gray-50 rounded-lg mb-4" data-id="${appt.id}">
+						<div class="flex justify-between items-start mb-4">
+							<h4 class="font-bold text-lg text-[#002855]">${typeName} Appointment</h4>
+							<button class="btn btn-delete w-8 h-8 p-0 flex items-center justify-center" data-id="${appt.id}" aria-label="Delete">
+								<svg class="w-5 h-5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+							</button>
+						</div>
+						<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+							<div>
+								<label class="block text-xs font-semibold">Quarter</label>
+								<select data-calc="quarter" class="w-full p-1 mt-1 h-[30px] border rounded leading-none">${quarterOptions}</select>
 							</div>
-						` : '';
-
-						const stepLabel = appt.type === 'ai' ? 'Point' : 'Step';
-
-						return `
-						<div class="appointment-row p-4 bg-gray-50 rounded-lg mb-4" data-id="${appt.id}">
-							<div class="flex justify-between items-start mb-4">
-								<h4 class="font-bold text-lg text-[#002855]">${typeName} Appointment</h4>
-								<button class="btn btn-delete w-8 h-8 p-0 flex items-center justify-center" data-id="${appt.id}" aria-label="Delete Appointment">
-									<svg class="w-5 h-5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
-								</button>
+							${appt.type !== 'reader' ? `
+							<div>
+								<label class="block text-xs font-semibold">${stepLabel}</label>
+								<select data-calc="step" class="w-full p-1 mt-1 h-[30px] border rounded leading-none">${scaleOptions}</select>
+							</div>` : ''}
+							<div>
+								<label class="block text-xs font-semibold">% Time / Hours</label>
+								<select data-calc="percentTime" class="w-full p-1 mt-1 h-[30px] border rounded leading-none">
+									${[25, 50, 75].map(v => {
+						const hrs = Math.round(v * 4.4);
+						const val = appt.type === 'reader' ? hrs : v;
+						return `<option value="${val}" ${val == appt.values.percentTime ? 'selected' : ''}>${v}% / ${hrs} hours</option>`;
+					}).join('')}
+								</select>
 							</div>
-							<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-								<div>
-									<label class="block text-xs font-semibold">Quarter</label>
-									<select data-calc="quarter" class="w-full p-1 mt-1 h-[30px] border rounded leading-none">${quarterOptions}</select>
+							<div class="col-span-1 md:col-span-2 lg:col-span-3">
+								<label class="block text-xs font-semibold">Supervisor / Instructor</label>
+								<div class="flex gap-2 mt-1">
+									<input type="text" data-calc="supervisor" class="flex-grow p-1 h-[30px] border rounded leading-none" value="${appt.values.supervisor}" placeholder="Name of Supervisor">
+									${appt.type !== 'gsr' ? `
+									<label class="inline-flex items-center justify-center px-2 h-[30px] bg-gray-50 border rounded cursor-pointer shrink-0 hover:bg-gray-100 transition-colors">
+										<input type="checkbox" data-calc="hideSupervisor" class="w-3.5 h-3.5 mr-1.5 cursor-pointer" ${appt.values.hideSupervisor ? 'checked' : ''}>
+										<span class="text-[11px] font-medium text-gray-600 whitespace-nowrap">Omit from letter</span>
+									</label>` : ''}
 								</div>
-								${appt.type !== 'reader' ? `
-								<div>
-									<label class="block text-xs font-semibold">${stepLabel}</label>
-									<select data-calc="step" class="w-full p-1 mt-1 h-[30px] border rounded leading-none">${scaleOptions}</select>
-								</div>
-								` : ''}
-								<div>
-									<label class="block text-xs font-semibold">% Time / Hours</label>
-									<select data-calc="percentTime" class="w-full p-1 mt-1 h-[30px] border rounded leading-none">
-										${[25, 50, 75].map(v => {
-							const hrs = Math.round(v * 4.4);
-							const val = appt.type === 'reader' ? hrs : v;
-							const isSelected = val == appt.values.percentTime ? 'selected' : '';
-							return `<option value="${val}" ${isSelected}>${v}% / ${hrs} hours</option>`;
-						}).join('')}
-									</select>
-								</div>
-								<div class="col-span-1 md:col-span-2 lg:col-span-3">
-									<label class="block text-xs font-semibold">Supervisor / Instructor</label>
-									<div class="flex gap-2 mt-1">
-										<input type="text" data-calc="supervisor" class="flex-grow p-1 h-[30px] border rounded leading-none" value="${appt.values.supervisor}" placeholder="Name of Supervisor">
-										${appt.type !== 'gsr' ? `
-										<label class="inline-flex items-center justify-center px-2 h-[30px] bg-gray-50 border rounded cursor-pointer shrink-0 hover:bg-gray-100 transition-colors">
-											<input type="checkbox" data-calc="hideSupervisor" class="w-3.5 h-3.5 mr-1.5 cursor-pointer" ${appt.values.hideSupervisor ? 'checked' : ''}>
-											<span class="text-[11px] font-medium text-gray-600 whitespace-nowrap">Omit from letter</span>
-										</label>
-										` : ''}
-									</div>
-								</div>
-								${dutiesHtml}
 							</div>
-						</div>`;
-					}).join('');
+							${dutiesHtml}
+						</div>
+					</div>`;
+				}).join('');
 			}
 
+			// ── Cost calculation ──────────────────────────────────────────────────────
 			function calculateAllCosts() {
 				appointments.forEach(appt => {
-					let monthlySalary = 0;
-					if (appt.type === 'gsr') monthlySalary = (COST_DATA.GSR_SCALE[appt.values.step] || 0) / 12;
-					else if (appt.type === 'ta') monthlySalary = (COST_DATA.TA_SCALE[appt.values.step] || 0) / 9;
-					else if (appt.type === 'ai') monthlySalary = (COST_DATA.AI_SCALE[appt.values.step] || 0) / 9;
-					else if (appt.type === 'reader') monthlySalary = COST_DATA.READER_TUTOR_RATE;
+					let base = 0;
+					if (appt.type === 'gsr') base = (COST_DATA.GSR_SCALE[appt.values.step] || 0) / 12;
+					else if (appt.type === 'ta') base = (COST_DATA.TA_SCALE[appt.values.step] || 0) / 9;
+					else if (appt.type === 'ai') base = (COST_DATA.AI_SCALE[appt.values.step] || 0) / 9;
+					else if (appt.type === 'reader') base = COST_DATA.READER_TUTOR_RATE;
 
 					const fte = parseFloat(appt.values.percentTime) / 100;
 					appt.costs = {
-						monthlyBase: monthlySalary,
-						monthlyActual: appt.type === 'reader' ? monthlySalary : monthlySalary * fte,
-						fte: fte
+						monthlyBase: base,
+						monthlyActual: appt.type === 'reader' ? base : base * fte,
+						fte
 					};
 				});
 			}
 
-			// ─── PDF helper ───────────────────────────────────────────────────────────
-			// 816px = 8.5in × 96dpi. Margins: 0.5in top/bottom, 0.75in left/right.
+			// ── PDF helpers ───────────────────────────────────────────────────────────
 			function getPdfOptions(filename) {
 				return {
-					margin: [0.5, 0.75, 0.5, 0.75],
+					margin: [0.5, 0.75, 0.5, 0.75],   // top, right, bottom, left (inches)
 					filename: filename || 'Offer_Letter.pdf',
 					image: { type: 'jpeg', quality: 0.98 },
 					html2canvas: {
 						scale: 2,
 						useCORS: true,
-						width: 816,
+						width: 816,         // 8.5in × 96dpi
 						windowWidth: 816,
-						scrollY: 0,
 						scrollX: 0,
+						scrollY: 0,
 						logging: false
 					},
 					jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
@@ -512,130 +497,118 @@
 			}
 
 			function buildPrintHtml() {
-				// Wrap in a fixed-width div matching the canvas width; no class names that
-				// could confuse html2pdf (e.g. letter-preview adds padding we don't want doubled).
 				return `<div style="width:816px;margin:0;padding:0;background:white;font-family:'Times New Roman',serif;">${printContainer.innerHTML}</div>`;
 			}
 
-			// ─── Main generation logic ─────────────────────────────────────────────────
+			// ── Generate letters ──────────────────────────────────────────────────────
 			generateBtn.addEventListener('click', () => {
-				const studentName = document.getElementById('global-student-name').value || '[STUDENT NAME]';
-				const studentEmail = document.getElementById('global-student-email').value || '';
-				const deptName = document.getElementById('global-dept-name').value || '[DEPARTMENT NAME]';
-				const headOfDept = document.getElementById('global-head-of-dept').value || '[HEAD OF DEPT]';
-				const contactName = document.getElementById('global-contact-name').value || '[CONTACT NAME]';
-				const contactPhone = document.getElementById('global-contact-phone').value || '[CONTACT PHONE]';
-				const contactEmail = document.getElementById('global-contact-email').value || '[CONTACT EMAIL]';
-				const deadline = document.getElementById('global-deadline').value;
+				const get = id => document.getElementById(id).value;
+				const studentName = get('global-student-name') || '[STUDENT NAME]';
+				const studentEmail = get('global-student-email') || '';
+				const deptName = get('global-dept-name') || '[DEPARTMENT NAME]';
+				const headOfDept = get('global-head-of-dept') || '[HEAD OF DEPT]';
+				const contactName = get('global-contact-name') || '[CONTACT NAME]';
+				const contactPhone = get('global-contact-phone') || '[CONTACT PHONE]';
+				const contactEmail = get('global-contact-email') || '[CONTACT EMAIL]';
+				const deadline = get('global-deadline');
+				const year = parseInt(get('global-year'));
 
 				const formattedDeadline = deadline
 					? new Date(deadline).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
 					: '[DATE]';
 
-				// Group identical appointments to combine quarters
+				// Group identical appointments by profile to combine quarters
 				const groups = {};
 				appointments.forEach(appt => {
-					const profileKey = `${appt.type}-${appt.values.step}-${appt.values.percentTime}-${appt.values.workDuties || ''}`;
-					if (!groups[profileKey]) groups[profileKey] = [];
-					groups[profileKey].push(appt);
+					const key = `${appt.type}-${appt.values.step}-${appt.values.percentTime}-${appt.values.workDuties || ''}`;
+					(groups[key] = groups[key] || []).push(appt);
 				});
 
 				let allLettersHtml = '';
+				const qOrder = { Fall: 1, Winter: 2, Spring: 3 };
 
 				Object.keys(groups).sort().forEach(key => {
-					const groupAppts = groups[key];
-					const sampleAppt = groupAppts[0];
-					const type = sampleAppt.type;
+					const group = groups[key];
+					const sample = group[0];
+					group.sort((a, b) => qOrder[a.values.quarter] - qOrder[b.values.quarter]);
 
-					const qOrder = { 'Fall': 1, 'Winter': 2, 'Spring': 3 };
-					groupAppts.sort((a, b) => qOrder[a.values.quarter] - qOrder[b.values.quarter]);
+					const quartersArr = [...new Set(group.map(a => a.values.quarter))];
+					const quarterString = quartersArr.length === 3 ? 'Fall, Winter, and Spring'
+						: quartersArr.length === 2 ? quartersArr.join(' and ')
+							: quartersArr[0];
 
-					const quartersSet = new Set(groupAppts.map(a => a.values.quarter));
-					const quartersArr = Array.from(quartersSet);
-
-					let quarterString = quartersArr[0];
-					if (quartersArr.length === 2) quarterString = quartersArr.join(' and ');
-					else if (quartersArr.length === 3) quarterString = 'Fall, Winter, and Spring';
-
-					const totalFte = parseFloat(sampleAppt.values.percentTime || 0);
-					const supervisor = sampleAppt.values.supervisor || '[SUPERVISOR]';
-					const monthlySal = sampleAppt.costs.monthlyActual;
-					const hideSupervisor = quartersArr.length > 1 || groupAppts.some(a => a.values.hideSupervisor);
-					const payDates = getCombinedPayDatesList(quartersArr);
-
-					const sharedData = {
+					const shared = {
 						studentName, deptName, headOfDept, contactName, contactPhone, contactEmail,
-						deadline: formattedDeadline,
-						quarter: quarterString, totalFte, supervisor, monthlySal, payDates, hideSupervisor,
-						year: parseInt(document.getElementById('global-year').value)
+						deadline: formattedDeadline, year,
+						quarter: quarterString,
+						totalFte: parseFloat(sample.values.percentTime || 0),
+						supervisor: sample.values.supervisor || '[SUPERVISOR]',
+						monthlySal: sample.costs.monthlyActual,
+						hideSupervisor: quartersArr.length > 1 || group.some(a => a.values.hideSupervisor),
+						payDates: getCombinedPayDatesList(quartersArr)
 					};
 
-					if (type === 'gsr') {
-						allLettersHtml += generateGsrLetter({ ...sharedData, duties: sampleAppt.values.workDuties });
-					} else {
-						allLettersHtml += generateAseLetter({ ...sharedData, type });
-					}
+					allLettersHtml += sample.type === 'gsr'
+						? generateGsrLetter({ ...shared, duties: sample.values.workDuties })
+						: generateAseLetter({ ...shared, type: sample.type });
 				});
 
-				if (allLettersHtml === '') {
-					alert('Please add at least one appointment.');
-					return;
-				}
+				if (!allLettersHtml) { alert('Please add at least one appointment.'); return; }
 
 				letterPreviewContainer.innerHTML = allLettersHtml;
 				printContainer.innerHTML = allLettersHtml;
 				letterModal.classList.remove('hidden');
 			});
 
-			closeModalBtn.addEventListener('click', () => {
-				letterModal.classList.add('hidden');
-			});
+			closeModalBtn.addEventListener('click', () => letterModal.classList.add('hidden'));
 
-			// ─── Send via DocuSign (Zapier) ────────────────────────────────────────────
-			// Sends the letter as a base64-encoded PDF in a JSON payload.
-			// In Zapier: Step 1 = Catch Hook, Step 2 = Google Drive Upload File
-			//   (set "File" to documentBase64, check "File is base64 encoded", extension = pdf),
-			//   Step 3 = DocuSign Send Envelope Using Document
-			//   (Document Source = URL, point at Google Drive file URL from step 2).
+			// ── Send via DocuSign (Zapier) ─────────────────────────────────────────────
+			// Uses FormData (multipart/form-data) — avoids CORS preflight that blocks
+			// application/json requests to Zapier catch hooks from the browser.
+			// documentBase64 arrives in Zapier as a plain text field; use Google Drive
+			// "Upload File" step with "File is base64 encoded" checked, then pass the
+			// Drive file URL to DocuSign "Send Envelope Using Document".
 			document.getElementById('send-zapier-btn').addEventListener('click', async () => {
-				const studentName = document.getElementById('global-student-name').value;
-				const studentEmail = document.getElementById('global-student-email').value;
-				const contactEmail = document.getElementById('global-contact-email').value;
-				const contactName = document.getElementById('global-contact-name').value;
+				const get = id => document.getElementById(id).value;
+				const studentName = get('global-student-name');
+				const studentEmail = get('global-student-email');
+				const contactEmail = get('global-contact-email');
+				const contactName = get('global-contact-name');
 
 				if (!studentEmail) {
-					alert("Please provide the Student Email in the Global Information panel before sending.");
+					alert("Please provide the Student Email before sending.");
 					return;
 				}
 
 				const btn = document.getElementById('send-zapier-btn');
-				const originalText = btn.innerText;
+				const orig = btn.innerText;
 				btn.innerText = 'Generating PDF...';
 				btn.disabled = true;
 
 				try {
 					const safeFilename = `Offer_Letter_${(studentName || 'Student').replace(/\s+/g, '_')}.pdf`;
+
 					const dataUri = await html2pdf()
 						.set(getPdfOptions(safeFilename))
 						.from(buildPrintHtml())
 						.outputPdf('datauristring');
 
-					// Strip "data:application/pdf;base64," prefix
-					const base64Data = dataUri.split(',')[1];
+					const base64Data = dataUri.split(',')[1]; // strip data: prefix
 
-					btn.innerText = 'Sending to Zapier...';
+					btn.innerText = 'Sending...';
+
+					// FormData avoids the Content-Type preflight that Zapier blocks
+					const formData = new FormData();
+					formData.append('studentName', studentName || 'Student');
+					formData.append('studentEmail', studentEmail);
+					formData.append('contactEmail', contactEmail || '');
+					formData.append('contactName', contactName || 'Department Contact');
+					formData.append('filename', safeFilename);
+					formData.append('documentBase64', base64Data);
 
 					const response = await fetch(ZAPIER_WEBHOOK_URL, {
 						method: 'POST',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({
-							studentName: studentName || 'Student',
-							studentEmail,
-							contactEmail: contactEmail || '',
-							contactName: contactName || 'Department Contact',
-							filename: safeFilename,
-							documentBase64: base64Data
-						})
+						body: formData  // no Content-Type header — browser sets multipart automatically
 					});
 
 					if (response.ok) {
@@ -647,60 +620,57 @@
 					console.error(e);
 					alert("Error sending: " + e.message);
 				} finally {
-					btn.innerText = originalText;
+					btn.innerText = orig;
 					btn.disabled = false;
 				}
 			});
 
-			// ─── Download PDF ──────────────────────────────────────────────────────────
+			// ── Download PDF ──────────────────────────────────────────────────────────
 			document.getElementById('download-pdf-btn').addEventListener('click', async () => {
 				const btn = document.getElementById('download-pdf-btn');
-				const originalText = btn.innerText;
+				const orig = btn.innerText;
 				btn.innerText = 'Generating...';
 				btn.disabled = true;
 				try {
-					const studentName = document.getElementById('global-student-name').value || 'Student';
-					const safeFilename = `Offer_Letter_${studentName.replace(/\s+/g, '_')}.pdf`;
-					await html2pdf().set(getPdfOptions(safeFilename)).from(buildPrintHtml()).save();
+					const name = document.getElementById('global-student-name').value || 'Student';
+					await html2pdf()
+						.set(getPdfOptions(`Offer_Letter_${name.replace(/\s+/g, '_')}.pdf`))
+						.from(buildPrintHtml())
+						.save();
 				} catch (e) {
 					console.error(e);
 					alert("Error generating PDF.");
 				} finally {
-					btn.innerText = originalText;
+					btn.innerText = orig;
 					btn.disabled = false;
 				}
 			});
 
-			// ─── Download Word ─────────────────────────────────────────────────────────
+			// ── Download Word ─────────────────────────────────────────────────────────
 			document.getElementById('download-word-btn').addEventListener('click', () => {
 				const content = letterPreviewContainer.innerHTML.replace(/\n|\t/g, ' ');
-				const html = `
-					<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-					<head><meta charset='utf-8'><title>Offer Letters</title>
-					<style>
-						body { font-family: "Times New Roman", serif; font-size: 11pt; }
-						.letter-page { page-break-after: always; margin-bottom: 2in; }
-						p { margin-bottom: 11pt; }
-						.signature-line { border-top: 1px solid black; width: 250px; display: inline-block; }
-					</style>
-					</head>
-					<body>${content}</body>
-					</html>`;
-				const studentName = document.getElementById('global-student-name').value || 'Student';
-				downloadBlob(html, `Offer_Letter_${studentName.replace(/\s+/g, '_')}.doc`, 'application/msword');
+				const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+				<head><meta charset='utf-8'><title>Offer Letters</title>
+				<style>
+					body { font-family: "Times New Roman", serif; font-size: 11pt; }
+					.letter-page { page-break-after: always; margin-bottom: 2in; }
+					p { margin-bottom: 11pt; }
+					.signature-line { border-top: 1px solid black; width: 250px; display: inline-block; }
+				</style></head>
+				<body>${content}</body></html>`;
+				const name = document.getElementById('global-student-name').value || 'Student';
+				downloadBlob(html, `Offer_Letter_${name.replace(/\s+/g, '_')}.doc`, 'application/msword');
 			});
 
-			function downloadBlob(content, filename, contentType) {
-				const blob = new Blob(['\ufeff', content], { type: contentType });
+			function downloadBlob(content, filename, type) {
+				const blob = new Blob(['\ufeff', content], { type });
 				const url = URL.createObjectURL(blob);
-				const link = document.createElement('a');
-				link.href = url;
-				link.download = filename;
-				link.click();
+				const a = document.createElement('a');
+				a.href = url; a.download = filename; a.click();
 				URL.revokeObjectURL(url);
 			}
 
-			// ─── Pay date helpers ──────────────────────────────────────────────────────
+			// ── Pay date helpers ──────────────────────────────────────────────────────
 			function getPayDatesArray(quarter, startYear) {
 				if (quarter === 'Fall') return [`November 1, ${startYear}`, `December 1, ${startYear}`, `January 1, ${startYear + 1}`];
 				if (quarter === 'Winter') return [`February 1, ${startYear + 1}`, `March 1, ${startYear + 1}`, `April 1, ${startYear + 1}`];
@@ -709,63 +679,81 @@
 			}
 
 			function getCombinedPayDatesList(quarters) {
-				const startYear = parseInt(document.getElementById('global-year').value);
-				let allDates = [];
-				quarters.forEach(q => { allDates = allDates.concat(getPayDatesArray(q, startYear)); });
-				if (allDates.length === 0) return '[PAY DATES]';
-				if (allDates.length === 1) return allDates[0];
-				if (allDates.length === 2) return allDates.join(' and ');
-				const last = allDates.pop();
-				return allDates.join(', ') + ', and ' + last;
+				const yr = parseInt(document.getElementById('global-year').value);
+				let dates = [];
+				quarters.forEach(q => { dates = dates.concat(getPayDatesArray(q, yr)); });
+				if (!dates.length) return '[PAY DATES]';
+				if (dates.length === 1) return dates[0];
+				if (dates.length === 2) return dates.join(' and ');
+				const last = dates.pop();
+				return dates.join(', ') + ', and ' + last;
 			}
 
 			function formatCurrency(val) {
 				return val.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 			}
 
-			// ─── DocuSign anchor helpers ───────────────────────────────────────────────
-			// Anchor strings are rendered as white 7pt text so they're invisible to readers
-			// but present in the PDF text layer for DocuSign autoplace tabs.
-			//
-			// In your DocuSign OfferBot template, configure anchor tabs:
-			//   Signature field   → anchor string: /s1/
-			//   Date Signed field → anchor string: /d1/
-			//   Accept checkbox   → anchor string: \ac1\
-			//   Decline checkbox  → anchor string: \dc1\
-
-			function anchorSpan(text) {
+			// ── DocuSign anchor helpers ───────────────────────────────────────────────
+			// White 7pt text — invisible to readers, present in PDF text layer.
+			// In your DocuSign OfferBot template set anchor strings:
+			//   Signature  → /s1/
+			//   Date       → /d1/
+			//   Accept CB  → \ac1\
+			//   Decline CB → \dc1\
+			function anchor(text) {
 				return `<span style="color:#FFFFFF;font-size:7pt;line-height:1;font-family:'Times New Roman',serif;">${text}</span>`;
 			}
 
 			function signatureBlock(role) {
 				return `
 				<div style="margin-top:2rem;">
-					<p>I accept _________ ${anchorSpan('\\ac1\\')} &nbsp;&nbsp; (or) &nbsp;&nbsp; I decline _________ ${anchorSpan('\\dc1\\')} the above appointment.</p>
+					<p>I accept _________ ${anchor('\\ac1\\')} &nbsp;&nbsp; (or) &nbsp;&nbsp; I decline _________ ${anchor('\\dc1\\')} the above appointment.</p>
 					<div style="display:flex;gap:3rem;margin-top:1rem;">
 						<div>
 							<div class="signature-line"></div>
-							<p style="font-size:9pt;margin-top:4px;">Signature of Prospective ${role} ${anchorSpan('/s1/')}</p>
+							<p style="font-size:9pt;margin-top:4px;">Signature of Prospective ${role} ${anchor('/s1/')}</p>
 						</div>
 						<div>
 							<div class="signature-line" style="width:120px;"></div>
-							<p style="font-size:9pt;margin-top:4px;">Date Signed ${anchorSpan('/d1/')}</p>
+							<p style="font-size:9pt;margin-top:4px;">Date Signed ${anchor('/d1/')}</p>
 						</div>
 					</div>
 				</div>`;
 			}
 
-			// ─── Letter generators ─────────────────────────────────────────────────────
+			// ── Letter generators ─────────────────────────────────────────────────────
+			function letterHeader(data, subjectLine) {
+				return `
+				<div class="letter-header">
+					<p>${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+				</div>
+				<p><b>To:</b> ${data.studentName}</p>
+				<p><b>From:</b> ${data.headOfDept}</p>
+				<p><b>Subject:</b> ${subjectLine}</p>
+				<p>Dear ${data.studentName.split(' ')[0]},</p>`;
+			}
+
+			function letterFooter(data) {
+				return `
+				<div class="letter-footer">
+					<div style="margin-bottom:11pt;">
+						<p style="margin:0;"><b>Hiring Department/Unit Contact:</b></p>
+						<p style="margin:0;">${data.contactName}</p>
+						<p style="margin:0;">${data.contactPhone}</p>
+						<p style="margin:0;">${data.contactEmail}</p>
+					</div>
+					<p>Sincerely,</p>
+					<p style="height:11pt;margin:0;"></p>
+					<p style="margin-bottom:0;"><b>${data.headOfDept}</b></p>
+					<p>Cc: Employment File</p>
+				</div>`;
+			}
+
 			function generateAseLetter(data) {
 				const isHourly = data.type === 'reader';
 				const title = data.type === 'ta' ? 'Teaching Assistant'
 					: data.type === 'ai' ? 'Associate Instructor'
 						: 'Reader/Tutor';
-
-				const timeReportingText = isHourly ? `
-					<p>You are responsible for honestly and accurately reporting your hours worked on an affirmative basis, including any leaves of absence taken. Such reporting must be done through the appropriate time and attendance reporting form and/or through your campus time and attendance system, by the submission deadline and procedures as set by your campus. Failure to accurately report work hours or an absence from work in any circumstance may result in an overpayment of public funds requiring your repayment. Submitting erroneous information in the time and attendance system will be subject to your submission being overridden and pay withheld for the time not worked. Failing to accurately report work hours or absences in any way and receiving an overpayment of funds is a serious violation of university policy that may result in disciplinary action, up to and including dismissal. See information on UC Davis Time Reporting System (TRS)</p>
-				` : `
-					<p><b>Reporting in Time and Attendance System</b> - You are responsible for honestly and accurately reporting the use of any leave or absences from work each month on the appropriate leave-reporting form and/or through your campus time and attendance system each month, in accordance with established local procedures. Failure to report an absence from work in any circumstance may result in an overpayment of public funds requiring your repayment. Submitting erroneous information in the time and attendance system will be subject to your submission being overridden and pay withheld for the time not worked. Failing to accurately report absences in any way and receiving an overpayment of funds is a serious violation of university policy that may result in disciplinary action, up to and including dismissal. If you have no absences or leave to report, you must still submit a report acknowledging no absences or leave to report in your local time and attendance system by the submission deadline as set by your campus. See information on UC Davis Time Reporting System (TRS)</p>
-				`;
 
 				const fteDisplay = isHourly
 					? `${Math.round(data.totalFte / 4.4)}% / ${data.totalFte} hours`
@@ -779,23 +767,21 @@
 					? ' Your supervisor will be noted on the Description of Duties form you receive prior to the quarter.'
 					: ` Your supervisor for this appointment will be <b>${data.supervisor}</b>.`;
 
+				const timeReporting = isHourly ? `
+					<p>You are responsible for honestly and accurately reporting your hours worked on an affirmative basis, including any leaves of absence taken. Such reporting must be done through the appropriate time and attendance reporting form and/or through your campus time and attendance system, by the submission deadline and procedures as set by your campus. Failure to accurately report work hours or an absence from work in any circumstance may result in an overpayment of public funds requiring your repayment. Submitting erroneous information in the time and attendance system will be subject to your submission being overridden and pay withheld for the time not worked. Failing to accurately report work hours or absences in any way and receiving an overpayment of funds is a serious violation of university policy that may result in disciplinary action, up to and including dismissal. See information on UC Davis Time Reporting System (TRS)</p>
+				` : `
+					<p><b>Reporting in Time and Attendance System</b> - You are responsible for honestly and accurately reporting the use of any leave or absences from work each month on the appropriate leave-reporting form and/or through your campus time and attendance system each month, in accordance with established local procedures. Failure to report an absence from work in any circumstance may result in an overpayment of public funds requiring your repayment. Submitting erroneous information in the time and attendance system will be subject to your submission being overridden and pay withheld for the time not worked. Failing to accurately report absences in any way and receiving an overpayment of funds is a serious violation of university policy that may result in disciplinary action, up to and including dismissal. If you have no absences or leave to report, you must still submit a report acknowledging no absences or leave to report in your local time and attendance system by the submission deadline as set by your campus. See information on UC Davis Time Reporting System (TRS)</p>
+				`;
+
 				return `
 				<div class="letter-page letter-preview mb-8">
-					<div class="letter-header">
-						<p>${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
-					</div>
-
-					<p><b>To:</b> ${data.studentName}</p>
-					<p><b>From:</b> ${data.headOfDept}</p>
-					<p><b>Subject:</b> Notification of Academic Student Employee Appointment (via DocuSign)</p>
-
-					<p>Dear ${data.studentName.split(' ')[0]},</p>
+					${letterHeader(data, 'Notification of Academic Student Employee Appointment (via DocuSign)')}
 
 					<p>I am pleased to offer you an appointment as a <b>${title}</b> in the <b>${data.deptName}</b> for the <b>${data.quarter} quarter(s) of ${data.year}-${data.year + 1}</b>.${supervisorLine}</p>
 
 					<p>This appointment is at <b>${fteDisplay}</b>. You will be paid ${salaryLine}. Your paychecks will be issued on <b>${data.payDates}</b>.</p>
 
-					${timeReportingText}
+					${timeReporting}
 
 					<p><b>Academic Eligibility Standards</b> - The UC Davis Office of Graduate Studies is the administrative home for graduate students. Your appointment is subject to regular review by the Graduate Division. University policy for graduate student employment requires that you meet and maintain all academic eligibility standards appropriate to this appointment (such as, enrollment, GPA, units of incomplete grades, academic progress, etc.). Further information regarding eligibility, restrictions and benefits may be found in the Academic Personnel Manual UCD Appendix II-B and on the web at https://grad.ucdavis.edu/student-employment.</p>
 
@@ -823,41 +809,20 @@
 
 					<p>Please sign and date below to indicate you understand and accept the terms of your appointment and return one copy to your hiring contact listed below. Failure to return a signed letter by <b>${data.deadline}</b> constitutes rejection of this offer.</p>
 
-					<div class="letter-footer">
-						<div style="margin-bottom:11pt;">
-							<p style="margin:0;"><b>Hiring Department/Unit Contact:</b></p>
-							<p style="margin:0;">${data.contactName}</p>
-							<p style="margin:0;">${data.contactPhone}</p>
-							<p style="margin:0;">${data.contactEmail}</p>
-						</div>
-						<p>Sincerely,</p>
-						<p style="height:11pt;margin:0;"></p>
-						<p style="margin-bottom:0;"><b>${data.headOfDept}</b></p>
-						<p>Cc: Employment File</p>
-					</div>
-
+					${letterFooter(data)}
 					${signatureBlock('ASE')}
 				</div>`;
 			}
 
 			function generateGsrLetter(data) {
 				const fteDisplay = `${data.totalFte}% / ${Math.round(data.totalFte * 4.4)} hours`;
-
 				const supervisorLine = data.hideSupervisor
 					? ' Your supervisor will be noted on the Description of Duties form you receive prior to the quarter.'
 					: ` Your PI/Supervisor for this appointment will be <b>${data.supervisor}</b>.`;
 
 				return `
 				<div class="letter-page letter-preview mb-8">
-					<div class="letter-header">
-						<p>${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
-					</div>
-
-					<p><b>To:</b> ${data.studentName}</p>
-					<p><b>From:</b> ${data.headOfDept}</p>
-					<p><b>Subject:</b> Notification of Graduate Student Researcher Appointment (via DocuSign)</p>
-
-					<p>Dear ${data.studentName.split(' ')[0]},</p>
+					${letterHeader(data, 'Notification of Graduate Student Researcher Appointment (via DocuSign)')}
 
 					<p>I am pleased to offer you an appointment as a <b>Graduate Student Researcher</b> in the <b>${data.deptName}</b> for the <b>${data.quarter} quarter(s) of ${data.year}-${data.year + 1}</b>.${supervisorLine}</p>
 
@@ -896,19 +861,7 @@
 
 					<p>Please sign and date below to indicate you understand and accept the terms of your appointment and return one copy to your hiring contact listed below. Failure to return a signed letter by <b>${data.deadline}</b> constitutes rejection of this offer.</p>
 
-					<div class="letter-footer">
-						<div style="margin-bottom:11pt;">
-							<p style="margin:0;"><b>Hiring Department/Unit Contact:</b></p>
-							<p style="margin:0;">${data.contactName}</p>
-							<p style="margin:0;">${data.contactPhone}</p>
-							<p style="margin:0;">${data.contactEmail}</p>
-						</div>
-						<p>Sincerely,</p>
-						<p style="height:11pt;margin:0;"></p>
-						<p style="margin-bottom:0;"><b>${data.headOfDept}</b></p>
-						<p>Cc: Employment File</p>
-					</div>
-
+					${letterFooter(data)}
 					${signatureBlock('GSR')}
 				</div>`;
 			}
