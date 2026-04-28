@@ -600,26 +600,37 @@
 
 				try {
 					const printContainer = document.getElementById('letter-print-container');
-					const cleanHtml = printContainer.innerHTML.replace(/letter-preview/g, '');
+					// Replace standard page breaks with strict MSO Word page breaks
+					const cleanHtml = printContainer.innerHTML
+						.replace(/letter-preview/g, '')
+						.replace(/<div class="letter-page">/g, '<br clear="all" style="mso-special-character:line-break;page-break-before:always" /><div>');
 					
-					// Wrap in strict HTML5 boilerplate to guarantee native DocuSign HTML-to-PDF conversion
-					const fullHtml = `<!DOCTYPE html>
-<html>
+					// Wrap in strict Microsoft Office (MSO) HTML5 boilerplate to guarantee formatting
+					const fullHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
 <head>
 <meta charset="UTF-8">
 <style>
-	body { font-family: 'Times New Roman', serif; font-size: 11pt; padding: 48px; }
-	.letter-page { page-break-after: always; margin-bottom: 2in; }
-	p { margin-bottom: 11pt; }
+	@page WordSection1 {
+		size: 8.5in 11.0in;
+		margin: 0.5in 0.5in 0.5in 0.5in;
+		mso-header-margin: 0.5in;
+		mso-footer-margin: 0.5in;
+		mso-paper-source: 0;
+	}
+	div.WordSection1 { page: WordSection1; }
+	body { font-family: 'Times New Roman', serif; font-size: 11pt; }
+	p { margin-bottom: 11pt; margin-top: 0; }
 	.signature-line { border-top: 1px solid black; width: 250px; display: inline-block; }
 </style>
 </head>
 <body>
-	${cleanHtml}
+	<div class="WordSection1">
+		${cleanHtml}
+	</div>
 </body>
 </html>`;
 
-					const htmlBlob = new Blob([fullHtml], { type: 'text/html' });
+					const docBlob = new Blob([fullHtml], { type: 'application/msword' });
 
 					btn.innerText = 'Dispatching to DocuSign...';
 
@@ -629,15 +640,15 @@
 					formData.append('contactEmail', contactEmail || '');
 					formData.append('contactName', contactName || 'Department Contact');
 					
-					// Append the native HTML blob properly
-					formData.append('document', htmlBlob, 'Offer_Letter.html');
+					// Append the native DOC blob properly
+					formData.append('document', docBlob, 'Offer_Letter.doc');
 
 					await fetch(ZAPIER_WEBHOOK_URL, {
 						method: 'POST',
 						body: formData
 					});
 
-					alert("Success! The HTML document has been properly formatted and dispatched to Zapier.");
+					alert("Success! The .doc document has been properly formatted and dispatched to Zapier.");
 				} catch (e) {
 					console.error(e);
 					alert("JS Error: " + e.message + "\\nLine: " + e.lineNumber);
