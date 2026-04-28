@@ -591,22 +591,13 @@
 				if (!studentEmail) {
 					alert("Please provide the Student Email in the Global Information panel before sending.");
 					return;
+				}
+
 				const btn = document.getElementById('send-zapier-btn');
 				const originalText = btn.innerText;
 				btn.innerText = 'Packaging PDF...';
+				
 				try {
-					const studentName = document.getElementById('global-student-name').value;
-					const studentEmail = document.getElementById('global-student-email').value;
-					const contactEmail = document.getElementById('global-contact-email').value;
-					const contactName = document.getElementById('global-contact-name').value;
-
-					if (!studentEmail) {
-						alert("Please provide the Student Email before sending.");
-						btn.innerText = 'Send via DocuSign';
-						btn.disabled = false;
-						return;
-					}
-
 					const opt = {
 						margin: 0.5,
 						filename: 'Offer_Letter.pdf',
