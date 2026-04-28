@@ -228,8 +228,8 @@
 	</div>
 
 	<!--
-		Off-screen container for PDF generation.
-		position:absolute (not fixed) eliminates scroll offset in html2canvas.
+		Off-screen PDF generation container.
+		position:absolute (not fixed) so html2canvas has no scroll offset.
 		816px = 8.5in @ 96dpi.
 	-->
 	<div id="letter-print-container"
@@ -264,16 +264,13 @@
 					alert("Error loading configuration. Please refresh.");
 					return;
 				}
-
 				persistentFields.forEach(id => {
 					const saved = localStorage.getItem(id);
 					if (saved) document.getElementById(id).value = saved;
 				});
-
 				const twoWeeks = new Date();
 				twoWeeks.setDate(twoWeeks.getDate() + 14);
 				document.getElementById('global-deadline').value = twoWeeks.toISOString().split('T')[0];
-
 				fullRender();
 			}
 
@@ -330,7 +327,7 @@
 				}
 			}
 
-			// ── Add / remove appointments ─────────────────────────────────────────────
+			// ── Appointments ──────────────────────────────────────────────────────────
 			addButtonsContainer.addEventListener('click', e => {
 				if (e.target.classList.contains('btn')) addAppointment(e.target.dataset.type);
 			});
@@ -344,8 +341,7 @@
 				if (!row) return;
 				const appt = appointments.find(a => a.id === parseInt(row.dataset.id, 10));
 				if (!appt) return;
-				const key = e.target.dataset.calc;
-				appt.values[key] = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+				appt.values[e.target.dataset.calc] = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
 				calculateAllCosts();
 				updateWarnings();
 			});
@@ -359,8 +355,7 @@
 
 			function addAppointment(type) {
 				appointments.push({
-					id: ++appointmentCounter,
-					type,
+					id: ++appointmentCounter, type,
 					values: {
 						quarter: 'Fall', step: '1',
 						percentTime: type === 'reader' ? '110' : '50',
@@ -372,7 +367,7 @@
 				fullRender();
 			}
 
-			// ── Render appointments list ──────────────────────────────────────────────
+			// ── Render ────────────────────────────────────────────────────────────────
 			function fullRender() {
 				calculateAllCosts();
 				updateWarnings();
@@ -383,19 +378,16 @@
 				appointmentsContainer.innerHTML = appointments.map(appt => {
 					const quarterOptions = ['Fall', 'Winter', 'Spring'].map(q =>
 						`<option ${q === appt.values.quarter ? 'selected' : ''}>${q}</option>`).join('');
-
 					let scaleOptions = '';
 					if (appt.type === 'gsr') scaleOptions = Object.keys(COST_DATA.GSR_SCALE).map(s => `<option value="${s}" ${s === appt.values.step ? 'selected' : ''}>Step ${s}</option>`).join('');
 					if (appt.type === 'ta') scaleOptions = Object.keys(COST_DATA.TA_SCALE).map(s => `<option value="${s}" ${s === appt.values.step ? 'selected' : ''}>Step ${s}</option>`).join('');
 					if (appt.type === 'ai') scaleOptions = Object.keys(COST_DATA.AI_SCALE).map(s => `<option value="${s}" ${s === appt.values.step ? 'selected' : ''}>Point ${s}</option>`).join('');
-
 					const stepLabel = appt.type === 'ai' ? 'Point' : 'Step';
 					const dutiesHtml = appt.type === 'gsr' ? `
 					<div class="col-span-full">
 						<label class="block text-xs font-semibold">Brief Statement of Work Duties</label>
 						<textarea data-calc="workDuties" class="w-full p-2 border rounded mt-1 text-sm" rows="2">${appt.values.workDuties}</textarea>
 					</div>` : '';
-
 					return `
 				<div class="appointment-row p-4 bg-gray-50 rounded-lg mb-4" data-id="${appt.id}">
 					<div class="flex justify-between items-start mb-4">
@@ -441,7 +433,7 @@
 				}).join('');
 			}
 
-			// ── Cost calculation ──────────────────────────────────────────────────────
+			// ── Costs ─────────────────────────────────────────────────────────────────
 			function calculateAllCosts() {
 				appointments.forEach(appt => {
 					let base = 0;
@@ -461,13 +453,9 @@
 					filename: filename || 'Offer_Letter.pdf',
 					image: { type: 'jpeg', quality: 0.98 },
 					html2canvas: {
-						scale: 2,
-						useCORS: true,
-						width: 816,        // 8.5in × 96dpi
-						windowWidth: 816,
-						scrollX: 0,
-						scrollY: 0,
-						logging: false
+						scale: 2, useCORS: true,
+						width: 816, windowWidth: 816,
+						scrollX: 0, scrollY: 0, logging: false
 					},
 					jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
 				};
@@ -477,7 +465,7 @@
 				return `<div style="width:816px;margin:0;padding:0;background:white;font-family:'Times New Roman',serif;">${printContainer.innerHTML}</div>`;
 			}
 
-			// ── Generate & preview letters ────────────────────────────────────────────
+			// ── Generate & preview ────────────────────────────────────────────────────
 			generateBtn.addEventListener('click', () => {
 				const get = id => document.getElementById(id).value;
 				const studentName = get('global-student-name') || '[STUDENT NAME]';
@@ -488,7 +476,6 @@
 				const contactEmail = get('global-contact-email') || '[CONTACT EMAIL]';
 				const deadline = get('global-deadline');
 				const year = parseInt(get('global-year'));
-
 				const formattedDeadline = deadline
 					? new Date(deadline).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
 					: '[DATE]';
@@ -506,30 +493,24 @@
 					const group = groups[key];
 					const sample = group[0];
 					group.sort((a, b) => qOrder[a.values.quarter] - qOrder[b.values.quarter]);
-
 					const quartersArr = [...new Set(group.map(a => a.values.quarter))];
 					const quarterString = quartersArr.length === 3 ? 'Fall, Winter, and Spring'
-						: quartersArr.length === 2 ? quartersArr.join(' and ')
-							: quartersArr[0];
-
+						: quartersArr.length === 2 ? quartersArr.join(' and ') : quartersArr[0];
 					const shared = {
 						studentName, deptName, headOfDept, contactName, contactPhone, contactEmail,
-						deadline: formattedDeadline, year,
-						quarter: quarterString,
+						deadline: formattedDeadline, year, quarter: quarterString,
 						totalFte: parseFloat(sample.values.percentTime || 0),
 						supervisor: sample.values.supervisor || '[SUPERVISOR]',
 						monthlySal: sample.costs.monthlyActual,
 						hideSupervisor: quartersArr.length > 1 || group.some(a => a.values.hideSupervisor),
 						payDates: getCombinedPayDatesList(quartersArr)
 					};
-
 					allLettersHtml += sample.type === 'gsr'
 						? generateGsrLetter({ ...shared, duties: sample.values.workDuties })
 						: generateAseLetter({ ...shared, type: sample.type });
 				});
 
 				if (!allLettersHtml) { alert('Please add at least one appointment.'); return; }
-
 				letterPreviewContainer.innerHTML = allLettersHtml;
 				printContainer.innerHTML = allLettersHtml;
 				letterModal.classList.remove('hidden');
@@ -541,12 +522,13 @@
 			//
 			// Flow:
 			//   1. Generate PDF blob in browser
-			//   2. Upload to file.io → returns a one-time-use URL (expires after first download)
-			//   3. POST metadata + URL to Zapier webhook as JSON
-			//   4. In Zapier: Google Drive "Upload File" step fetches from the URL → real PDF
-			//   5. DocuSign step gets the Drive file URL
+			//   2. Upload to tmpfiles.org → returns a direct-download URL (60 min expiry)
+			//   3. POST metadata + URL to Zapier as JSON (no binary, no CORS issues)
 			//
-			// This avoids all binary-over-webhook encoding issues.
+			// In Zapier:
+			//   - Google Drive "Upload File": set File field to documentUrl
+			//     (Drive fetches the real PDF from that URL)
+			//   - DocuSign "Send Envelope": Document 1 = Drive file URL output from step above
 
 			document.getElementById('send-zapier-btn').addEventListener('click', async () => {
 				const get = id => document.getElementById(id).value;
@@ -565,7 +547,7 @@
 				btn.disabled = true;
 
 				try {
-					// Step 1: Generate PDF blob
+					// 1. Generate PDF blob
 					btn.innerText = 'Generating PDF…';
 					const safeFilename = `Offer_Letter_${(studentName || 'Student').replace(/\s+/g, '_')}.pdf`;
 					const pdfBlob = await html2pdf()
@@ -573,30 +555,29 @@
 						.from(buildPrintHtml())
 						.outputPdf('blob');
 
-					// Step 2: Upload to file.io
+					// 2. Upload to tmpfiles.org (CORS-friendly, 60-min expiry, deleted after first download)
 					btn.innerText = 'Uploading PDF…';
-					const fileIoForm = new FormData();
-					fileIoForm.append('file', new File([pdfBlob], safeFilename, { type: 'application/pdf' }));
-					// expires=1h gives Zapier plenty of time to fetch it; file.io deletes after first download
-					fileIoForm.append('expires', '1h');
+					const uploadForm = new FormData();
+					uploadForm.append('file', new File([pdfBlob], safeFilename, { type: 'application/pdf' }));
 
-					const fileIoRes = await fetch('https://file.io', {
+					const uploadRes = await fetch('https://tmpfiles.org/api/v1/upload', {
 						method: 'POST',
-						body: fileIoForm
+						body: uploadForm
 					});
-					const fileIoJson = await fileIoRes.json();
+					const uploadJson = await uploadRes.json();
 
-					if (!fileIoJson.success || !fileIoJson.link) {
-						throw new Error('file.io upload failed: ' + JSON.stringify(fileIoJson));
+					if (!uploadJson.data || !uploadJson.data.url) {
+						throw new Error('tmpfiles.org upload failed: ' + JSON.stringify(uploadJson));
 					}
 
-					const pdfUrl = fileIoJson.link;
-					console.log('PDF hosted at:', pdfUrl); // visible in DevTools for debugging
+					// tmpfiles returns a page URL like https://tmpfiles.org/12345/file.pdf
+					// Insert /dl/ to get the direct download URL Zapier/Drive can fetch
+					const pdfUrl = uploadJson.data.url.replace('https://tmpfiles.org/', 'https://tmpfiles.org/dl/');
+					console.log('PDF hosted at:', pdfUrl);
 
-					// Step 3: Send metadata + URL to Zapier as plain JSON
-					// No binary data = no CORS preflight issues
+					// 3. Send metadata + URL to Zapier — plain JSON, no binary, no CORS preflight
 					btn.innerText = 'Sending to Zapier…';
-					const response = await fetch(ZAPIER_WEBHOOK_URL, {
+					const zapierRes = await fetch(ZAPIER_WEBHOOK_URL, {
 						method: 'POST',
 						headers: { 'Content-Type': 'application/json' },
 						body: JSON.stringify({
@@ -605,14 +586,14 @@
 							contactEmail: contactEmail || '',
 							contactName: contactName || 'Department Contact',
 							filename: safeFilename,
-							documentUrl: pdfUrl        // ← Zapier uses this URL to fetch the PDF
+							documentUrl: pdfUrl
 						})
 					});
 
-					if (response.ok) {
+					if (zapierRes.ok) {
 						alert("Sent! The letter is on its way to DocuSign.");
 					} else {
-						alert(`Zapier returned status ${response.status}. Check your Zap history.`);
+						alert(`Zapier returned status ${zapierRes.status}. Check your Zap history.`);
 					}
 
 				} catch (e) {
@@ -694,11 +675,11 @@
 
 			// ── DocuSign anchor helpers ───────────────────────────────────────────────
 			// White 7pt text — invisible to readers, present in PDF text layer.
-			// In your DocuSign OfferBot template set anchor strings:
-			//   Signature field   → /s1/
-			//   Date Signed field → /d1/
-			//   Accept checkbox   → \ac1\
-			//   Decline checkbox  → \dc1\
+			// In DocuSign OfferBot template, set anchor strings:
+			//   Signature   → /s1/
+			//   Date Signed → /d1/
+			//   Accept CB   → \ac1\
+			//   Decline CB  → \dc1\
 			function anchor(text) {
 				return `<span style="color:#FFFFFF;font-size:7pt;line-height:1;font-family:'Times New Roman',serif;">${text}</span>`;
 			}
@@ -720,7 +701,7 @@
 			</div>`;
 			}
 
-			// ── Letter template helpers ───────────────────────────────────────────────
+			// ── Shared letter fragments ───────────────────────────────────────────────
 			function letterHeader(data, subjectLine) {
 				return `
 			<div class="letter-header">
@@ -752,8 +733,7 @@
 			function generateAseLetter(data) {
 				const isHourly = data.type === 'reader';
 				const title = data.type === 'ta' ? 'Teaching Assistant'
-					: data.type === 'ai' ? 'Associate Instructor'
-						: 'Reader/Tutor';
+					: data.type === 'ai' ? 'Associate Instructor' : 'Reader/Tutor';
 
 				const fteDisplay = isHourly
 					? `${Math.round(data.totalFte / 4.4)}% / ${data.totalFte} hours`
