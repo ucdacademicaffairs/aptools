@@ -200,6 +200,17 @@
 
 			const ZAPIER_WEBHOOK_URL = 'https://hooks.zapier.com/hooks/catch/27268773/uj1leu5/';
 
+			// DocuSign anchor strings — must match exactly what is configured
+			// in the OfferBot template AutoPlace fields:
+			//   Checkbox (accept)  → ACCSIGN1
+			//   Checkbox (decline) → DCLSIGN1
+			//   Signature field    → SIGHERE1
+			//   Date Signed field  → DATEHERE1
+			const ANCHOR_ACCEPT = 'ACCSIGN1';
+			const ANCHOR_DECLINE = 'DCLSIGN1';
+			const ANCHOR_SIGNATURE = 'SIGHERE1';
+			const ANCHOR_DATE = 'DATEHERE1';
+
 			let COST_DATA = {};
 			let appointments = [];
 			let appointmentCounter = 0;
@@ -505,7 +516,6 @@
 				const pdfDoc = await PDFDocument.create();
 				const regular = await pdfDoc.embedFont(StandardFonts.TimesRoman);
 				const bold = await pdfDoc.embedFont(StandardFonts.TimesRomanBold);
-				const italic = await pdfDoc.embedFont(StandardFonts.TimesRomanItalic);
 
 				const PW = 612, PH = 792;
 				const ML = 54, MR = 54, MT = 54, MB = 54;
@@ -543,13 +553,8 @@
 					if (y - needed < MB) newPage();
 				}
 
-				function drawLine(text, font, size, x, color) {
-					if (!text) return;
-					page.drawText(text, { x, y, font, size, color: color || black });
-				}
-
 				function drawParagraph(text, opts = {}) {
-					const font = opts.bold ? bold : (opts.italic ? italic : regular);
+					const font = opts.bold ? bold : regular;
 					const size = opts.size || NORMAL;
 					const lh = size * 1.45;
 					const indent = opts.indent || ML;
@@ -559,17 +564,19 @@
 					ensureSpace(lines.length * lh + (opts.spaceBefore || 0));
 					if (opts.spaceBefore) y -= opts.spaceBefore;
 					for (const line of lines) {
-						drawLine(line, font, size, indent, color);
+						page.drawText(line, { x: indent, y, font, size, color });
 						y -= lh;
 					}
-					if (opts.spaceAfter !== undefined) y -= opts.spaceAfter;
-					else y -= lh * 0.3;
+					y -= (opts.spaceAfter !== undefined ? opts.spaceAfter : lh * 0.3);
 				}
 
 				function drawMixed(parts, opts = {}) {
 					const size = opts.size || NORMAL;
 					const lh = size * 1.45;
 					const indent = opts.indent || ML;
+					const spaceW = regular.widthOfTextAtSize(' ', size);
+					const maxW = CW - (indent - ML);
+
 					const words = [];
 					for (const part of parts) {
 						const f = part.bold ? bold : regular;
@@ -577,12 +584,11 @@
 							if (w) words.push({ w, f });
 						}
 					}
-					const spaceW = regular.widthOfTextAtSize(' ', size);
-					const maxW = CW - (indent - ML);
+
 					const lines = [[]];
 					for (const wobj of words) {
 						const cur = lines[lines.length - 1];
-						let lineW = cur.reduce((acc, o, i) => acc + o.f.widthOfTextAtSize(o.w, size) + (i > 0 ? spaceW : 0), 0);
+						const lineW = cur.reduce((acc, o, i) => acc + o.f.widthOfTextAtSize(o.w, size) + (i > 0 ? spaceW : 0), 0);
 						const addW = (cur.length > 0 ? spaceW : 0) + wobj.f.widthOfTextAtSize(wobj.w, size);
 						if (lineW + addW <= maxW || cur.length === 0) {
 							cur.push(wobj);
@@ -590,19 +596,18 @@
 							lines.push([wobj]);
 						}
 					}
+
 					ensureSpace(lines.length * lh + (opts.spaceBefore || 0));
 					if (opts.spaceBefore) y -= opts.spaceBefore;
 					for (const line of lines) {
 						let x = indent;
-						for (let i = 0; i < line.length; i++) {
-							const { w, f } = line[i];
-							page.drawText(w, { x, y, font: f, size, color: opts.color || black });
+						for (const { w, f } of line) {
+							page.drawText(w, { x, y, font: f, size, color: black });
 							x += f.widthOfTextAtSize(w, size) + spaceW;
 						}
 						y -= lh;
 					}
-					if (opts.spaceAfter !== undefined) y -= opts.spaceAfter;
-					else y -= lh * 0.3;
+					y -= (opts.spaceAfter !== undefined ? opts.spaceAfter : lh * 0.3);
 				}
 
 				function drawBlankLine(n = 1) { y -= LINE_H * n; }
@@ -648,8 +653,7 @@
 					{ label: 'Direct Deposit', text: " - Please note that direct deposit information expires 60 days following an employee's separation date and is not reactivated upon reappointment. All employees who are rehired or reappointed are encouraged to review their direct deposit information regularly via UCPath to avoid any delays in processing your paycheck." },
 				];
 
-				for (let li = 0; li < groups.length; li++) {
-					const g = groups[li];
+				for (const g of groups) {
 					newPage();
 
 					const isGsr = g.type === 'gsr';
@@ -670,9 +674,9 @@
 						? 'Notification of Graduate Student Researcher Appointment (via DocuSign)'
 						: 'Notification of Academic Student Employee Appointment (via DocuSign)';
 
-					// Date (right-aligned)
+					// Date right-aligned
 					const dateStr = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-					drawLine(dateStr, regular, NORMAL, PW - MR - regular.widthOfTextAtSize(dateStr, NORMAL));
+					page.drawText(dateStr, { x: PW - MR - regular.widthOfTextAtSize(dateStr, NORMAL), y, font: regular, size: NORMAL, color: black });
 					y -= LINE_H * 2;
 
 					drawMixed([{ text: 'To: ', bold: true }, { text: d.studentName, bold: false }]);
@@ -713,27 +717,38 @@
 					drawParagraph(d.headOfDept, { bold: true, spaceAfter: 0 });
 					drawParagraph('Cc: Employment File');
 
-					// Signature block
-					ensureSpace(120);
+					// ── Signature block ─────────────────────────────────────────────
+					ensureSpace(130);
 					drawBlankLine();
 
-					// Accept/decline with invisible DocuSign anchors
-					drawLine('I accept _________  (or)  I decline _________  the above appointment.', regular, NORMAL, ML);
-					page.drawText('\\ac1\\', { x: ML + regular.widthOfTextAtSize('I accept _________ ', NORMAL), y, font: regular, size: TINY, color: white });
-					page.drawText('\\dc1\\', { x: ML + regular.widthOfTextAtSize('I accept _________  (or)  I decline _________ ', NORMAL), y, font: regular, size: TINY, color: white });
-					y -= LINE_H * 2.5;
+					// Accept/decline line
+					// Anchor strings written in white — invisible but searchable by DocuSign
+					const acceptLineText = 'I accept _________  (or)  I decline _________  the above appointment.';
+					page.drawText(acceptLineText, { x: ML, y, font: regular, size: NORMAL, color: black });
 
-					ensureSpace(60);
+					// ACCSIGN1 anchor — placed just after "I accept _________ "
+					const accX = ML + regular.widthOfTextAtSize('I accept _________  ', NORMAL);
+					page.drawText(ANCHOR_ACCEPT, { x: accX, y, font: regular, size: TINY, color: white });
+
+					// DCLSIGN1 anchor — placed just after "I decline _________ "
+					const dclX = ML + regular.widthOfTextAtSize('I accept _________  (or)  I decline _________  ', NORMAL);
+					page.drawText(ANCHOR_DECLINE, { x: dclX, y, font: regular, size: TINY, color: white });
+
+					y -= LINE_H * 3;
+
+					// Signature line + SIGHERE1 anchor
+					ensureSpace(70);
 					page.drawLine({ start: { x: ML, y }, end: { x: ML + 220, y }, thickness: 0.5, color: black });
-					page.drawText('/s1/', { x: ML + 225, y, font: regular, size: TINY, color: white });
-					y -= 4;
-					drawLine(`Signature of Prospective ${isGsr ? 'GSR' : 'ASE'}`, regular, SMALL, ML);
+					page.drawText(ANCHOR_SIGNATURE, { x: ML + 225, y, font: regular, size: TINY, color: white });
+					y -= 5;
+					page.drawText(`Signature of Prospective ${isGsr ? 'GSR' : 'ASE'}`, { x: ML, y, font: regular, size: SMALL, color: black });
 
-					const dlx = ML + 260;
-					const dly = y + LINE_H * 1.5;
-					page.drawLine({ start: { x: dlx, y: dly }, end: { x: dlx + 100, y: dly }, thickness: 0.5, color: black });
-					page.drawText('/d1/', { x: dlx + 105, y: dly, font: regular, size: TINY, color: white });
-					page.drawText('Date Signed', { x: dlx, y: dly - LINE_H - 2, font: regular, size: SMALL, color: black });
+					// Date line + DATEHERE1 anchor (to the right of the signature line)
+					const dlx = ML + 270;
+					const dly = y + SMALL * 1.45 + 5; // back up to line level
+					page.drawLine({ start: { x: dlx, y: dly }, end: { x: dlx + 120, y: dly }, thickness: 0.5, color: black });
+					page.drawText(ANCHOR_DATE, { x: dlx + 125, y: dly, font: regular, size: TINY, color: white });
+					page.drawText('Date Signed', { x: dlx, y: dly - SMALL * 1.45 - 3, font: regular, size: SMALL, color: black });
 				}
 
 				const pdfBytes = await pdfDoc.save();
@@ -769,9 +784,10 @@
 			});
 
 			// ── Send via DocuSign ─────────────────────────────────────────────────────
-			// Sends the PDF as a raw file field in FormData.
-			// In Zapier: no Google Drive step needed.
-			// DocuSign step: Document Source = External File, Document 1 = "1. document" from webhook.
+			// Sends PDF as a raw file in FormData — no base64, no intermediate hosting.
+			// In Zapier: Catch Hook → DocuSign "Send Envelope Using Document"
+			//   Document Source = External File
+			//   Document 1 = "1. document" from the webhook
 			document.getElementById('send-zapier-btn').addEventListener('click', async () => {
 				const d = collectLetterData();
 				if (!d.studentEmail) { alert("Please provide the Student Email before sending."); return; }
@@ -791,7 +807,6 @@
 					form.append('studentEmail', d.studentEmail);
 					form.append('contactEmail', d.contactEmail);
 					form.append('contactName', d.contactName);
-					// Raw PDF file — map "document" field directly to DocuSign Document 1 in Zapier
 					form.append('document', new File([pdfBlob], safeFilename, { type: 'application/pdf' }));
 
 					const res = await fetch(ZAPIER_WEBHOOK_URL, { method: 'POST', body: form });
