@@ -200,16 +200,15 @@
 
 			const ZAPIER_WEBHOOK_URL = 'https://hooks.zapier.com/hooks/catch/27268773/uj1leu5/';
 
-			// DocuSign anchor strings — must match exactly what is configured
-			// in the OfferBot template AutoPlace fields:
+			// DocuSign anchor strings
 			//   Checkbox (accept)  → ACCSIGN1
 			//   Checkbox (decline) → DCLSIGN1
 			//   Signature field    → SIGHERE1
 			//   Date Signed field  → DATEHERE1
-			const ANCHOR_ACCEPT = 'ACCSIGN1';
-			const ANCHOR_DECLINE = 'DCLSIGN1';
-			const ANCHOR_SIGNATURE = 'SIGHERE1';
-			const ANCHOR_DATE = 'DATEHERE1';
+			const ANCHOR_ACCEPT = '\ACCSIGN1\';
+			const ANCHOR_DECLINE = '\DCLSIGN1\';
+			const ANCHOR_SIGNATURE = '\SIGHERE1\';
+			const ANCHOR_DATE = '\DATEHERE1\';
 
 			let COST_DATA = {};
 			let appointments = [];
