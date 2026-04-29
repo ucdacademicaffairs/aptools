@@ -83,12 +83,18 @@
 			</div>
 
 			<div class="card space-y-6">
-				<div>
-					<h3 class="text-xl font-bold text-gray-800 mb-2">Global Information</h3>
-					<p class="text-sm text-gray-600">These fields will be shared across all generated letters.</p>
+				<div class="flex justify-between items-center mb-2">
+					<div>
+						<h3 class="text-xl font-bold text-gray-800 mb-1">Global Information</h3>
+						<p class="text-sm text-gray-600">These fields will be shared across all generated letters.</p>
+					</div>
+					<div class="flex items-center bg-gray-200 rounded p-1">
+						<button id="mode-single-btn" class="px-3 py-1 text-sm font-semibold rounded bg-white shadow-sm text-gray-800">Single Student</button>
+						<button id="mode-bulk-btn" class="px-3 py-1 text-sm font-semibold rounded text-gray-600 hover:text-gray-800 transition-colors">Bulk Load</button>
+					</div>
 				</div>
 
-				<div class="bg-gray-50/50 border rounded-lg p-5 shadow-sm">
+				<div id="single-student-card" class="bg-gray-50/50 border rounded-lg p-5 shadow-sm">
 					<h4 class="font-bold text-gray-800 mb-4 text-xs tracking-widest uppercase">Student Information</h4>
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
 						<div>
@@ -171,10 +177,11 @@
 				</div>
 			</div>
 
-			<div class="card">
-				<div class="flex justify-between items-center mb-4">
-					<h3 class="text-xl font-bold text-gray-800">Add Appointment</h3>
-					<button id="clear-all-btn" class="btn btn-delete text-sm">Clear All</button>
+			<div id="single-appointments-wrap">
+				<div class="card mb-6">
+					<div class="flex justify-between items-center mb-4">
+						<h3 class="text-xl font-bold text-gray-800">Add Appointment</h3>
+						<button id="clear-all-btn" class="btn btn-delete text-sm">Clear All</button>
 				</div>
 				<div class="flex flex-wrap gap-2" id="add-buttons">
 					<button class="btn" data-type="gsr">GSR</button>
@@ -240,6 +247,10 @@
 			let appointmentCounter = 0;
 			let letterheadDataUrl = null;  // base64 data URL of uploaded letterhead image
 
+			let isBulkMode = false;
+			let bulkRows = [];
+			let bulkRowCounter = 0;
+
 			const persistentFields = [
 				'global-dept-name', 'global-head-of-dept',
 				'global-contact-name', 'global-contact-phone', 'global-contact-email'
@@ -269,6 +280,38 @@
 			const generateBtn = document.getElementById('generate-letters-btn');
 			const letterModal = document.getElementById('letter-modal');
 			const letterPreviewContainer = document.getElementById('letter-preview-container');
+
+			// ── Mode Toggle ───────────────────────────────────────────────────────────
+			const modeSingleBtn = document.getElementById('mode-single-btn');
+			const modeBulkBtn = document.getElementById('mode-bulk-btn');
+			const singleStudentCard = document.getElementById('single-student-card');
+			const singleApptsWrap = document.getElementById('single-appointments-wrap');
+			const bulkLoadWrap = document.getElementById('bulk-load-wrap');
+
+			modeSingleBtn.addEventListener('click', () => setMode(false));
+			modeBulkBtn.addEventListener('click', () => setMode(true));
+
+			function setMode(bulk) {
+				isBulkMode = bulk;
+				if (bulk) {
+					modeBulkBtn.classList.add('bg-white', 'shadow-sm', 'text-gray-800');
+					modeBulkBtn.classList.remove('text-gray-600');
+					modeSingleBtn.classList.remove('bg-white', 'shadow-sm', 'text-gray-800');
+					modeSingleBtn.classList.add('text-gray-600');
+					singleStudentCard.classList.add('hidden');
+					singleApptsWrap.classList.add('hidden');
+					bulkLoadWrap.classList.remove('hidden');
+					if (bulkRows.length === 0) addBulkRow();
+				} else {
+					modeSingleBtn.classList.add('bg-white', 'shadow-sm', 'text-gray-800');
+					modeSingleBtn.classList.remove('text-gray-600');
+					modeBulkBtn.classList.remove('bg-white', 'shadow-sm', 'text-gray-800');
+					modeBulkBtn.classList.add('text-gray-600');
+					singleStudentCard.classList.remove('hidden');
+					singleApptsWrap.classList.remove('hidden');
+					bulkLoadWrap.classList.add('hidden');
+				}
+			}
 
 			// ── Persistence ───────────────────────────────────────────────────────────
 			persistentFields.forEach(id => {
@@ -358,6 +401,122 @@
 					costs: {}
 				});
 				fullRender();
+			}
+
+			// ── Bulk Load ─────────────────────────────────────────────────────────────
+			const bulkTbody = document.getElementById('bulk-tbody');
+
+			function addBulkRow(data = {}) {
+				bulkRowCounter++;
+				bulkRows.push({
+					id: bulkRowCounter,
+					name: data.name || '',
+					email: data.email || '',
+					type: data.type || 'ta',
+					quarter: data.quarter || 'Fall',
+					step: data.step || '1',
+					percentTime: data.percentTime || '50',
+					supervisor: data.supervisor || ''
+				});
+				renderBulkTable();
+			}
+
+			document.getElementById('bulk-add-row-btn').addEventListener('click', () => addBulkRow());
+
+			bulkTbody.addEventListener('input', e => {
+				const tr = e.target.closest('tr');
+				if (!tr) return;
+				const id = parseInt(tr.dataset.id, 10);
+				const row = bulkRows.find(r => r.id === id);
+				if (!row) return;
+				row[e.target.dataset.field] = e.target.value;
+			});
+
+			bulkTbody.addEventListener('change', e => {
+				if (e.target.dataset.field === 'type') {
+					renderBulkTable(); // re-render to update step and percent options
+				}
+			});
+
+			bulkTbody.addEventListener('click', e => {
+				if (e.target.closest('.btn-delete-row')) {
+					const id = parseInt(e.target.closest('tr').dataset.id, 10);
+					bulkRows = bulkRows.filter(r => r.id !== id);
+					renderBulkTable();
+				}
+			});
+
+			bulkTbody.addEventListener('paste', e => {
+				const pasted = (e.clipboardData || window.clipboardData).getData('text');
+				if (!pasted || pasted.indexOf('\t') === -1) return; // ignore simple single-cell pastes
+
+				e.preventDefault();
+				const lines = pasted.split(/\r?\n/).filter(line => line.trim() !== '');
+				
+				const startRowId = e.target.closest('tr') ? parseInt(e.target.closest('tr').dataset.id, 10) : null;
+				let startIndex = startRowId ? bulkRows.findIndex(r => r.id === startRowId) : bulkRows.length;
+				
+				lines.forEach((line, i) => {
+					const cols = line.split('\t');
+					const typeRaw = (cols[2] || 'ta').toLowerCase().trim();
+					let type = 'ta';
+					if (typeRaw.includes('ai') || typeRaw.includes('associate')) type = 'ai';
+					else if (typeRaw.includes('gsr') || typeRaw.includes('research')) type = 'gsr';
+					else if (typeRaw.includes('reader') || typeRaw.includes('tutor')) type = 'reader';
+
+					const data = {
+						name: cols[0] ? cols[0].trim() : '',
+						email: cols[1] ? cols[1].trim() : '',
+						type: type,
+						quarter: cols[3] ? cols[3].trim() : 'Fall',
+						step: cols[4] ? cols[4].replace(/[^0-9]/g, '') : '1',
+						percentTime: cols[5] ? cols[5].replace(/[^0-9]/g, '') : '50',
+						supervisor: cols[6] ? cols[6].trim() : ''
+					};
+
+					if (startIndex + i < bulkRows.length) {
+						bulkRows[startIndex + i] = { ...bulkRows[startIndex + i], ...data };
+					} else {
+						bulkRowCounter++;
+						bulkRows.push({ id: bulkRowCounter, ...data });
+					}
+				});
+				renderBulkTable();
+			});
+
+			function renderBulkTable() {
+				bulkTbody.innerHTML = bulkRows.map(r => {
+					const typeOpts = `<option value="ta" ${r.type==='ta'?'selected':''}>TA</option><option value="gsr" ${r.type==='gsr'?'selected':''}>GSR</option><option value="reader" ${r.type==='reader'?'selected':''}>Reader</option><option value="ai" ${r.type==='ai'?'selected':''}>AI</option>`;
+					const qOpts = ['Fall', 'Winter', 'Spring'].map(q => `<option ${r.quarter===q?'selected':''}>${q}</option>`).join('');
+					
+					let stepOpts = '';
+					if (r.type === 'gsr') stepOpts = Object.keys(COST_DATA.GSR_SCALE || {}).map(s => `<option value="${s}" ${s===r.step?'selected':''}>Step ${s}</option>`).join('');
+					else if (r.type === 'ta') stepOpts = Object.keys(COST_DATA.TA_SCALE || {}).map(s => `<option value="${s}" ${s===r.step?'selected':''}>Step ${s}</option>`).join('');
+					else if (r.type === 'ai') stepOpts = Object.keys(COST_DATA.AI_SCALE || {}).map(s => `<option value="${s}" ${s===r.step?'selected':''}>Point ${s}</option>`).join('');
+					else if (r.type === 'reader') stepOpts = `<option value="1">N/A</option>`;
+
+					const pctOpts = [25, 50, 75].map(v => {
+						const hrs = Math.round(v * 4.4);
+						const val = r.type === 'reader' ? hrs : v;
+						return `<option value="${val}" ${val==r.percentTime?'selected':''}>${v}%</option>`;
+					}).join('');
+
+					return `
+					<tr data-id="${r.id}" class="border-b bg-white hover:bg-gray-50 transition-colors">
+						<td class="p-1 border"><input type="text" data-field="name" class="w-full p-1 border rounded text-xs bg-transparent" value="${r.name}" placeholder="Name"></td>
+						<td class="p-1 border"><input type="email" data-field="email" class="w-full p-1 border rounded text-xs bg-transparent" value="${r.email}" placeholder="Email"></td>
+						<td class="p-1 border"><select data-field="type" class="w-full p-1 border rounded text-xs bg-transparent">${typeOpts}</select></td>
+						<td class="p-1 border"><select data-field="quarter" class="w-full p-1 border rounded text-xs bg-transparent">${qOpts}</select></td>
+						<td class="p-1 border"><select data-field="step" class="w-full p-1 border rounded text-xs bg-transparent">${stepOpts}</select></td>
+						<td class="p-1 border"><select data-field="percentTime" class="w-full p-1 border rounded text-xs bg-transparent">${pctOpts}</select></td>
+						<td class="p-1 border"><input type="text" data-field="supervisor" class="w-full p-1 border rounded text-xs bg-transparent" value="${r.supervisor}" placeholder="Supervisor"></td>
+						<td class="p-1 border text-center">
+							<button class="btn-delete-row text-red-500 hover:text-red-700 transition-colors p-1" title="Remove Row">
+								<svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+							</button>
+						</td>
+					</tr>`;
+				}).join('');
 			}
 
 			// ── Render UI ─────────────────────────────────────────────────────────────
@@ -502,6 +661,64 @@
 				});
 			}
 
+			function buildBulkLetterGroups(email) {
+				const studentRows = bulkRows.filter(r => r.email === email);
+				const hideAllSup = document.getElementById('bulk-hide-supervisor').checked;
+				
+				const mockAppts = studentRows.map((r, i) => {
+					let base = 0;
+					if (r.type === 'gsr') base = (COST_DATA.GSR_SCALE[r.step] || 0) / 12;
+					else if (r.type === 'ta') base = (COST_DATA.TA_SCALE[r.step] || 0) / 9;
+					else if (r.type === 'ai') base = (COST_DATA.AI_SCALE[r.step] || 0) / 9;
+					else if (r.type === 'reader') base = COST_DATA.READER_TUTOR_RATE;
+					const fte = parseFloat(r.percentTime) / 100;
+					
+					return {
+						id: i,
+						type: r.type,
+						values: {
+							quarter: r.quarter,
+							step: r.step,
+							percentTime: r.percentTime,
+							supervisor: r.supervisor,
+							hideSupervisor: hideAllSup,
+							workDuties: r.type === 'gsr' ? 'Conducting research related to your studies.' : ''
+						},
+						costs: {
+							monthlyBase: base,
+							monthlyActual: r.type === 'reader' ? base : base * fte,
+							fte: fte
+						}
+					};
+				});
+				
+				const groups = {};
+				mockAppts.forEach(appt => {
+					const key = `${appt.type}-${appt.values.step}-${appt.values.percentTime}-${appt.values.workDuties || ''}`;
+					(groups[key] = groups[key] || []).push(appt);
+				});
+				
+				const qOrder = { Fall: 1, Winter: 2, Spring: 3 };
+				return Object.keys(groups).sort().map(key => {
+					const group = groups[key];
+					const sample = group[0];
+					group.sort((a, b) => qOrder[a.values.quarter] - qOrder[b.values.quarter]);
+					const quartersArr = [...new Set(group.map(a => a.values.quarter))];
+					const quarterString = quartersArr.length === 3 ? 'Fall, Winter, and Spring'
+						: quartersArr.length === 2 ? quartersArr.join(' and ') : quartersArr[0];
+					return {
+						type: sample.type, quarter: quarterString,
+						totalFte: parseFloat(sample.values.percentTime || 0),
+						supervisor: sample.values.supervisor || '[SUPERVISOR]',
+						monthlySal: sample.costs.monthlyActual,
+						hideSupervisor: quartersArr.length > 1 || group.some(a => a.values.hideSupervisor),
+						payDates: getCombinedPayDatesList(quartersArr),
+						duties: sample.values.workDuties || '',
+						step: sample.values.step
+					};
+				});
+			}
+
 			// ── Boilerplate text (shared between preview and PDF) ─────────────────────
 			const ASE_BOILERPLATE = [
 				{ label: 'Academic Eligibility Standards', text: ' - The UC Davis Office of Graduate Studies is the administrative home for graduate students. Your appointment is subject to regular review by the Graduate Division. University policy for graduate student employment requires that you meet and maintain all academic eligibility standards appropriate to this appointment (such as, enrollment, GPA, units of incomplete grades, academic progress, etc.). Further information regarding eligibility, restrictions and benefits may be found in the Academic Personnel Manual UCD Appendix II-B and on the web at https://grad.ucdavis.edu/student-employment.' },
@@ -611,7 +828,7 @@
 			}
 
 			// ── pdf-lib PDF builder ───────────────────────────────────────────────────
-			async function buildPdfBlob(d, groups) {
+			async function buildPdfBlob(lettersList) {
 				const { PDFDocument, StandardFonts, rgb } = PDFLib;
 				const pdfDoc = await PDFDocument.create();
 				const regular = await pdfDoc.embedFont(StandardFonts.TimesRoman);
@@ -634,7 +851,6 @@
 						letterheadImage = isJpeg
 							? await pdfDoc.embedJpg(bytes)
 							: await pdfDoc.embedPng(bytes);
-						// Scale to max 80pt tall, preserve aspect ratio
 						const scale = Math.min(80 / letterheadImage.height, 200 / letterheadImage.width);
 						letterheadDims = { w: letterheadImage.width * scale, h: letterheadImage.height * scale };
 					} catch (e) {
@@ -706,8 +922,10 @@
 					}
 				}
 
-				for (const g of groups) {
-					newPage();
+				for (const letter of lettersList) {
+					const { d, groups } = letter;
+					for (const g of groups) {
+						newPage();
 					const isGsr = g.type === 'gsr', isHourly = g.type === 'reader';
 					const title = g.type === 'ta' ? 'Teaching Assistant'
 						: g.type === 'ai' ? 'Associate Instructor'
@@ -825,6 +1043,7 @@
 					page.drawLine({ start: { x: dlx, y: dly }, end: { x: dlx + 120, y: dly }, thickness: 0.5, color: black });
 					page.drawText(ANCHOR_DATE, { x: dlx + 125, y: dly, font: regular, size: TINY, color: white });
 					page.drawText('Date Signed', { x: dlx, y: dly - SMALL * 1.45 - 3, font: regular, size: SMALL, color: black });
+					}
 				}
 
 				return new Blob([await pdfDoc.save()], { type: 'application/pdf' });
@@ -832,10 +1051,39 @@
 
 			// ── Generate & preview ────────────────────────────────────────────────────
 			generateBtn.addEventListener('click', () => {
-				const d = collectLetterData(), groups = buildLetterGroups();
-				if (!groups.length) { alert('Please add at least one appointment.'); return; }
-				letterPreviewContainer.innerHTML = buildPreviewHtml(d, groups);
-				letterModal.classList.remove('hidden');
+				const globalData = collectLetterData();
+				
+				if (isBulkMode) {
+					if (bulkRows.length === 0) { alert('Add at least one row.'); return; }
+					
+					// Group rows by email
+					const studentsMap = {};
+					bulkRows.forEach(r => {
+						if (!r.email) return;
+						if (!studentsMap[r.email]) studentsMap[r.email] = { name: r.name, email: r.email };
+					});
+					
+					const students = Object.values(studentsMap);
+					if (students.length === 0) { alert("No valid emails found in bulk rows."); return; }
+					
+					let allHtml = '';
+					students.forEach((student, i) => {
+						const d = { ...globalData, studentName: student.name, studentEmail: student.email };
+						const groups = buildBulkLetterGroups(student.email);
+						allHtml += buildPreviewHtml(d, groups);
+						if (i < students.length - 1) {
+							allHtml += '<hr style="margin:4rem 0; border: 2px dashed #9ca3af;">';
+						}
+					});
+					letterPreviewContainer.innerHTML = allHtml;
+					letterModal.classList.remove('hidden');
+					
+				} else {
+					const groups = buildLetterGroups();
+					if (!groups.length) { alert('Please add at least one appointment.'); return; }
+					letterPreviewContainer.innerHTML = buildPreviewHtml(globalData, groups);
+					letterModal.classList.remove('hidden');
+				}
 			});
 			document.getElementById('close-modal-btn').addEventListener('click', () => letterModal.classList.add('hidden'));
 
@@ -844,10 +1092,34 @@
 				const btn = document.getElementById('download-pdf-btn'), orig = btn.innerText;
 				btn.innerText = 'Generating…'; btn.disabled = true;
 				try {
-					const d = collectLetterData();
-					const blob = await buildPdfBlob(d, buildLetterGroups());
+					const globalData = collectLetterData();
+					let lettersList = [];
+					
+					if (isBulkMode) {
+						const studentsMap = {};
+						bulkRows.forEach(r => {
+							if (!r.email) return;
+							if (!studentsMap[r.email]) studentsMap[r.email] = { name: r.name, email: r.email };
+						});
+						const students = Object.values(studentsMap);
+						if (students.length === 0) throw new Error("No valid emails found in bulk rows.");
+						
+						students.forEach(student => {
+							const d = { ...globalData, studentName: student.name, studentEmail: student.email };
+							const groups = buildBulkLetterGroups(student.email);
+							lettersList.push({ d, groups });
+						});
+					} else {
+						const groups = buildLetterGroups();
+						if (!groups.length) throw new Error('Please add at least one appointment.');
+						lettersList.push({ d: globalData, groups });
+					}
+					
+					const blob = await buildPdfBlob(lettersList);
 					const url = URL.createObjectURL(blob), a = document.createElement('a');
-					a.href = url; a.download = `Offer_Letter_${(d.studentName || 'Student').replace(/\s+/g, '_')}.pdf`; a.click();
+					a.href = url; 
+					a.download = isBulkMode ? 'Offer_Letters_Bulk.pdf' : `Offer_Letter_${(globalData.studentName || 'Student').replace(/\s+/g, '_')}.pdf`;
+					a.click();
 					URL.revokeObjectURL(url);
 				} catch (e) { console.error(e); alert('Error: ' + e.message); }
 				finally { btn.innerText = orig; btn.disabled = false; }
@@ -855,25 +1127,76 @@
 
 			// ── Send via DocuSign ─────────────────────────────────────────────────────
 			document.getElementById('send-zapier-btn').addEventListener('click', async () => {
-				const d = collectLetterData();
-				if (!d.studentEmail) { alert("Please provide the Student Email before sending."); return; }
-				const btn = document.getElementById('send-zapier-btn'), orig = btn.innerText;
-				btn.disabled = true;
-				try {
-					btn.innerText = 'Generating PDF…';
-					const safeFilename = `Offer_Letter_${(d.studentName || 'Student').replace(/\s+/g, '_')}.pdf`;
-					const pdfBlob = await buildPdfBlob(d, buildLetterGroups());
-					btn.innerText = 'Sending…';
-					const form = new FormData();
-					form.append('studentName', d.studentName);
-					form.append('studentEmail', d.studentEmail);
-					form.append('contactEmail', d.contactEmail);
-					form.append('contactName', d.contactName);
-					form.append('document', new File([pdfBlob], safeFilename, { type: 'application/pdf' }));
-					const res = await fetch(ZAPIER_WEBHOOK_URL, { method: 'POST', body: form });
-					res.ok ? alert("Sent! Check DocuSign.") : alert(`Zapier returned status ${res.status}.`);
-				} catch (e) { console.error(e); alert("Error: " + e.message); }
-				finally { btn.innerText = orig; btn.disabled = false; }
+				const globalData = collectLetterData();
+				
+				if (isBulkMode) {
+					const studentsMap = {};
+					bulkRows.forEach(r => {
+						if (!r.email) return;
+						if (!studentsMap[r.email]) studentsMap[r.email] = { name: r.name, email: r.email };
+					});
+					const students = Object.values(studentsMap);
+					if (students.length === 0) { alert("No valid emails found in bulk rows."); return; }
+					
+					const btn = document.getElementById('send-zapier-btn'), orig = btn.innerText;
+					btn.disabled = true;
+					
+					try {
+						let successCount = 0;
+						for (let i = 0; i < students.length; i++) {
+							const student = students[i];
+							btn.innerText = `Sending ${i+1} of ${students.length}…`;
+							
+							const d = { ...globalData, studentName: student.name, studentEmail: student.email };
+							const groups = buildBulkLetterGroups(student.email);
+							const safeFilename = `Offer_Letter_${(d.studentName || 'Student').replace(/\s+/g, '_')}.pdf`;
+							
+							const pdfBlob = await buildPdfBlob([{ d, groups }]); // generate just this one
+							
+							const form = new FormData();
+							form.append('studentName', d.studentName);
+							form.append('studentEmail', d.studentEmail);
+							form.append('contactEmail', d.contactEmail);
+							form.append('contactName', d.contactName);
+							form.append('document', new File([pdfBlob], safeFilename, { type: 'application/pdf' }));
+							
+							const res = await fetch(ZAPIER_WEBHOOK_URL, { method: 'POST', body: form });
+							if (!res.ok) throw new Error(`Zapier error ${res.status} for ${d.studentEmail}`);
+							successCount++;
+							
+							// Rate limiting delay
+							if (i < students.length - 1) await new Promise(r => setTimeout(r, 1000));
+						}
+						alert(`Successfully sent ${successCount} letters to Zapier/DocuSign!`);
+					} catch (e) { 
+						console.error(e); 
+						alert("Error during bulk send: " + e.message); 
+					} finally { 
+						btn.innerText = orig; 
+						btn.disabled = false; 
+					}
+
+				} else {
+					if (!globalData.studentEmail) { alert("Please provide the Student Email before sending."); return; }
+					const btn = document.getElementById('send-zapier-btn'), orig = btn.innerText;
+					btn.disabled = true;
+					try {
+						btn.innerText = 'Generating PDF…';
+						const safeFilename = `Offer_Letter_${(globalData.studentName || 'Student').replace(/\s+/g, '_')}.pdf`;
+						const groups = buildLetterGroups();
+						const pdfBlob = await buildPdfBlob([{ d: globalData, groups }]);
+						btn.innerText = 'Sending…';
+						const form = new FormData();
+						form.append('studentName', globalData.studentName);
+						form.append('studentEmail', globalData.studentEmail);
+						form.append('contactEmail', globalData.contactEmail);
+						form.append('contactName', globalData.contactName);
+						form.append('document', new File([pdfBlob], safeFilename, { type: 'application/pdf' }));
+						const res = await fetch(ZAPIER_WEBHOOK_URL, { method: 'POST', body: form });
+						res.ok ? alert("Sent! Check DocuSign.") : alert(`Zapier returned status ${res.status}.`);
+					} catch (e) { console.error(e); alert("Error: " + e.message); }
+					finally { btn.innerText = orig; btn.disabled = false; }
+				}
 			});
 
 			// ── Download Word ─────────────────────────────────────────────────────────
