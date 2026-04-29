@@ -89,8 +89,12 @@
 						<p class="text-sm text-gray-600">These fields will be shared across all generated letters.</p>
 					</div>
 					<div class="flex items-center bg-gray-200 rounded p-1">
-						<button id="mode-single-btn" class="px-3 py-1 text-sm font-semibold rounded bg-white shadow-sm text-gray-800">Single Student</button>
-						<button id="mode-bulk-btn" class="px-3 py-1 text-sm font-semibold rounded text-gray-600 hover:text-gray-800 transition-colors">Bulk Load</button>
+						<button id="mode-single-btn"
+							class="px-3 py-1 text-sm font-semibold rounded bg-white shadow-sm text-gray-800">Single
+							Student</button>
+						<button id="mode-bulk-btn"
+							class="px-3 py-1 text-sm font-semibold rounded text-gray-600 hover:text-gray-800 transition-colors">Bulk
+							Load</button>
 					</div>
 				</div>
 
@@ -203,14 +207,16 @@
 				<div class="flex justify-between items-center mb-4">
 					<h3 class="text-xl font-bold text-gray-800">Bulk Load Appointments</h3>
 					<div class="flex items-center gap-4">
-						<label class="inline-flex items-center text-sm font-semibold text-gray-700 bg-gray-100 px-3 py-1.5 rounded cursor-pointer hover:bg-gray-200 transition-colors">
+						<label
+							class="inline-flex items-center text-sm font-semibold text-gray-700 bg-gray-100 px-3 py-1.5 rounded cursor-pointer hover:bg-gray-200 transition-colors">
 							<input type="checkbox" id="bulk-hide-supervisor" class="w-4 h-4 mr-2 cursor-pointer">
 							Hide All Supervisors
 						</label>
 						<button id="bulk-add-row-btn" class="btn btn-secondary text-sm">Add Row</button>
 					</div>
 				</div>
-				<p class="text-sm text-gray-600 mb-4">Paste directly from Excel (Student Name, Email, Type, Quarter, Step/Point, % Time, Supervisor) or add rows manually.</p>
+				<p class="text-sm text-gray-600 mb-4">Paste directly from Excel (Student Name, Email, Type, Quarter,
+					Step/Point, % Time, Supervisor) or add rows manually.</p>
 				<div class="overflow-x-auto">
 					<table class="w-full text-left border-collapse">
 						<thead>
@@ -269,8 +275,7 @@
 
 			const ZAPIER_WEBHOOK_URL = 'https://hooks.zapier.com/hooks/catch/27268773/uj1leu5/';
 
-			// DocuSign AutoPlace anchor strings (backslash-wrapped, no special chars).
-			// Must match exactly what is set in the OfferBot template AutoPlace fields.
+			// DocuSign AutoPlace anchor strings. We're definitely writing them and whatever happens after this is Zapier or Docusign's fault :D
 			const ANCHOR_ACCEPT = '\\ACCSIGN1\\';
 			const ANCHOR_DECLINE = '\\DCLSIGN1\\';
 			const ANCHOR_SIGNATURE = '\\SIGHERE1\\';
@@ -486,10 +491,10 @@
 
 				e.preventDefault();
 				const lines = pasted.split(/\r?\n/).filter(line => line.trim() !== '');
-				
+
 				const startRowId = e.target.closest('tr') ? parseInt(e.target.closest('tr').dataset.id, 10) : null;
 				let startIndex = startRowId ? bulkRows.findIndex(r => r.id === startRowId) : bulkRows.length;
-				
+
 				lines.forEach((line, i) => {
 					const cols = line.split('\t');
 					const typeRaw = (cols[2] || 'ta').toLowerCase().trim();
@@ -520,19 +525,19 @@
 
 			function renderBulkTable() {
 				bulkTbody.innerHTML = bulkRows.map(r => {
-					const typeOpts = `<option value="ta" ${r.type==='ta'?'selected':''}>TA</option><option value="gsr" ${r.type==='gsr'?'selected':''}>GSR</option><option value="reader" ${r.type==='reader'?'selected':''}>Reader</option><option value="ai" ${r.type==='ai'?'selected':''}>AI</option>`;
-					const qOpts = ['Fall', 'Winter', 'Spring'].map(q => `<option ${r.quarter===q?'selected':''}>${q}</option>`).join('');
-					
+					const typeOpts = `<option value="ta" ${r.type === 'ta' ? 'selected' : ''}>TA</option><option value="gsr" ${r.type === 'gsr' ? 'selected' : ''}>GSR</option><option value="reader" ${r.type === 'reader' ? 'selected' : ''}>Reader</option><option value="ai" ${r.type === 'ai' ? 'selected' : ''}>AI</option>`;
+					const qOpts = ['Fall', 'Winter', 'Spring'].map(q => `<option ${r.quarter === q ? 'selected' : ''}>${q}</option>`).join('');
+
 					let stepOpts = '';
-					if (r.type === 'gsr') stepOpts = Object.keys(COST_DATA.GSR_SCALE || {}).map(s => `<option value="${s}" ${s===r.step?'selected':''}>Step ${s}</option>`).join('');
-					else if (r.type === 'ta') stepOpts = Object.keys(COST_DATA.TA_SCALE || {}).map(s => `<option value="${s}" ${s===r.step?'selected':''}>Step ${s}</option>`).join('');
-					else if (r.type === 'ai') stepOpts = Object.keys(COST_DATA.AI_SCALE || {}).map(s => `<option value="${s}" ${s===r.step?'selected':''}>Point ${s}</option>`).join('');
+					if (r.type === 'gsr') stepOpts = Object.keys(COST_DATA.GSR_SCALE || {}).map(s => `<option value="${s}" ${s === r.step ? 'selected' : ''}>Step ${s}</option>`).join('');
+					else if (r.type === 'ta') stepOpts = Object.keys(COST_DATA.TA_SCALE || {}).map(s => `<option value="${s}" ${s === r.step ? 'selected' : ''}>Step ${s}</option>`).join('');
+					else if (r.type === 'ai') stepOpts = Object.keys(COST_DATA.AI_SCALE || {}).map(s => `<option value="${s}" ${s === r.step ? 'selected' : ''}>Point ${s}</option>`).join('');
 					else if (r.type === 'reader') stepOpts = `<option value="1">N/A</option>`;
 
 					const pctOpts = [25, 50, 75].map(v => {
 						const hrs = Math.round(v * 4.4);
 						const val = r.type === 'reader' ? hrs : v;
-						return `<option value="${val}" ${val==r.percentTime?'selected':''}>${v}%</option>`;
+						return `<option value="${val}" ${val == r.percentTime ? 'selected' : ''}>${v}%</option>`;
 					}).join('');
 
 					return `
@@ -698,7 +703,7 @@
 			function buildBulkLetterGroups(email) {
 				const studentRows = bulkRows.filter(r => r.email === email);
 				const hideAllSup = document.getElementById('bulk-hide-supervisor').checked;
-				
+
 				const mockAppts = studentRows.map((r, i) => {
 					let base = 0;
 					if (r.type === 'gsr') base = (COST_DATA.GSR_SCALE[r.step] || 0) / 12;
@@ -706,7 +711,7 @@
 					else if (r.type === 'ai') base = (COST_DATA.AI_SCALE[r.step] || 0) / 9;
 					else if (r.type === 'reader') base = COST_DATA.READER_TUTOR_RATE;
 					const fte = parseFloat(r.percentTime) / 100;
-					
+
 					return {
 						id: i,
 						type: r.type,
@@ -725,13 +730,13 @@
 						}
 					};
 				});
-				
+
 				const groups = {};
 				mockAppts.forEach(appt => {
 					const key = `${appt.type}-${appt.values.step}-${appt.values.percentTime}-${appt.values.workDuties || ''}`;
 					(groups[key] = groups[key] || []).push(appt);
 				});
-				
+
 				const qOrder = { Fall: 1, Winter: 2, Spring: 3 };
 				return Object.keys(groups).sort().map(key => {
 					const group = groups[key];
@@ -960,123 +965,123 @@
 					const { d, groups } = letter;
 					for (const g of groups) {
 						newPage();
-					const isGsr = g.type === 'gsr', isHourly = g.type === 'reader';
-					const title = g.type === 'ta' ? 'Teaching Assistant'
-						: g.type === 'ai' ? 'Associate Instructor'
-							: g.type === 'reader' ? 'Reader/Tutor' : 'Graduate Student Researcher';
-					const fteDisplay = isHourly
-						? `${Math.round(g.totalFte / 4.4)}% / ${g.totalFte} hours`
-						: `${g.totalFte}% / ${Math.round(g.totalFte * 4.4)} hours`;
-					const salaryText = isHourly
-						? `at an hourly rate of ${formatCurrency(g.monthlySal)} per hour`
-						: `at a monthly ${isGsr ? 'rate' : 'salary'} of ${formatCurrency(g.monthlySal)} (based on a full-time monthly rate of ${formatCurrency(g.monthlySal * (100 / g.totalFte))})`;
-					const supervisorText = g.hideSupervisor
-						? ' Your supervisor will be noted on the Description of Duties form you receive prior to the quarter.'
-						: ` Your ${isGsr ? 'PI/Supervisor' : 'supervisor'} for this appointment will be ${g.supervisor}.`;
-					const subject = isGsr
-						? 'Notification of Graduate Student Researcher Appointment (via DocuSign)'
-						: 'Notification of Academic Student Employee Appointment (via DocuSign)';
+						const isGsr = g.type === 'gsr', isHourly = g.type === 'reader';
+						const title = g.type === 'ta' ? 'Teaching Assistant'
+							: g.type === 'ai' ? 'Associate Instructor'
+								: g.type === 'reader' ? 'Reader/Tutor' : 'Graduate Student Researcher';
+						const fteDisplay = isHourly
+							? `${Math.round(g.totalFte / 4.4)}% / ${g.totalFte} hours`
+							: `${g.totalFte}% / ${Math.round(g.totalFte * 4.4)} hours`;
+						const salaryText = isHourly
+							? `at an hourly rate of ${formatCurrency(g.monthlySal)} per hour`
+							: `at a monthly ${isGsr ? 'rate' : 'salary'} of ${formatCurrency(g.monthlySal)} (based on a full-time monthly rate of ${formatCurrency(g.monthlySal * (100 / g.totalFte))})`;
+						const supervisorText = g.hideSupervisor
+							? ' Your supervisor will be noted on the Description of Duties form you receive prior to the quarter.'
+							: ` Your ${isGsr ? 'PI/Supervisor' : 'supervisor'} for this appointment will be ${g.supervisor}.`;
+						const subject = isGsr
+							? 'Notification of Graduate Student Researcher Appointment (via DocuSign)'
+							: 'Notification of Academic Student Employee Appointment (via DocuSign)';
 
-					// Letterhead image top-left
-					if (letterheadImage && letterheadDims) {
-						page.drawImage(letterheadImage, {
-							x: ML,
-							y: PH - MT - letterheadDims.h + 10,
-							width: letterheadDims.w,
-							height: letterheadDims.h
-						});
-						// Push y down to clear the image
-						y = PH - MT - letterheadDims.h - 8;
-					}
+						// Letterhead image top-left
+						if (letterheadImage && letterheadDims) {
+							page.drawImage(letterheadImage, {
+								x: ML,
+								y: PH - MT - letterheadDims.h + 10,
+								width: letterheadDims.w,
+								height: letterheadDims.h
+							});
+							// Push y down to clear the image
+							y = PH - MT - letterheadDims.h - 8;
+						}
 
-					// Date right-aligned
-					const dateStr = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-					page.drawText(dateStr, { x: PW - MR - regular.widthOfTextAtSize(dateStr, NORMAL), y, font: regular, size: NORMAL, color: black });
-					y -= LINE_H * 2;
+						// Date right-aligned
+						const dateStr = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+						page.drawText(dateStr, { x: PW - MR - regular.widthOfTextAtSize(dateStr, NORMAL), y, font: regular, size: NORMAL, color: black });
+						y -= LINE_H * 2;
 
-					drawMixed([{ text: 'To: ', bold: true }, { text: d.studentName, bold: false }]);
-					drawMixed([{ text: 'From: ', bold: true }, { text: d.headOfDept, bold: false }]);
-					drawMixed([{ text: 'Subject: ', bold: true }, { text: subject, bold: false }]);
-					drawBlankLine();
-					drawParagraph(`Dear ${d.studentName.split(' ')[0]},`);
-					drawBlankLine(0.5);
+						drawMixed([{ text: 'To: ', bold: true }, { text: d.studentName, bold: false }]);
+						drawMixed([{ text: 'From: ', bold: true }, { text: d.headOfDept, bold: false }]);
+						drawMixed([{ text: 'Subject: ', bold: true }, { text: subject, bold: false }]);
+						drawBlankLine();
+						drawParagraph(`Dear ${d.studentName.split(' ')[0]},`);
+						drawBlankLine(0.5);
 
-					const p1Parts = [
-						{ text: 'I am pleased to offer you an appointment as a', bold: false },
-						{ text: title, bold: true },
-						{ text: 'in the', bold: false },
-						{ text: d.deptName, bold: true },
-						{ text: 'for the', bold: false },
-						{ text: `${g.quarter} quarter(s) of ${d.year}-${d.year + 1}.`, bold: true }
-					];
-
-					if (g.hideSupervisor) {
-						p1Parts.push({ text: 'Your supervisor will be noted on the Description of Duties form you receive prior to the quarter.', bold: false });
-					} else {
-						p1Parts.push({ text: `Your ${isGsr ? 'PI/Supervisor' : 'supervisor'} for this appointment will be`, bold: false });
-						p1Parts.push({ text: `${g.supervisor}.`, bold: true });
-					}
-
-					drawMixed(p1Parts);
-
-					const salaryParts = isHourly
-						? [{ text: `at an hourly rate of ${formatCurrency(g.monthlySal)} per hour.`, bold: false }]
-						: [
-							{ text: `at a monthly ${isGsr ? 'rate' : 'salary'} of`, bold: false },
-							{ text: formatCurrency(g.monthlySal), bold: true },
-							{ text: `(based on a full-time monthly rate of ${formatCurrency(g.monthlySal * (100 / g.totalFte))}).`, bold: false }
+						const p1Parts = [
+							{ text: 'I am pleased to offer you an appointment as a', bold: false },
+							{ text: title, bold: true },
+							{ text: 'in the', bold: false },
+							{ text: d.deptName, bold: true },
+							{ text: 'for the', bold: false },
+							{ text: `${g.quarter} quarter(s) of ${d.year}-${d.year + 1}.`, bold: true }
 						];
 
-					const p2Parts = [
-						{ text: 'This appointment is at', bold: false },
-						{ text: `${fteDisplay}.`, bold: true },
-						{ text: 'You will be paid', bold: false },
-						...salaryParts,
-						{ text: 'Your paychecks will be issued on', bold: false },
-						{ text: `${g.payDates}.`, bold: true }
-					];
+						if (g.hideSupervisor) {
+							p1Parts.push({ text: 'Your supervisor will be noted on the Description of Duties form you receive prior to the quarter.', bold: false });
+						} else {
+							p1Parts.push({ text: `Your ${isGsr ? 'PI/Supervisor' : 'supervisor'} for this appointment will be`, bold: false });
+							p1Parts.push({ text: `${g.supervisor}.`, bold: true });
+						}
 
-					drawMixed(p2Parts);
+						drawMixed(p1Parts);
 
-					if (isGsr) drawMixed([{ text: 'Short Statement of Required Work Duties: ', bold: true }, { text: g.duties, bold: false }]);
+						const salaryParts = isHourly
+							? [{ text: `at an hourly rate of ${formatCurrency(g.monthlySal)} per hour.`, bold: false }]
+							: [
+								{ text: `at a monthly ${isGsr ? 'rate' : 'salary'} of`, bold: false },
+								{ text: formatCurrency(g.monthlySal), bold: true },
+								{ text: `(based on a full-time monthly rate of ${formatCurrency(g.monthlySal * (100 / g.totalFte))}).`, bold: false }
+							];
 
-					if (isHourly) {
-						drawParagraph('You are responsible for honestly and accurately reporting your hours worked on an affirmative basis, including any leaves of absence taken. Such reporting must be done through the appropriate time and attendance reporting form and/or through your campus time and attendance system, by the submission deadline and procedures as set by your campus. Failure to accurately report work hours or an absence from work in any circumstance may result in an overpayment of public funds requiring your repayment. Submitting erroneous information in the time and attendance system will be subject to your submission being overridden and pay withheld for the time not worked. Failing to accurately report work hours or absences in any way and receiving an overpayment of funds is a serious violation of university policy that may result in disciplinary action, up to and including dismissal. See information on UC Davis Time Reporting System (TRS)');
-					} else if (!isGsr) {
-						drawMixed([{ text: 'Reporting in Time and Attendance System', bold: true }, { text: ' - You are responsible for honestly and accurately reporting the use of any leave or absences from work each month on the appropriate leave-reporting form and/or through your campus time and attendance system each month, in accordance with established local procedures. Failure to report an absence from work in any circumstance may result in an overpayment of public funds requiring your repayment. Submitting erroneous information in the time and attendance system will be subject to your submission being overridden and pay withheld for the time not worked. Failing to accurately report absences in any way and receiving an overpayment of funds is a serious violation of university policy that may result in disciplinary action, up to and including dismissal. If you have no absences or leave to report, you must still submit a report acknowledging no absences or leave to report in your local time and attendance system by the submission deadline as set by your campus. See information on UC Davis Time Reporting System (TRS)', bold: false }]);
-					}
+						const p2Parts = [
+							{ text: 'This appointment is at', bold: false },
+							{ text: `${fteDisplay}.`, bold: true },
+							{ text: 'You will be paid', bold: false },
+							...salaryParts,
+							{ text: 'Your paychecks will be issued on', bold: false },
+							{ text: `${g.payDates}.`, bold: true }
+						];
 
-					drawBoilerplatePdf(isGsr ? GSR_BOILERPLATE : ASE_BOILERPLATE);
-					drawParagraph(`Please sign and date below to indicate you understand and accept the terms of your appointment and return one copy to your hiring contact listed below. Failure to return a signed letter by ${d.formattedDeadline} constitutes rejection of this offer.`);
-					drawBlankLine(0.5);
-					drawParagraph('Hiring Department/Unit Contact:', { bold: true, spaceAfter: 0 });
-					drawParagraph(d.contactName, { spaceAfter: 0 });
-					drawParagraph(d.contactPhone, { spaceAfter: 0 });
-					drawParagraph(d.contactEmail);
-					drawBlankLine(0.5);
-					drawParagraph('Sincerely,');
-					drawBlankLine(2);
-					drawParagraph(d.headOfDept, { bold: true, spaceAfter: 0 });
-					drawParagraph('Cc: Employment File');
+						drawMixed(p2Parts);
 
-					// Signature block with invisible DocuSign anchors
-					ensureSpace(130); drawBlankLine();
-					const acceptLineText = 'I accept _________  (or)  I decline _________  the above appointment.';
-					page.drawText(acceptLineText, { x: ML, y, font: regular, size: NORMAL, color: black });
-					page.drawText(ANCHOR_ACCEPT, { x: ML + regular.widthOfTextAtSize('I accept _________  ', NORMAL), y, font: regular, size: TINY, color: white });
-					page.drawText(ANCHOR_DECLINE, { x: ML + regular.widthOfTextAtSize('I accept _________  (or)  I decline _________  ', NORMAL), y, font: regular, size: TINY, color: white });
-					y -= LINE_H * 3;
+						if (isGsr) drawMixed([{ text: 'Short Statement of Required Work Duties: ', bold: true }, { text: g.duties, bold: false }]);
 
-					ensureSpace(70);
-					page.drawLine({ start: { x: ML, y }, end: { x: ML + 220, y }, thickness: 0.5, color: black });
-					page.drawText(ANCHOR_SIGNATURE, { x: ML + 225, y, font: regular, size: TINY, color: white });
-					y -= 5;
-					page.drawText(`Signature of Prospective ${isGsr ? 'GSR' : 'ASE'}`, { x: ML, y, font: regular, size: SMALL, color: black });
+						if (isHourly) {
+							drawParagraph('You are responsible for honestly and accurately reporting your hours worked on an affirmative basis, including any leaves of absence taken. Such reporting must be done through the appropriate time and attendance reporting form and/or through your campus time and attendance system, by the submission deadline and procedures as set by your campus. Failure to accurately report work hours or an absence from work in any circumstance may result in an overpayment of public funds requiring your repayment. Submitting erroneous information in the time and attendance system will be subject to your submission being overridden and pay withheld for the time not worked. Failing to accurately report work hours or absences in any way and receiving an overpayment of funds is a serious violation of university policy that may result in disciplinary action, up to and including dismissal. See information on UC Davis Time Reporting System (TRS)');
+						} else if (!isGsr) {
+							drawMixed([{ text: 'Reporting in Time and Attendance System', bold: true }, { text: ' - You are responsible for honestly and accurately reporting the use of any leave or absences from work each month on the appropriate leave-reporting form and/or through your campus time and attendance system each month, in accordance with established local procedures. Failure to report an absence from work in any circumstance may result in an overpayment of public funds requiring your repayment. Submitting erroneous information in the time and attendance system will be subject to your submission being overridden and pay withheld for the time not worked. Failing to accurately report absences in any way and receiving an overpayment of funds is a serious violation of university policy that may result in disciplinary action, up to and including dismissal. If you have no absences or leave to report, you must still submit a report acknowledging no absences or leave to report in your local time and attendance system by the submission deadline as set by your campus. See information on UC Davis Time Reporting System (TRS)', bold: false }]);
+						}
 
-					const dlx = ML + 270, dly = y + SMALL * 1.45 + 5;
-					page.drawLine({ start: { x: dlx, y: dly }, end: { x: dlx + 120, y: dly }, thickness: 0.5, color: black });
-					page.drawText(ANCHOR_DATE, { x: dlx + 125, y: dly, font: regular, size: TINY, color: white });
-					page.drawText('Date Signed', { x: dlx, y: dly - SMALL * 1.45 - 3, font: regular, size: SMALL, color: black });
+						drawBoilerplatePdf(isGsr ? GSR_BOILERPLATE : ASE_BOILERPLATE);
+						drawParagraph(`Please sign and date below to indicate you understand and accept the terms of your appointment and return one copy to your hiring contact listed below. Failure to return a signed letter by ${d.formattedDeadline} constitutes rejection of this offer.`);
+						drawBlankLine(0.5);
+						drawParagraph('Hiring Department/Unit Contact:', { bold: true, spaceAfter: 0 });
+						drawParagraph(d.contactName, { spaceAfter: 0 });
+						drawParagraph(d.contactPhone, { spaceAfter: 0 });
+						drawParagraph(d.contactEmail);
+						drawBlankLine(0.5);
+						drawParagraph('Sincerely,');
+						drawBlankLine(2);
+						drawParagraph(d.headOfDept, { bold: true, spaceAfter: 0 });
+						drawParagraph('Cc: Employment File');
+
+						// Signature block with invisible DocuSign anchors
+						ensureSpace(130); drawBlankLine();
+						const acceptLineText = 'I accept _________  (or)  I decline _________  the above appointment.';
+						page.drawText(acceptLineText, { x: ML, y, font: regular, size: NORMAL, color: black });
+						page.drawText(ANCHOR_ACCEPT, { x: ML + regular.widthOfTextAtSize('I accept _________  ', NORMAL), y, font: regular, size: TINY, color: white });
+						page.drawText(ANCHOR_DECLINE, { x: ML + regular.widthOfTextAtSize('I accept _________  (or)  I decline _________  ', NORMAL), y, font: regular, size: TINY, color: white });
+						y -= LINE_H * 3;
+
+						ensureSpace(70);
+						page.drawLine({ start: { x: ML, y }, end: { x: ML + 220, y }, thickness: 0.5, color: black });
+						page.drawText(ANCHOR_SIGNATURE, { x: ML + 225, y, font: regular, size: TINY, color: white });
+						y -= 5;
+						page.drawText(`Signature of Prospective ${isGsr ? 'GSR' : 'ASE'}`, { x: ML, y, font: regular, size: SMALL, color: black });
+
+						const dlx = ML + 270, dly = y + SMALL * 1.45 + 5;
+						page.drawLine({ start: { x: dlx, y: dly }, end: { x: dlx + 120, y: dly }, thickness: 0.5, color: black });
+						page.drawText(ANCHOR_DATE, { x: dlx + 125, y: dly, font: regular, size: TINY, color: white });
+						page.drawText('Date Signed', { x: dlx, y: dly - SMALL * 1.45 - 3, font: regular, size: SMALL, color: black });
 					}
 				}
 
@@ -1086,20 +1091,20 @@
 			// ── Generate & preview ────────────────────────────────────────────────────
 			generateBtn.addEventListener('click', () => {
 				const globalData = collectLetterData();
-				
+
 				if (isBulkMode) {
 					if (bulkRows.length === 0) { alert('Add at least one row.'); return; }
-					
+
 					// Group rows by email
 					const studentsMap = {};
 					bulkRows.forEach(r => {
 						if (!r.email) return;
 						if (!studentsMap[r.email]) studentsMap[r.email] = { name: r.name, email: r.email };
 					});
-					
+
 					const students = Object.values(studentsMap);
 					if (students.length === 0) { alert("No valid emails found in bulk rows."); return; }
-					
+
 					let allHtml = '';
 					students.forEach((student, i) => {
 						const d = { ...globalData, studentName: student.name, studentEmail: student.email };
@@ -1111,7 +1116,7 @@
 					});
 					letterPreviewContainer.innerHTML = allHtml;
 					letterModal.classList.remove('hidden');
-					
+
 				} else {
 					const groups = buildLetterGroups();
 					if (!groups.length) { alert('Please add at least one appointment.'); return; }
@@ -1128,7 +1133,7 @@
 				try {
 					const globalData = collectLetterData();
 					let lettersList = [];
-					
+
 					if (isBulkMode) {
 						const studentsMap = {};
 						bulkRows.forEach(r => {
@@ -1137,7 +1142,7 @@
 						});
 						const students = Object.values(studentsMap);
 						if (students.length === 0) throw new Error("No valid emails found in bulk rows.");
-						
+
 						students.forEach(student => {
 							const d = { ...globalData, studentName: student.name, studentEmail: student.email };
 							const groups = buildBulkLetterGroups(student.email);
@@ -1148,10 +1153,10 @@
 						if (!groups.length) throw new Error('Please add at least one appointment.');
 						lettersList.push({ d: globalData, groups });
 					}
-					
+
 					const blob = await buildPdfBlob(lettersList);
 					const url = URL.createObjectURL(blob), a = document.createElement('a');
-					a.href = url; 
+					a.href = url;
 					a.download = isBulkMode ? 'Offer_Letters_Bulk.pdf' : `Offer_Letter_${(globalData.studentName || 'Student').replace(/\s+/g, '_')}.pdf`;
 					a.click();
 					URL.revokeObjectURL(url);
@@ -1162,7 +1167,7 @@
 			// ── Send via DocuSign ─────────────────────────────────────────────────────
 			document.getElementById('send-zapier-btn').addEventListener('click', async () => {
 				const globalData = collectLetterData();
-				
+
 				if (isBulkMode) {
 					const studentsMap = {};
 					bulkRows.forEach(r => {
@@ -1171,43 +1176,43 @@
 					});
 					const students = Object.values(studentsMap);
 					if (students.length === 0) { alert("No valid emails found in bulk rows."); return; }
-					
+
 					const btn = document.getElementById('send-zapier-btn'), orig = btn.innerText;
 					btn.disabled = true;
-					
+
 					try {
 						let successCount = 0;
 						for (let i = 0; i < students.length; i++) {
 							const student = students[i];
-							btn.innerText = `Sending ${i+1} of ${students.length}…`;
-							
+							btn.innerText = `Sending ${i + 1} of ${students.length}…`;
+
 							const d = { ...globalData, studentName: student.name, studentEmail: student.email };
 							const groups = buildBulkLetterGroups(student.email);
 							const safeFilename = `Offer_Letter_${(d.studentName || 'Student').replace(/\s+/g, '_')}.pdf`;
-							
+
 							const pdfBlob = await buildPdfBlob([{ d, groups }]); // generate just this one
-							
+
 							const form = new FormData();
 							form.append('studentName', d.studentName);
 							form.append('studentEmail', d.studentEmail);
 							form.append('contactEmail', d.contactEmail);
 							form.append('contactName', d.contactName);
 							form.append('document', new File([pdfBlob], safeFilename, { type: 'application/pdf' }));
-							
+
 							const res = await fetch(ZAPIER_WEBHOOK_URL, { method: 'POST', body: form });
 							if (!res.ok) throw new Error(`Zapier error ${res.status} for ${d.studentEmail}`);
 							successCount++;
-							
+
 							// Rate limiting delay
 							if (i < students.length - 1) await new Promise(r => setTimeout(r, 1000));
 						}
 						alert(`Successfully sent ${successCount} letters to Zapier/DocuSign!`);
-					} catch (e) { 
-						console.error(e); 
-						alert("Error during bulk send: " + e.message); 
-					} finally { 
-						btn.innerText = orig; 
-						btn.disabled = false; 
+					} catch (e) {
+						console.error(e);
+						alert("Error during bulk send: " + e.message);
+					} finally {
+						btn.innerText = orig;
+						btn.disabled = false;
 					}
 
 				} else {
