@@ -59,7 +59,6 @@
 
 		.letter-preview .letterhead-img {
 			max-height: 80px;
-			float: right;
 			margin-bottom: 1rem;
 		}
 
@@ -155,8 +154,8 @@
 						<div class="md:col-span-2">
 							<label class="block text-sm font-semibold text-gray-700">
 								Letterhead Image
-								<span class="text-gray-400 font-normal ml-1">(optional — JPG, PNG, or GIF, appears
-									top-right of each letter)</span>
+								<span class="text-gray-400 font-normal ml-1">(optional — JPG, PNG, or GIF; appears in
+									the top-left of each letter)</span>
 							</label>
 							<div class="flex items-center gap-3 mt-1">
 								<input type="file" id="letterhead-upload" accept="image/jpeg,image/png,image/gif"
@@ -573,9 +572,10 @@
 
 					return `<div class="letter-preview mb-12">
 					<div class="letter-header-row">
-						<div></div>
-						<div style="text-align:right;">
+						<div>
 							${imgHtml}
+						</div>
+						<div style="text-align:right;">
 							<p style="margin:0;">${dateStr}</p>
 						</div>
 					</div>
@@ -725,10 +725,10 @@
 						? 'Notification of Graduate Student Researcher Appointment (via DocuSign)'
 						: 'Notification of Academic Student Employee Appointment (via DocuSign)';
 
-					// Letterhead image top-right
+					// Letterhead image top-left
 					if (letterheadImage && letterheadDims) {
 						page.drawImage(letterheadImage, {
-							x: PW - MR - letterheadDims.w,
+							x: ML,
 							y: PH - MT - letterheadDims.h + 10,
 							width: letterheadDims.w,
 							height: letterheadDims.h
@@ -748,8 +748,43 @@
 					drawBlankLine();
 					drawParagraph(`Dear ${d.studentName.split(' ')[0]},`);
 					drawBlankLine(0.5);
-					drawParagraph(`I am pleased to offer you an appointment as a ${title} in the ${d.deptName} for the ${g.quarter} quarter(s) of ${d.year}-${d.year + 1}.${supervisorText}`);
-					drawParagraph(`This appointment is at ${fteDisplay}. You will be paid ${salaryText}. Your paychecks will be issued on ${g.payDates}.`);
+
+					const p1Parts = [
+						{ text: 'I am pleased to offer you an appointment as a', bold: false },
+						{ text: title, bold: true },
+						{ text: 'in the', bold: false },
+						{ text: d.deptName, bold: true },
+						{ text: 'for the', bold: false },
+						{ text: `${g.quarter} quarter(s) of ${d.year}-${d.year + 1}.`, bold: true }
+					];
+
+					if (g.hideSupervisor) {
+						p1Parts.push({ text: 'Your supervisor will be noted on the Description of Duties form you receive prior to the quarter.', bold: false });
+					} else {
+						p1Parts.push({ text: `Your ${isGsr ? 'PI/Supervisor' : 'supervisor'} for this appointment will be`, bold: false });
+						p1Parts.push({ text: `${g.supervisor}.`, bold: true });
+					}
+
+					drawMixed(p1Parts);
+
+					const salaryParts = isHourly
+						? [{ text: `at an hourly rate of ${formatCurrency(g.monthlySal)} per hour.`, bold: false }]
+						: [
+							{ text: `at a monthly ${isGsr ? 'rate' : 'salary'} of`, bold: false },
+							{ text: formatCurrency(g.monthlySal), bold: true },
+							{ text: `(based on a full-time monthly rate of ${formatCurrency(g.monthlySal * (100 / g.totalFte))}).`, bold: false }
+						];
+
+					const p2Parts = [
+						{ text: 'This appointment is at', bold: false },
+						{ text: `${fteDisplay}.`, bold: true },
+						{ text: 'You will be paid', bold: false },
+						...salaryParts,
+						{ text: 'Your paychecks will be issued on', bold: false },
+						{ text: `${g.payDates}.`, bold: true }
+					];
+
+					drawMixed(p2Parts);
 
 					if (isGsr) drawMixed([{ text: 'Short Statement of Required Work Duties: ', bold: true }, { text: g.duties, bold: false }]);
 
