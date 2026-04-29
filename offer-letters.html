@@ -824,9 +824,12 @@
 				return groups.map(g => {
 					const isGsr = g.type === 'gsr';
 					const isHourly = g.type === 'reader';
-					const title = g.type === 'ta' ? 'Teaching Assistant'
+					let title = g.type === 'ta' ? 'Teaching Assistant'
 						: g.type === 'ai' ? 'Associate Instructor'
 							: g.type === 'reader' ? 'Reader/Tutor' : 'Graduate Student Researcher';
+					if (g.type === 'ta' || g.type === 'gsr') title += ` (Step ${g.step})`;
+					if (g.type === 'ai') title += ` (Point ${g.step})`;
+					
 					const fteDisplay = isHourly
 						? `${Math.round(g.totalFte / 4.4)}% / ${g.totalFte} hours`
 						: `${g.totalFte}% / ${Math.round(g.totalFte * 4.4)} hours`;
