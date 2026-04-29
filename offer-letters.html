@@ -653,6 +653,22 @@
 				const last = dates.pop();
 				return dates.join(', ') + ', and ' + last;
 			}
+			function getServiceDates(quarters) {
+				const startYear = parseInt(document.getElementById('global-year').value);
+				let datesText = [];
+				quarters.forEach(q => {
+					let calYear = startYear;
+					if (q === 'Winter' || q === 'Spring') calYear += 1;
+					const key = `${q} ${calYear}`;
+					if (COST_DATA.QUARTER_DATES && COST_DATA.QUARTER_DATES[key]) {
+						const d = COST_DATA.QUARTER_DATES[key];
+						const start = new Date(d.serviceStart + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+						const end = new Date(d.serviceEnd + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+						datesText.push(`${q}: ${start} to ${end}`);
+					}
+				});
+				return datesText.length ? datesText.join('; ') : '[SERVICE DATES]';
+			}
 			function formatCurrency(val) {
 				return val.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 			}
@@ -694,6 +710,7 @@
 						monthlySal: sample.costs.monthlyActual,
 						hideSupervisor: quartersArr.length > 1 || group.some(a => a.values.hideSupervisor),
 						payDates: getCombinedPayDatesList(quartersArr),
+						serviceDates: getServiceDates(quartersArr),
 						duties: sample.values.workDuties || '',
 						step: sample.values.step
 					};
@@ -752,6 +769,7 @@
 						monthlySal: sample.costs.monthlyActual,
 						hideSupervisor: quartersArr.length > 1 || group.some(a => a.values.hideSupervisor),
 						payDates: getCombinedPayDatesList(quartersArr),
+						serviceDates: getServiceDates(quartersArr),
 						duties: sample.values.workDuties || '',
 						step: sample.values.step
 					};
@@ -840,7 +858,7 @@
 					<p><strong>Subject:</strong> ${subject}</p>
 					<p>Dear ${d.studentName.split(' ')[0]},</p>
 					<p>I am pleased to offer you an appointment as a <strong>${title}</strong> in the <strong>${d.deptName}</strong> for the <strong>${g.quarter} quarter(s) of ${d.year}-${d.year + 1}</strong>.${supervisorLine}</p>
-					<p>This appointment is at <strong>${fteDisplay}</strong>. You will be paid ${salaryLine}. Your paychecks will be issued on <strong>${g.payDates}</strong>.</p>
+					<p>This appointment is at <strong>${fteDisplay}</strong>. You will be paid ${salaryLine}. Your paychecks will be issued on <strong>${g.payDates}</strong>. The service dates for this appointment are <strong>${g.serviceDates}</strong>.</p>
 					${isGsr ? `<p><strong>Short Statement of Required Work Duties:</strong> ${g.duties}</p>` : ''}
 					${timeReporting}
 					${boilerplateHtml(isGsr ? GSR_BOILERPLATE : ASE_BOILERPLATE)}
@@ -966,9 +984,12 @@
 					for (const g of groups) {
 						newPage();
 						const isGsr = g.type === 'gsr', isHourly = g.type === 'reader';
-						const title = g.type === 'ta' ? 'Teaching Assistant'
+						let title = g.type === 'ta' ? 'Teaching Assistant'
 							: g.type === 'ai' ? 'Associate Instructor'
 								: g.type === 'reader' ? 'Reader/Tutor' : 'Graduate Student Researcher';
+						if (g.type === 'ta' || g.type === 'gsr') title += ` (Step ${g.step})`;
+						if (g.type === 'ai') title += ` (Point ${g.step})`;
+
 						const fteDisplay = isHourly
 							? `${Math.round(g.totalFte / 4.4)}% / ${g.totalFte} hours`
 							: `${g.totalFte}% / ${Math.round(g.totalFte * 4.4)} hours`;
@@ -1038,7 +1059,9 @@
 							{ text: 'You will be paid', bold: false },
 							...salaryParts,
 							{ text: 'Your paychecks will be issued on', bold: false },
-							{ text: `${g.payDates}.`, bold: true }
+							{ text: `${g.payDates}.`, bold: true },
+							{ text: 'The service dates for this appointment are', bold: false },
+							{ text: `${g.serviceDates}.`, bold: true }
 						];
 
 						drawMixed(p2Parts);
