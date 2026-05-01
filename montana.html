@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yolo to Lolo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;700;900&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+	--forest-void: #0d1410;
+	--forest-deep: #172a1e;
+	--forest-green: #23402d;
+	--usfs-green: #1a4325;
+	--gold: #dfb33e;
+	--gold-dim: #a68427;
+	--paper: #f0ead6;
+	--paper-dark: #dfd7c2;
+	--paper-darker: #c9c0a9;
+	--ink-black: #1a1a1a;
+	--ink-light: #444444;
+	--red-stamp: #a42c2c;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+	background-color: var(--forest-void);
+	color: var(--ink-black);
+	font-family: 'Lora', serif;
+	line-height: 1.6;
+	-webkit-font-smoothing: antialiased;
+	position: relative;
+	overflow-x: hidden;
+  }
+
+  /* ── BITTERROOT TOPO BACKGROUND ── */
+  .environment {
+	position: fixed;
+	top: 0; left: 0; width: 100vw; height: 100vh;
+	background: radial-gradient(circle at 50% 0%, var(--usfs-green), var(--forest-deep) 60%, var(--forest-void) 100%);
+	z-index: -3;
+  }
+
+  .topo-map {
+	position: fixed;
+	top: 0; left: 0; width: 100vw; height: 100vh;
+	z-index: -2;
+	opacity: 0.35;
+	pointer-events: none;
+  }
+
+  .contour {
+	stroke-width: 0.75px;
+	opacity: 0.4;
+  }
+
+  .index-contour {
+	stroke-width: 2px;
+	opacity: 0.7;
+  }
+
+  .trail-line {
+	stroke-width: 2.5px;
+	stroke-dasharray: 8 12;
+	opacity: 0.8;
+  }
+
+  /* ── LAYOUT ── */
+  .wrapper {
+	max-width: 850px;
+	margin: 0 auto;
+	padding: 60px 20px;
+  }
+
+  /* ── HEADER (DARK THEME) ── */
+  header {
+	text-align: center;
+	color: var(--gold);
+	margin-bottom: 40px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+  }
+
+  .coord-tag {
+	font-family: 'Inconsolata', monospace;
+	font-size: 0.85rem;
+	letter-spacing: 0.2em;
+	color: var(--gold-dim);
+	text-transform: uppercase;
+	display: inline-block;
+	border: 1px solid var(--gold-dim);
+	padding: 6px 12px;
+	margin-bottom: 24px;
+	background: rgba(0,0,0,0.2);
+  }
+
+  h1 {
+	font-size: clamp(2.5rem, 6vw, 4rem);
+	font-weight: 400;
+	line-height: 1.1;
+	margin-bottom: 16px;
+	color: var(--paper);
+	text-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  }
+
+  h1 em {
+	font-style: italic;
+	color: var(--gold);
+  }
+
+  .subtitle {
+	font-family: 'Inconsolata', monospace;
+	font-size: 0.95rem;
+	letter-spacing: 0.1em;
+	color: var(--paper-dark);
+	opacity: 0.9;
+  }
+
+  /* ── DISPATCH CARDS (USFS FORM THEME) ── */
+  .dispatch-card {
+	background-color: var(--paper);
+	border-radius: 2px;
+	padding: 40px 8%;
+	box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255,255,255,0.1);
+	position: relative;
+	margin-bottom: 30px;
+	border: 1px solid var(--paper-darker);
+  }
+
+  /* USFS Form Header Styling */
+  .form-header {
+	border-bottom: 3px double var(--ink-black);
+	padding-bottom: 16px;
+	margin-bottom: 30px;
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-end;
+  }
+
+  .form-title-group {
+	display: flex;
+	flex-direction: column;
+  }
+
+  .dept-title {
+	font-family: 'Inconsolata', monospace;
+	font-size: 0.75rem;
+	letter-spacing: 0.1em;
+	color: var(--ink-light);
+	text-transform: uppercase;
+	font-weight: 700;
+  }
+
+  .form-title {
+	font-family: 'Inconsolata', monospace;
+	font-size: 1.2rem;
+	letter-spacing: 0.05em;
+	color: var(--usfs-green);
+	text-transform: uppercase;
+	font-weight: 900;
+  }
+
+  .form-number {
+	font-family: 'Inconsolata', monospace;
+	font-size: 0.8rem;
+	color: var(--ink-light);
+	border: 1px solid var(--ink-light);
+	padding: 4px 8px;
+  }
+
+  .meta-bar {
+	display: flex;
+	justify-content: space-between;
+	border-bottom: 1px solid var(--paper-darker);
+	padding-bottom: 16px;
+	margin-bottom: 30px;
+	font-family: 'Inconsolata', monospace;
+	font-size: 0.9rem;
+	color: var(--ink-light);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+  }
+
+  .meta-bar span {
+	background: rgba(0,0,0,0.03);
+	padding: 4px 10px;
+	border: 1px dashed var(--paper-darker);
+  }
+
+  .meta-bar span strong {
+	color: var(--red-stamp);
+	margin-left: 8px;
+  }
+
+  .intro {
+	font-size: 1.25rem;
+	line-height: 1.8;
+  }
+
+  .intro strong {
+	font-weight: 600;
+	color: var(--usfs-green);
+  }
+
+  /* ── TYPOGRAPHY & SECTIONS ── */
+  h2 {
+	font-size: 1.5rem;
+	font-weight: 600;
+	border-bottom: 2px solid var(--usfs-green);
+	padding-bottom: 8px;
+	margin-bottom: 30px;
+	display: inline-block;
+	color: var(--usfs-green);
+  }
+
+  /* ── SCHEDULE GRAPHIC ── */
+  .week-graphic-wrapper {
+	margin-bottom: 40px;
+	padding: 15px;
+	background: #e8e2cd; 
+	border-radius: 2px;
+	border: 1px solid var(--paper-darker);
+	box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+  }
+
+  .week-graphic-header {
+	font-family: 'Inconsolata', monospace;
+	font-size: 0.9rem;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--ink-light);
+	font-weight: 700;
+	text-align: center;
+	margin-bottom: 35px;
+	border-bottom: 1px dashed var(--paper-darker);
+	padding-bottom: 10px;
+  }
+  
+  .week-graphic-subtext {
+	  text-align: center;
+	  font-size: 0.85rem;
+	  color: var(--ink-light);
+	  margin-top: 15px;
+	  font-style: italic;
+	  opacity: 0.8;
+	}
+
+  .week-grid {
+	display: flex;
+	gap: 8px;
+	justify-content: space-between;
+  }
+
+  .day {
+	flex: 1;
+	text-align: center;
+	padding: 12px 0;
+	border-radius: 2px;
+	font-family: 'Inconsolata', monospace;
+	font-weight: 700;
+	font-size: 1rem;
+	position: relative;
+	border: 2px solid;
+  }
+
+  .day.off {
+	background: repeating-linear-gradient(45deg, #e8e2cd, #e8e2cd 5px, #d8d0b8 5px, #d8d0b8 10px);
+	color: var(--ink-light);
+	border-color: #beb49c;
+	opacity: 0.8;
+  }
+  
+  .day.off::before {
+	content: '';
+	position: absolute;
+	top: 50%; left: 10%; right: 10%;
+	height: 2px;
+	background-color: var(--red-stamp);
+	transform: translateY(-50%);
+  }
+
+  .day.online {
+	background-color: var(--usfs-green);
+	color: var(--gold);
+	border-color: var(--forest-deep);
+	box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+
+  .day-label {
+	position: absolute;
+	top: -24px;
+	left: 50%;
+	transform: translateX(-50%);
+	font-size: 0.65rem;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+  }
+
+  .day.off .day-label { color: var(--red-stamp); }
+  .day.online .day-label { color: var(--usfs-green); font-weight: 900; }
+
+  /* ── THE PLAN GRID ── */
+  .plan-grid {
+	display: grid;
+	gap: 30px;
+  }
+
+  .plan-item {
+	display: flex;
+	flex-direction: column;
+  }
+
+  .plan-label {
+	font-family: 'Inconsolata', monospace;
+	font-size: 0.85rem;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--usfs-green);
+	font-weight: 700;
+	margin-bottom: 8px;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+  }
+
+  .plan-label::before {
+	content: '■';
+	color: var(--gold-dim);
+	font-size: 1.2rem;
+	line-height: 1;
+  }
+
+  .plan-desc {
+	color: var(--ink-light);
+	font-size: 1rem;
+	padding-left: 22px;
+  }
+
+  .plan-desc a {
+	color: var(--red-stamp);
+	text-decoration: none;
+	border-bottom: 1px solid var(--red-stamp);
+  }
+
+  .plan-desc a:hover {
+	color: var(--usfs-green);
+	border-color: var(--usfs-green);
+  }
+
+  /* ── CONTACT GRID ── */
+  .contact-grid {
+	display: grid;
+	gap: 20px;
+	grid-template-columns: 1fr;
+  }
+
+  .contact-method {
+	background-color: #e8e2cd;
+	padding: 24px;
+	border-radius: 2px;
+	border-top: 4px solid var(--usfs-green);
+	border-bottom: 1px solid var(--paper-darker);
+	border-left: 1px solid var(--paper-darker);
+	border-right: 1px solid var(--paper-darker);
+  }
+
+  .contact-method h3 {
+	font-family: 'Inconsolata', monospace;
+	font-size: 1.1rem;
+	color: var(--usfs-green);
+	margin-bottom: 12px;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+  }
+
+  .contact-method p {
+	font-size: 0.95rem;
+	color: var(--ink-light);
+  }
+
+  /* ── FOOTER ── */
+  .sign-off {
+	text-align: center;
+	border-top: 2px dotted var(--paper-darker);
+	padding-top: 40px;
+	margin-top: 40px;
+	font-style: italic;
+	color: var(--ink-light);
+	font-size: 1.1rem;
+  }
+
+  .stamp {
+	margin-top: 30px;
+	text-align: center;
+	font-family: 'Inconsolata', monospace;
+	color: var(--red-stamp);
+	font-size: 0.9rem;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	border: 3px solid var(--red-stamp);
+	display: inline-block;
+	padding: 12px 24px;
+	transform: rotate(-3deg);
+	opacity: 0.85;
+	font-weight: 700;
+  }
+
+  @media (min-width: 600px) {
+	.plan-item { flex-direction: row; gap: 20px; }
+	.plan-label { width: 160px; flex-shrink: 0; margin-bottom: 0; }
+	.plan-desc { padding-left: 0; }
+  }
+
+  @media (min-width: 768px) {
+	.contact-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  @media (max-width: 500px) {
+	.week-grid { gap: 4px; }
+	.day { font-size: 0.85rem; padding: 10px 0; }
+	.day-label { font-size: 0.55rem; top: -20px; }
+	.form-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+	.form-number { align-self: flex-start; }
+	.meta-bar { flex-direction: column; gap: 10px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="environment"></div>
+  
+  <svg class="topo-map" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+	<g fill="none" stroke="var(--gold)" stroke-linecap="round" stroke-linejoin="round">
+	  <path class="contour" d="M 700 300 C 720 280, 750 290, 760 320 C 770 350, 740 370, 710 360 C 680 350, 670 320, 700 300" />
+	  <path class="contour" d="M 680 270 C 730 240, 790 250, 810 320 C 830 380, 770 420, 700 400 C 630 380, 620 310, 680 270" />
+	  <path class="contour" d="M 660 240 C 740 200, 830 210, 860 320 C 890 410, 800 470, 690 440 C 580 410, 570 290, 660 240" />
+	  <path class="contour" d="M 640 210 C 750 160, 870 170, 910 320 C 950 440, 830 520, 680 480 C 530 440, 520 270, 640 210" />
+	  <path class="index-contour" d="M 620 180 C 760 120, 910 130, 960 320 C 1010 470, 860 570, 670 520 C 480 470, 470 250, 620 180" />
+	  
+	  <path class="contour" d="M 600 150 C 770 80, 950 90, 1010 320 C 1070 500, 890 620, 660 560 C 430 500, 420 230, 600 150" />
+	  <path class="contour" d="M 580 120 C 780 40, 990 50, 1060 320 C 1130 530, 920 670, 650 600 C 380 530, 370 210, 580 120" />
+	  <path class="contour" d="M 560 90 C 790 0, 1030 10, 1110 320 C 1190 560, 950 720, 640 640 C 330 560, 320 190, 560 90" />
+	  <path class="contour" d="M 540 60 C 800 -40, 1070 -30, 1160 320 C 1250 590, 980 770, 630 680 C 280 590, 270 170, 540 60" />
+	  <path class="index-contour" d="M 520 30 C 810 -80, 1110 -70, 1210 320 C 1310 620, 1010 820, 620 720 C 230 620, 220 150, 520 30" />
+	  
+	  <path class="contour" d="M 500 0 C 820 -120, 1150 -110, 1260 320 C 1370 650, 1040 870, 610 760 C 180 650, 170 130, 500 0" />
+	  <path class="contour" d="M 480 -30 C 830 -160, 1190 -150, 1310 320 C 1430 680, 1070 920, 600 800 C 130 680, 120 110, 480 -30" />
+	  <path class="contour" d="M 460 -60 C 840 -200, 1230 -190, 1360 320 C 1490 710, 1100 970, 590 840 C 80 710, 70 90, 460 -60" />
+	  <path class="contour" d="M 440 -90 C 850 -240, 1270 -230, 1410 320 C 1550 740, 1130 1020, 580 880 C 30 740, 20 70, 440 -90" />
+	  <path class="index-contour" d="M 420 -120 C 860 -280, 1310 -270, 1460 320 C 1610 770, 1160 1070, 570 920 C -20 770, -30 50, 420 -120" />
+	  
+	  <path class="contour" d="M 400 -150 C 870 -320, 1350 -310, 1510 320 C 1670 800, 1190 1120, 560 960 C -70 800, -80 30, 400 -150" />
+	  <path class="contour" d="M 380 -180 C 880 -360, 1390 -350, 1560 320 C 1730 830, 1220 1170, 550 1000 C -120 830, -130 10, 380 -180" />
+	  <path class="contour" d="M 360 -210 C 890 -400, 1430 -390, 1610 320 C 1790 860, 1250 1220, 540 1040 C -170 860, -180 -10, 360 -210" />
+	  <path class="contour" d="M 340 -240 C 900 -440, 1470 -430, 1660 320 C 1850 890, 1280 1270, 530 1080 C -220 890, -230 -30, 340 -240" />
+	  <path class="index-contour" d="M 320 -270 C 910 -480, 1510 -470, 1710 320 C 1910 920, 1310 1320, 520 1120 C -270 920, -280 -50, 320 -270" />
+
+	  <path class="trail-line" d="M -100 900 Q 300 800, 500 500 T 1100 100" />
+	</g>
+  </svg>
+
+  <div class="wrapper">
+	
+	<header>
+	  <div class="coord-tag">46°24'32.3"N, 113°41'58.9"W</div>
+	  <h1>Where Has Will Gone</h1>
+	  <div class="subtitle">And How Can I Find Him?</div>
+	</header>
+
+	<main>
+	  <section class="dispatch-card">
+		<div class="form-header">
+		  <div class="form-title-group">
+			<span class="dept-title">Letters and Science Blue Cluster // Field Division</span>
+			<span class="form-title">Volunteer Dispatch</span>
+		  </div>
+		  <div class="form-number">Form 7700-40</div>
+		</div>
+
+		<div class="meta-bar">
+		  <span>Status: <strong>Waiting to Leave</strong></span>
+		  <span>Dates: <strong>Jun 01 - Aug 31</strong></span>
+		</div>
+
+		<div class="intro">
+		  <p>Hi! This summer, my wife Sam and I accepted an unusual invitation: <strong>serving as volunteer Forest Service rangers in Montana.</strong> We'll be found around Rock Creek, in Lolo National Forest.</p>
+		  <br>
+		  <p>I'm not leaving UC Davis, however – I'll be continuing to work via satellite. The aim of this page is to give you a sense of how to reach me, and what to expect.</p>
+		</div>
+	  </section>
+
+	  <section class="dispatch-card">
+		<h2>Operational Plan</h2>
+
+		<div class="week-graphic-wrapper">
+		  <div class="week-graphic-header">Generic Weekly Availability</div>
+		  <div class="week-grid">
+			<div class="day online"><span class="day-label">Online</span>M</div>
+			<div class="day off"><span class="day-label">Off</span>T</div>
+			<div class="day off"><span class="day-label">Off</span>W</div>
+			<div class="day online"><span class="day-label">Online</span>Th</div>
+			<div class="day online"><span class="day-label">Online</span>F</div>
+			<div class="day online"><span class="day-label">Online</span>S</div>
+			<div class="day online"><span class="day-label">Online</span>Su</div>
+		  </div>
+		  <div class="week-graphic-subtext">Specific dates may vary depending on approved vacation usage</div>
+		</div>
+
+		<div class="plan-grid">
+		  <div class="plan-item">
+			<div class="plan-label">Schedule Shift</div>
+			<div class="plan-desc">To accommodate ranger duties, my "weekend" has moved to Tuesdays and Wednesdays. The upside for you? I’m now online and available for support on Saturdays and Sundays.</div>
+		  </div>
+
+		  <div class="plan-item">
+			<div class="plan-label">Core Duties</div>
+			<div class="plan-desc">I'll be continuing to support the same functions in the department, so please feel welcome to write about "the usual"!</div>
+		  </div>
+
+		  <div class="plan-item">
+			<div class="plan-label">Supervision</div>
+			<div class="plan-desc">Monica has graciously stepped in to handle in-person supervision while I'm away; please ensure she's copied on any inquiries concerning HR/AP/Grad team in-person matters.</div>
+		  </div>
+
+		</div>
+	  </section>
+
+	  <section class="dispatch-card">
+		<h2>Communications Protocol</h2>
+		
+		<div class="contact-grid">
+		  <div class="contact-method">
+			<h3>Phone / Zoom</h3>
+			<p>I can still chat via phone and Zoom, but we’ll need to speak via email to schedule a time first so that I can ensure the internet is live.</p>
+		  </div>
+		  
+		  <div class="contact-method">
+			<h3>Email</h3>
+			<p>Email remains a great way to contact me! I expect to be maintaining the same response times.</p>
+		  </div>
+		  
+		  <div class="contact-method">
+			<h3>In-Person</h3>
+			<p>I welcome in-person meetings! The closest airport is in Missoula. I recommend renting a high-clearance vehicle, and can offer lodging!</p>
+		  </div>
+		</div>
+
+		<div class="sign-off">
+		  <p>Although I trust that the quality and quantity of my work won't vary while I'm away, I'm grateful for your forbearance with the "curiosities" of this arrangement. Please reach out with any questions!</p>
+		  
+		  <div class="stamp">See ya out there!</div>
+		</div>
+	  </section>
+	</main>
+
+  </div>
+
+</body>
+</html>
