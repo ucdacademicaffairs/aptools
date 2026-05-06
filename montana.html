@@ -403,13 +403,13 @@
 			color: var(--ink-light);
 		}
 
-		.contact-method a {
+		.contact-method p a {
 			color: var(--red-stamp);
 			text-decoration: none;
 			border-bottom: 1px solid var(--red-stamp);
 		}
 
-		.contact-method a:hover {
+		.contact-method p a:hover {
 			color: var(--usfs-green);
 			border-color: var(--usfs-green);
 		}
@@ -632,16 +632,22 @@
 				<div class="contact-grid">
 					<div class="contact-method">
 						<h3>Phone / Zoom</h3>
-						<p>I can still chat via phone (<a href="tel:530-752-8048">530-752-8048</a>) and Zoom, but we’ll
+						<p>I can still chat via phone and Zoom, but we’ll
 							need to schedule a time via email first so that I can ensure the internet is live.</p>
-						<div class="stamp" style="transform: rotate(3deg); margin-top: 20px;">Call Me</div>
+						<div style="text-align: center; margin-top: 20px;">
+							<a href="tel:530-752-8048" class="stamp"
+								style="transform: rotate(3deg); margin-top: 0; text-decoration: none;">Call Me</a>
+						</div>
 					</div>
 
 					<div class="contact-method">
 						<h3>Email</h3>
-						<p>Email (<a href="mailto:woangel@ucdavis.edu">woangel@ucdavis.edu</a>) remains a great way to
+						<p>Email remains a great way to
 							contact me! I expect to be maintaining the same response times.</p>
-						<div class="stamp" style="transform: rotate(-2deg); margin-top: 20px;">Email Me</div>
+						<div style="text-align: center; margin-top: 20px;">
+							<a href="mailto:woangel@ucdavis.edu" class="stamp"
+								style="transform: rotate(-2deg); margin-top: 0; text-decoration: none;">Email Me</a>
+						</div>
 					</div>
 
 					<div class="contact-method">
