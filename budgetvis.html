@@ -55,6 +55,11 @@
 			font-size: 1.75rem;
 			font-weight: 700;
 			color: var(--ucd-blue);
+			white-space: nowrap;
+		}
+
+		[id$="-diff"], [id$="-diff-m"], td.text-right {
+			white-space: nowrap;
 		}
 
 		.section-title {
@@ -876,10 +881,10 @@
 
 					tr.innerHTML = `
 					<td class="px-6 py-4 font-medium text-[#002855]">${row.category}</td>
-					<td class="px-6 py-4 text-right text-gray-600">${formatMoney(row.old)}</td>
-					<td class="px-6 py-4 text-right text-gray-900 font-semibold">${formatMoney(row.new)}</td>
-					<td class="px-6 py-4 text-right ${pctClass} font-bold">${(row.diff > 0 ? "+" : "") + formatMoney(row.diff)}</td>
-					<td class="px-6 py-4 text-right text-xs text-gray-500">${pctText}</td>
+					<td class="px-6 py-4 text-right text-gray-600 whitespace-nowrap">${formatMoney(row.old)}</td>
+					<td class="px-6 py-4 text-right text-gray-900 font-semibold whitespace-nowrap">${formatMoney(row.new)}</td>
+					<td class="px-6 py-4 text-right ${pctClass} font-bold whitespace-nowrap">${(row.diff > 0 ? "+" : "") + formatMoney(row.diff)}</td>
+					<td class="px-6 py-4 text-right text-xs text-gray-500 whitespace-nowrap">${pctText}</td>
 				`;
 					tbody.appendChild(tr);
 				});
