@@ -26,11 +26,48 @@
 		}
 
 		@keyframes fadeIn {
-			from { opacity: 0; transform: translateY(10px); }
-			to { opacity: 1; transform: translateY(0); }
+			from {
+				opacity: 0;
+				transform: translateY(10px);
+			}
+
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
 		}
 
-		.radio-card input[type="radio"]:checked + div {
+		/* Custom button toggle styles */
+		.toggle-group {
+			display: flex;
+			gap: 0.5rem;
+		}
+
+		.toggle-btn {
+			flex: 1;
+			padding: 0.75rem 1rem;
+			border: 1px solid #d1d5db;
+			border-radius: 0.375rem;
+			background-color: white;
+			color: #374151;
+			font-weight: 500;
+			text-align: center;
+			cursor: pointer;
+			transition: all 0.2s;
+		}
+
+		.toggle-btn:hover {
+			background-color: #f3f4f6;
+		}
+
+		.toggle-btn.selected {
+			background-color: #eff6ff;
+			border-color: #3b82f6;
+			color: #1d4ed8;
+			box-shadow: 0 0 0 1px #3b82f6;
+		}
+
+		.radio-card input[type="radio"]:checked+div {
 			border-color: #4f46e5;
 			background-color: #eff6ff;
 		}
@@ -50,7 +87,8 @@
 				<div class="text-right">
 					<p class="text-sm font-medium">Step <span id="current-step-display">1</span> of 4</p>
 					<div class="w-32 h-2 bg-blue-900 rounded-full mt-2 overflow-hidden">
-						<div id="progress-bar" class="h-full bg-blue-400 transition-all duration-300" style="width: 25%;"></div>
+						<div id="progress-bar" class="h-full bg-blue-400 transition-all duration-300"
+							style="width: 25%;"></div>
 					</div>
 				</div>
 			</div>
@@ -58,55 +96,101 @@
 
 		<!-- Main Content -->
 		<main class="flex-grow max-w-4xl w-full mx-auto px-6 py-8">
-			
+
 			<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
 
 				<!-- Step 1: Introduction -->
 				<div id="step-1" class="step-container active">
 					<h2 class="text-2xl font-bold text-gray-900 mb-4">Welcome to the OATS Category I Guide</h2>
 					<div class="prose max-w-none text-gray-600 space-y-4">
-						<p>Of all the acronym-systems at UC Davis, few baffle like the Outside Activities Tracking System (OATS). This tool is designed to help you prepare the required <strong>Category I Prior Approval Request</strong>.</p>
-						
+						<p>Of all the acronym-systems at UC Davis, few baffle like the Outside Activities Tracking
+							System (OATS). This tool is designed to help you prepare the required <strong>Category I
+								Prior Approval Request</strong>.</p>
+
 						<div class="bg-blue-50 border-l-4 border-blue-600 p-4 rounded-r-md my-6">
 							<h3 class="text-lg font-semibold text-blue-800 mb-2">Before You Begin</h3>
 							<ul class="list-disc pl-5 space-y-1 text-blue-900">
-								<li>Category I activities require <strong>prior approval</strong>. Submit your request at least 6 weeks before the activity begins.</li>
+								<li>Category I activities require <strong>prior approval</strong>. Submit your request
+									at least 6 weeks before the activity begins.</li>
 								<li>This guide focuses on academic-year (APM-025) faculty.</li>
-								<li>Time Limits: AY faculty can spend up to 39 days (312 hours) per academic year on Categories I & II combined.</li>
+								<li>Time Limits: AY faculty can spend up to 39 days (312 hours) per academic year on
+									Categories I & II combined.</li>
 							</ul>
 						</div>
 
-						<p>At the end of this wizard, you will receive a formatted text block that you can copy and paste directly into the "Notes" section of your UC OATS request, along with any necessary email drafts for campus consultations.</p>
+						<p>At the end of this wizard, you will receive a formatted text block that you can copy and
+							paste directly into the "Notes" section of your UC OATS request, along with any necessary
+							email drafts for campus consultations.</p>
 					</div>
 
 					<div class="mt-8 flex justify-end">
-						<button type="button" class="next-btn bg-blue-700 hover:bg-blue-800 text-white font-medium py-2 px-6 rounded-md shadow-sm transition-colors">Start Questionnaire &rarr;</button>
+						<button type="button"
+							class="next-btn bg-blue-700 hover:bg-blue-800 text-white font-medium py-2 px-6 rounded-md shadow-sm transition-colors">Start
+							Questionnaire &rarr;</button>
 					</div>
 				</div>
 
 				<!-- Step 2: Activity Details -->
 				<div id="step-2" class="step-container">
 					<h2 class="text-2xl font-bold text-gray-900 mb-6">1. Activity Details</h2>
-					<p class="text-gray-600 mb-6">Please provide the details required for the APM-025 form. This information will be used to fill out your PDF.</p>
-					
+					<p class="text-gray-600 mb-6">Please provide the details required for the APM-025 form. This
+						information will be used to fill out your PDF.</p>
+
 					<div class="space-y-4 mb-6">
 						<div>
 							<label class="block text-sm font-medium text-gray-700">Your Name</label>
-							<input type="text" id="faculty-name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2 border" placeholder="First Last">
+							<input type="text" id="faculty-name"
+								class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2 border"
+								placeholder="First Last">
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-gray-700">Organization Name</label>
-							<input type="text" id="org-name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2 border" placeholder="Name of outside entity">
+							<input type="text" id="org-name"
+								class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2 border"
+								placeholder="Name of outside entity">
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-gray-700">Faculty Obligations</label>
-							<p class="text-xs text-gray-500 mb-1">Explain how the outside professional activity will not interfere with your faculty obligations.</p>
-							<textarea id="obligations-text" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2 border"></textarea>
+							<p class="text-xs text-gray-500 mb-1">Explain how the outside professional activity will not
+								interfere with your faculty obligations.</p>
+							<textarea id="obligations-text" rows="3"
+								class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2 border"></textarea>
 						</div>
 						<div>
-							<label class="block text-sm font-medium text-gray-700">University Enhancement</label>
-							<p class="text-xs text-gray-500 mb-1">Explain how the activity enhances the University's mission or provides a public benefit.</p>
-							<textarea id="enhancement-text" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2 border"></textarea>
+							<label class="block text-sm font-medium text-gray-700">Home University Enhancement</label>
+							<p class="text-xs text-gray-500 mb-1">Explain how the activity enhances the University of
+								California's mission or provides a public benefit.</p>
+							<textarea id="enhancement-text" rows="3"
+								class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2 border"></textarea>
+						</div>
+					</div>
+
+					<h3 class="text-lg font-bold text-gray-900 mb-4 border-t pt-4">Logistics</h3>
+					<div class="space-y-6 mb-6">
+						<div>
+							<p class="font-medium text-gray-800 mb-2 text-sm">Will you receive University summer
+								compensation?</p>
+							<div class="toggle-group" id="summer-comp-group" data-val="">
+								<button type="button" class="toggle-btn" data-val="yes">Yes</button>
+								<button type="button" class="toggle-btn" data-val="no">No</button>
+								<button type="button" class="toggle-btn" data-val="na">N/A (Fiscal Year)</button>
+							</div>
+						</div>
+						<div>
+							<p class="font-medium text-gray-800 mb-2 text-sm">Will you receive a formal appointment at
+								the outside entity?</p>
+							<div class="toggle-group" id="formal-appt-group" data-val="">
+								<button type="button" class="toggle-btn" data-val="yes">Yes</button>
+								<button type="button" class="toggle-btn" data-val="no">No</button>
+							</div>
+						</div>
+						<div>
+							<p class="font-medium text-gray-800 mb-2 text-sm">Will you be compensated for this activity?
+							</p>
+							<div class="toggle-group" id="compensated-group" data-val="">
+								<button type="button" class="toggle-btn" data-val="yes">Yes</button>
+								<button type="button" class="toggle-btn" data-val="no">No</button>
+							</div>
 						</div>
 					</div>
 
@@ -116,76 +200,87 @@
 					</div>
 
 					<div class="mt-8 flex justify-between">
-						<button type="button" class="prev-btn text-gray-600 hover:text-gray-900 font-medium py-2 px-4 rounded-md transition-colors">&larr; Back</button>
-						<button type="button" class="next-btn bg-blue-700 hover:bg-blue-800 text-white font-medium py-2 px-6 rounded-md shadow-sm transition-colors">Continue &rarr;</button>
+						<button type="button"
+							class="prev-btn text-gray-600 hover:text-gray-900 font-medium py-2 px-4 rounded-md transition-colors">&larr;
+							Back</button>
+						<button type="button"
+							class="next-btn bg-blue-700 hover:bg-blue-800 text-white font-medium py-2 px-6 rounded-md shadow-sm transition-colors">Continue
+							&rarr;</button>
 					</div>
 				</div>
 
 				<!-- Step 3: Screening Questions -->
 				<div id="step-3" class="step-container">
 					<h2 class="text-2xl font-bold text-gray-900 mb-6">2. Screening Questions</h2>
-					<p class="text-gray-600 mb-6">To expedite any required consultations, please answer the following questions. Your answers will be included in your request.</p>
-					
+					<p class="text-gray-600 mb-6">To expedite any required consultations, please answer the following
+						questions. Your answers will be included in your request.</p>
+
 					<div class="space-y-6" id="screening-questions">
 						<!-- Questions populated via JS -->
 					</div>
 
 					<div class="mt-8 flex justify-between">
-						<button type="button" class="prev-btn text-gray-600 hover:text-gray-900 font-medium py-2 px-4 rounded-md transition-colors">&larr; Back</button>
-						<button type="button" id="generate-btn" class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-6 rounded-md shadow-sm transition-colors">Generate OATS Note &rarr;</button>
+						<button type="button"
+							class="prev-btn text-gray-600 hover:text-gray-900 font-medium py-2 px-4 rounded-md transition-colors">&larr;
+							Back</button>
+						<button type="button" id="generate-btn"
+							class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-6 rounded-md shadow-sm transition-colors">Generate
+							OATS Note &rarr;</button>
 					</div>
 				</div>
-
-				<!-- Step 4: Output & Summary -->
-				<div id="step-4" class="step-container">
-					<div class="flex items-center gap-3 mb-6">
-						<div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
-							<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-						</div>
-						<h2 class="text-2xl font-bold text-gray-900">Your OATS Note is Ready</h2>
-					</div>
-
-					<div id="pdf-download-section" class="mb-8 p-5 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
-						<div>
-							<h3 class="text-lg font-semibold text-blue-800 mb-1">📄 APM-025 Form Ready</h3>
-							<p class="text-blue-700 text-sm">We have pre-filled the official PDF with your details. You must attach this to your OATS request.</p>
-						</div>
-						<button id="download-pdf-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors whitespace-nowrap">
-							Download PDF
-						</button>
-					</div>
-
-					<div id="consultation-alert" class="hidden mb-8 p-5 bg-amber-50 border border-amber-200 rounded-lg">
-						<h3 class="text-lg font-semibold text-amber-800 mb-2">⚠️ Consultation Required</h3>
-						<p class="text-amber-700 mb-4">Based on your activity type, you are required to consult with the following campus offices well in advance of your start date. We have prepared draft emails for you.</p>
-						<div id="email-buttons" class="flex flex-wrap gap-3">
-							<!-- Email buttons injected here -->
-						</div>
-						<p class="text-sm text-amber-600 mt-4 italic">Note: Consultation responses must be uploaded to the Notes tab of your OATS request once received.</p>
-					</div>
-
-					<div class="bg-gray-50 border border-gray-200 rounded-lg p-6 relative">
-						<button id="copy-btn" class="absolute top-4 right-4 text-gray-500 hover:text-blue-600 bg-white border border-gray-200 rounded px-3 py-1 text-sm font-medium transition-colors shadow-sm">Copy to Clipboard</button>
-						<h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Copy & Paste into UC OATS "Notes"</h3>
-						<pre id="output-text" class="whitespace-pre-wrap font-mono text-sm text-gray-800 bg-white p-4 rounded border border-gray-200 overflow-x-auto"></pre>
-					</div>
-
-					<div class="mt-8 flex justify-between items-center border-t border-gray-100 pt-6">
-						<p class="text-sm text-gray-500">Don't forget to attach any contracts, MOUs, or letters of agreement to your OATS request.</p>
-						<button type="button" onclick="location.reload()" class="text-blue-600 hover:text-blue-800 font-medium py-2 px-4 transition-colors">Start Over</button>
-					</div>
-				</div>
-
+				<button type="button" id="generate-btn"
+					class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-6 rounded-md shadow-sm transition-colors">Generate
+					PDF &rarr;</button>
 			</div>
-		</main>
+	</div>
 
-		<!-- Footer -->
-		<footer class="bg-gray-100 py-6 border-t border-gray-200 mt-auto w-full">
-			<div class="max-w-4xl mx-auto px-6 text-center text-sm text-gray-500">
-				<p>This page is an informal guide. For definitive policy, see the Academic Personnel Manual (APM) and campus guidance.</p>
-				<p class="mt-1">Questions? Contact Will Arcement-Angel at woangel@ucdavis.edu</p>
+	<!-- Step 4: Output -->
+	<div id="step-4" class="step-container">
+		<div class="mb-8 border-b pb-6">
+			<h2 class="text-2xl font-bold text-gray-900">Your APM-025 Request is Ready</h2>
+			<p class="text-gray-600 mt-2">Download your completed form and initiate any required consultations below.
+			</p>
+		</div>
+
+		<div id="pdf-download-section"
+			class="mb-8 p-5 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+			<div>
+				<h3 class="text-lg font-semibold text-blue-800 mb-1">📄 APM-025 Form Ready</h3>
+				<p class="text-blue-700 text-sm">We have pre-filled the official PDF with your details and selections.
+					You must attach this to your OATS request.</p>
 			</div>
-		</footer>
+			<button id="download-pdf-btn"
+				class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors whitespace-nowrap">
+				Download PDF
+			</button>
+		</div>
+
+		<div id="consultation-alert" class="hidden mb-8 p-5 bg-amber-50 border border-amber-200 rounded-lg">
+			<h3 class="text-lg font-semibold text-amber-800 mb-2">⚠️ Consultation Required</h3>
+			<p class="text-amber-700 mb-4">Based on your activity type, you are required to consult with the following
+				campus offices well in advance of your start date. We have prepared draft emails for you.</p>
+			<div class="flex flex-col gap-3" id="email-buttons">
+				<!-- Email buttons injected via JS -->
+			</div>
+		</div>
+
+		<div class="mt-8 flex justify-end items-center border-t border-gray-100 pt-6">
+			<button type="button" onclick="location.reload()"
+				class="text-blue-600 hover:text-blue-800 font-medium py-2 px-4 transition-colors">Start Over</button>
+		</div>
+	</div>
+
+	</div>
+	</main>
+
+	<!-- Footer -->
+	<footer class="bg-gray-100 py-6 border-t border-gray-200 mt-auto w-full">
+		<div class="max-w-4xl mx-auto px-6 text-center text-sm text-gray-500">
+			<p>This page is an informal guide. For definitive policy, see the Academic Personnel Manual (APM) and campus
+				guidance.</p>
+			<p class="mt-1">Questions? Contact Will Arcement-Angel at woangel@ucdavis.edu</p>
+		</div>
+	</footer>
 	</div>
 	</div>
 
@@ -208,8 +303,8 @@
 			{ id: 'q3', text: '3. Does the outside activity intersect and/or overlap with any UC Davis sponsored projects or non-monetary research agreements where you are the PI or key personnel?' },
 			{ id: 'q4', text: '4. Does the outside activity involve any UC Davis intellectual property?' },
 			{ id: 'q5', text: '5. Do you have a management role or financial interest in the organization?' },
-			{ id: 'q6', text: '6. Can you confirm this is a paid appointment while you are on unpaid leave from UC Davis?' },
-			{ id: 'q7', text: '7. Does the outside activity involve a start-up company that you founded or in which you have a management role?' }
+			{ id: 'q6', text: '6. Could you confirm that this is a paid appointment while you are on unpaid leave from UC Davis?' },
+			{ id: 'q7', text: '7. Could you confirm that the outside activity does not involve a start-up company that you founded or in which you have a management role?' }
 		];
 
 		// DOM Elements
@@ -218,7 +313,7 @@
 		const steps = document.querySelectorAll('.step-container');
 		const progressBar = document.getElementById('progress-bar');
 		const stepDisplay = document.getElementById('current-step-display');
-		
+
 		let currentStep = 1;
 
 		// Initialize Form
@@ -227,7 +322,7 @@
 			activities.forEach((act, index) => {
 				const isChecked = index === 0 ? 'checked' : '';
 				const conditionalNote = act.rc === 'conditional' ? '<span class="block text-xs text-amber-600 mt-1">Requires Research Compliance consultation if research is also expected.</span>' : '';
-				
+
 				activityContainer.innerHTML += `
 					<label class="radio-card block cursor-pointer">
 						<input type="radio" name="activityType" value="${act.id}" class="sr-only" ${isChecked}>
@@ -239,46 +334,63 @@
 				`;
 			});
 
-			// Populate Questions
+			// Populate Questions as Button Groups
 			questions.forEach(q => {
 				questionsContainer.innerHTML += `
-					<div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+					<div class="bg-gray-50 border border-gray-200 rounded-lg p-4 question-block">
 						<p class="font-medium text-gray-800 mb-3">${q.text}</p>
-						<div class="flex gap-4">
-							<label class="flex items-center gap-2 cursor-pointer">
-								<input type="radio" name="${q.id}" value="Yes" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" required>
-								<span>Yes</span>
-							</label>
-							<label class="flex items-center gap-2 cursor-pointer">
-								<input type="radio" name="${q.id}" value="No" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" checked>
-								<span>No</span>
-							</label>
+						<div class="toggle-group" id="group-${q.id}" data-val="">
+							<button type="button" class="toggle-btn" data-val="Yes">Yes</button>
+							<button type="button" class="toggle-btn" data-val="No">No</button>
 						</div>
 					</div>
 				`;
 			});
 
-			// Event Listeners for Navigation
-			document.querySelectorAll('.next-btn').forEach(btn => {
-				btn.addEventListener('click', () => changeStep(1));
+			// Setup Toggle Button Logic for all groups
+			document.querySelectorAll('.toggle-group').forEach(group => {
+				const buttons = group.querySelectorAll('.toggle-btn');
+				buttons.forEach(btn => {
+					btn.addEventListener('click', (e) => {
+						buttons.forEach(b => b.classList.remove('selected'));
+						btn.classList.add('selected');
+						group.dataset.val = btn.dataset.val;
+					});
+				});
 			});
+
+			// Navigation Validation
+			document.querySelector('#step-1 .next-btn').addEventListener('click', () => changeStep(1));
+
+			document.querySelector('#step-2 .next-btn').addEventListener('click', () => {
+				const summer = document.getElementById('summer-comp-group').dataset.val;
+				const appt = document.getElementById('formal-appt-group').dataset.val;
+				const comp = document.getElementById('compensated-group').dataset.val;
+				if (!summer || !appt || !comp) {
+					alert('Please answer all the logistics questions before continuing.');
+					return;
+				}
+				changeStep(1);
+			});
+
+			document.querySelector('#step-3 .next-btn').addEventListener('click', () => {
+				let allAnswered = true;
+				questions.forEach(q => {
+					if (!document.getElementById('group-' + q.id).dataset.val) {
+						allAnswered = false;
+					}
+				});
+				if (!allAnswered) {
+					alert('Please answer all 7 screening questions before continuing.');
+					return;
+				}
+				generateOutput();
+			});
+
 			document.querySelectorAll('.prev-btn').forEach(btn => {
 				btn.addEventListener('click', () => changeStep(-1));
 			});
 
-			document.getElementById('generate-btn').addEventListener('click', generateOutput);
-			
-			document.getElementById('copy-btn').addEventListener('click', async (e) => {
-				const text = document.getElementById('output-text').innerText;
-				await navigator.clipboard.writeText(text);
-				const btn = e.target;
-				btn.innerText = 'Copied!';
-				btn.classList.add('text-green-600', 'border-green-200');
-				setTimeout(() => {
-					btn.innerText = 'Copy to Clipboard';
-					btn.classList.remove('text-green-600', 'border-green-200');
-				}, 2000);
-			});
 			document.getElementById('download-pdf-btn').addEventListener('click', generatePDF);
 		}
 
@@ -294,17 +406,42 @@
 				const pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
 				const form = pdfDoc.getForm();
 
-				// Fill text fields
-				try { form.getTextField('Your Name').setText(document.getElementById('faculty-name').value); } catch(e){}
-				try { form.getTextField('Organization Name').setText(document.getElementById('org-name').value); } catch(e){}
-				try { form.getTextField('Faculty Obligations').setText(document.getElementById('obligations-text').value); } catch(e){}
-				try { form.getTextField('University Enhancement').setText(document.getElementById('enhancement-text').value); } catch(e){}
+				// Fill text fields with font size adjustments
+				try { form.getTextField('Your Name').setText(document.getElementById('faculty-name').value); form.getTextField('Your Name').setFontSize(10); } catch (e) { }
+				try { form.getTextField('Organization Name').setText(document.getElementById('org-name').value); form.getTextField('Organization Name').setFontSize(10); } catch (e) { }
+				try { form.getTextField('Faculty Obligations').setText(document.getElementById('obligations-text').value); form.getTextField('Faculty Obligations').setFontSize(10); } catch (e) { }
+				try { form.getTextField('University Enhancement').setText(document.getElementById('enhancement-text').value); form.getTextField('University Enhancement').setFontSize(10); } catch (e) { }
 
-				// We leave checkboxes blank to let faculty review and check them manually for safety, 
-				// as they are legally binding attestations.
+				// Fill Logistics Checkboxes
+				const summer = document.getElementById('summer-comp-group').dataset.val;
+				if (summer === 'yes') { try { form.getCheckBox('Check Box1').check() } catch (e) { } }
+				if (summer === 'no') { try { form.getCheckBox('Check Box2').check() } catch (e) { } }
+				if (summer === 'na') { try { form.getCheckBox('Check Box3').check() } catch (e) { } }
+
+				const appt = document.getElementById('formal-appt-group').dataset.val;
+				if (appt === 'yes') {
+					try { form.getCheckBox('Check Box4').check() } catch (e) { }
+					try { form.getCheckBox('Check Box5').check() } catch (e) { } // Assume attached
+				}
+				if (appt === 'no') { try { form.getCheckBox('Check Box6').check() } catch (e) { } }
+
+				const comp = document.getElementById('compensated-group').dataset.val;
+				if (comp === 'yes') { try { form.getCheckBox('Check Box9').check() } catch (e) { } }
+				if (comp === 'no') { try { form.getCheckBox('Check Box17').check() } catch (e) { } }
+
+				// Checkbox 7 (Consultation attached) and 8 (No consultation required) 
+				// based on activity type.
+				const selectedActivityId = document.querySelector('input[name="activityType"]:checked').value;
+				const activity = activities.find(a => a.id === selectedActivityId);
+				const needsTT = activity.tt;
+				const needsRC = activity.rc === true || activity.rc === 'conditional'; // assume conditional is checked for safety
+
+				if (!needsTT && !needsRC) {
+					try { form.getCheckBox('Check Box8').check() } catch (e) { }
+				}
 
 				const pdfBytes = await pdfDoc.save();
-				
+
 				// Trigger download
 				const blob = new Blob([pdfBytes], { type: 'application/pdf' });
 				const link = document.createElement('a');
@@ -331,7 +468,7 @@
 			steps[currentStep - 1].classList.remove('active');
 			currentStep += direction;
 			steps[currentStep - 1].classList.add('active');
-			
+
 			// Update Progress
 			stepDisplay.innerText = currentStep;
 			progressBar.style.width = `${(currentStep / 4) * 100}%`;
@@ -340,43 +477,23 @@
 		function generateOutput() {
 			const selectedActivityId = document.querySelector('input[name="activityType"]:checked').value;
 			const activity = activities.find(a => a.id === selectedActivityId);
-			
+
 			// Determine Consultations
 			let needsTT = activity.tt;
 			let needsRC = activity.rc === true;
-			
+
 			// If teaching in US, ask if research is expected (we'll just flag it for RC to be safe, or we could add logic)
 			if (activity.rc === 'conditional') {
 				// For simplicity in the wizard, we'll prompt them to contact RC just in case, but note the condition
-				needsRC = true; 
+				needsRC = true;
 			}
 
 			// Gather Q&A
 			let qaText = "";
 			questions.forEach(q => {
-				const answer = document.querySelector(`input[name="${q.id}"]:checked`).value;
+				const answer = document.getElementById('group-' + q.id).dataset.val;
 				qaText += `${q.text}\nAnswer: ${answer}\n\n`;
 			});
-
-			const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-
-			// Build Note Text
-			let noteText = `=== APM-025 Category I Additional Information ===\nDate: ${dateStr}\n\n`;
-			noteText += `Activity Type: ${activity.text}\n\n`;
-			noteText += `--- Screening Questions ---\n\n`;
-			noteText += qaText;
-
-			if (needsTT || needsRC) {
-				noteText += `--- Consultation Status ---\n`;
-				noteText += `Required consultations have been initiated based on the activity type.\n`;
-				if (needsTT) noteText += `- Technology Transfer (techtransfer@ucdavis.edu)\n`;
-				if (needsRC) noteText += `- Research Compliance (dmehlen@ucdavis.edu)\n`;
-			} else {
-				noteText += `--- Consultation Status ---\n`;
-				noteText += `Based on the APM-025 chart, no advance consultation is strictly required for this activity type.\n`;
-			}
-
-			document.getElementById('output-text').innerText = noteText;
 
 			// Handle Alerts and Emails
 			const alertDiv = document.getElementById('consultation-alert');
@@ -385,7 +502,7 @@
 
 			if (needsTT || needsRC) {
 				alertDiv.classList.remove('hidden');
-				
+
 				const emailSubject = encodeURIComponent("Consultation Request: Category I Outside Activity");
 				let emailBody = encodeURIComponent("Hello,\n\nI am preparing a Category I Prior Approval request in UC OATS and am seeking required consultation regarding my proposed outside activity.\n\nHere is the initial screening information:\n\n");
 				emailBody += encodeURIComponent(qaText);
