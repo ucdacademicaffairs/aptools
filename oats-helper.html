@@ -228,34 +228,34 @@
 				const isChecked = index === 0 ? 'checked' : '';
 				const conditionalNote = act.rc === 'conditional' ? '<span class="block text-xs text-amber-600 mt-1">Requires Research Compliance consultation if research is also expected.</span>' : '';
 				
-				activityContainer.innerHTML += \`
+				activityContainer.innerHTML += `
 					<label class="radio-card block cursor-pointer">
-						<input type="radio" name="activityType" value="\${act.id}" class="sr-only" \${isChecked}>
+						<input type="radio" name="activityType" value="${act.id}" class="sr-only" ${isChecked}>
 						<div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
-							<span class="font-medium text-gray-800">\${act.text}</span>
-							\${conditionalNote}
+							<span class="font-medium text-gray-800">${act.text}</span>
+							${conditionalNote}
 						</div>
 					</label>
-				\`;
+				`;
 			});
 
 			// Populate Questions
 			questions.forEach(q => {
-				questionsContainer.innerHTML += \`
+				questionsContainer.innerHTML += `
 					<div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-						<p class="font-medium text-gray-800 mb-3">\${q.text}</p>
+						<p class="font-medium text-gray-800 mb-3">${q.text}</p>
 						<div class="flex gap-4">
 							<label class="flex items-center gap-2 cursor-pointer">
-								<input type="radio" name="\${q.id}" value="Yes" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" required>
+								<input type="radio" name="${q.id}" value="Yes" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" required>
 								<span>Yes</span>
 							</label>
 							<label class="flex items-center gap-2 cursor-pointer">
-								<input type="radio" name="\${q.id}" value="No" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" checked>
+								<input type="radio" name="${q.id}" value="No" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" checked>
 								<span>No</span>
 							</label>
 						</div>
 					</div>
-				\`;
+				`;
 			});
 
 			// Event Listeners for Navigation
@@ -309,7 +309,7 @@
 				const blob = new Blob([pdfBytes], { type: 'application/pdf' });
 				const link = document.createElement('a');
 				link.href = URL.createObjectURL(blob);
-				link.download = \`APM-025_Category_I_\${document.getElementById('faculty-name').value.replace(/\\s+/g, '_') || 'Form'}.pdf\`;
+				link.download = `APM-025_Category_I_${document.getElementById('faculty-name').value.replace(/\s+/g, '_') || 'Form'}.pdf`;
 				link.click();
 
 				btn.innerText = 'Downloaded!';
@@ -334,7 +334,7 @@
 			
 			// Update Progress
 			stepDisplay.innerText = currentStep;
-			progressBar.style.width = \`\${(currentStep / 4) * 100}%\`;
+			progressBar.style.width = `${(currentStep / 4) * 100}%`;
 		}
 
 		function generateOutput() {
@@ -354,26 +354,26 @@
 			// Gather Q&A
 			let qaText = "";
 			questions.forEach(q => {
-				const answer = document.querySelector(\`input[name="\${q.id}"]:checked\`).value;
-				qaText += \`\${q.text}\\nAnswer: \${answer}\\n\\n\`;
+				const answer = document.querySelector(`input[name="${q.id}"]:checked`).value;
+				qaText += `${q.text}\nAnswer: ${answer}\n\n`;
 			});
 
 			const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
 			// Build Note Text
-			let noteText = \`=== APM-025 Category I Additional Information ===\\nDate: \${dateStr}\\n\\n\`;
-			noteText += \`Activity Type: \${activity.text}\\n\\n\`;
-			noteText += \`--- Screening Questions ---\\n\\n\`;
+			let noteText = `=== APM-025 Category I Additional Information ===\nDate: ${dateStr}\n\n`;
+			noteText += `Activity Type: ${activity.text}\n\n`;
+			noteText += `--- Screening Questions ---\n\n`;
 			noteText += qaText;
 
 			if (needsTT || needsRC) {
-				noteText += \`--- Consultation Status ---\\n\`;
-				noteText += \`Required consultations have been initiated based on the activity type.\\n\`;
-				if (needsTT) noteText += \`- Technology Transfer (techtransfer@ucdavis.edu)\\n\`;
-				if (needsRC) noteText += \`- Research Compliance (dmehlen@ucdavis.edu)\\n\`;
+				noteText += `--- Consultation Status ---\n`;
+				noteText += `Required consultations have been initiated based on the activity type.\n`;
+				if (needsTT) noteText += `- Technology Transfer (techtransfer@ucdavis.edu)\n`;
+				if (needsRC) noteText += `- Research Compliance (dmehlen@ucdavis.edu)\n`;
 			} else {
-				noteText += \`--- Consultation Status ---\\n\`;
-				noteText += \`Based on the APM-025 chart, no advance consultation is strictly required for this activity type.\\n\`;
+				noteText += `--- Consultation Status ---\n`;
+				noteText += `Based on the APM-025 chart, no advance consultation is strictly required for this activity type.\n`;
 			}
 
 			document.getElementById('output-text').innerText = noteText;
@@ -387,25 +387,25 @@
 				alertDiv.classList.remove('hidden');
 				
 				const emailSubject = encodeURIComponent("Consultation Request: Category I Outside Activity");
-				let emailBody = encodeURIComponent("Hello,\\n\\nI am preparing a Category I Prior Approval request in UC OATS and am seeking required consultation regarding my proposed outside activity.\\n\\nHere is the initial screening information:\\n\\n");
+				let emailBody = encodeURIComponent("Hello,\n\nI am preparing a Category I Prior Approval request in UC OATS and am seeking required consultation regarding my proposed outside activity.\n\nHere is the initial screening information:\n\n");
 				emailBody += encodeURIComponent(qaText);
-				emailBody += encodeURIComponent("\\nPlease let me know what additional information you need.\\n\\nThank you,");
+				emailBody += encodeURIComponent("\nPlease let me know what additional information you need.\n\nThank you,");
 
 				if (needsRC) {
-					emailContainer.innerHTML += \`
-						<a href="mailto:dmehlen@ucdavis.edu?subject=\${emailSubject}&body=\${emailBody}" class="inline-flex items-center gap-2 bg-white border border-amber-300 text-amber-800 hover:bg-amber-100 font-medium py-2 px-4 rounded-md transition-colors shadow-sm text-sm">
+					emailContainer.innerHTML += `
+						<a href="mailto:dmehlen@ucdavis.edu?subject=${emailSubject}&body=${emailBody}" class="inline-flex items-center gap-2 bg-white border border-amber-300 text-amber-800 hover:bg-amber-100 font-medium py-2 px-4 rounded-md transition-colors shadow-sm text-sm">
 							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
 							Email Research Compliance
 						</a>
-					\`;
+					`;
 				}
 				if (needsTT) {
-					emailContainer.innerHTML += \`
-						<a href="mailto:techtransfer@ucdavis.edu?subject=\${emailSubject}&body=\${emailBody}" class="inline-flex items-center gap-2 bg-white border border-amber-300 text-amber-800 hover:bg-amber-100 font-medium py-2 px-4 rounded-md transition-colors shadow-sm text-sm">
+					emailContainer.innerHTML += `
+						<a href="mailto:techtransfer@ucdavis.edu?subject=${emailSubject}&body=${emailBody}" class="inline-flex items-center gap-2 bg-white border border-amber-300 text-amber-800 hover:bg-amber-100 font-medium py-2 px-4 rounded-md transition-colors shadow-sm text-sm">
 							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
 							Email Tech Transfer
 						</a>
-					\`;
+					`;
 				}
 			} else {
 				alertDiv.classList.add('hidden');
