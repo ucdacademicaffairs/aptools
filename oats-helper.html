@@ -174,7 +174,6 @@
 							<div class="toggle-group" id="summer-comp-group" data-val="">
 								<button type="button" class="toggle-btn" data-val="yes">Yes</button>
 								<button type="button" class="toggle-btn" data-val="no">No</button>
-								<button type="button" class="toggle-btn" data-val="na">N/A (Fiscal Year)</button>
 							</div>
 						</div>
 						<div>
@@ -230,13 +229,13 @@
 					</div>
 				</div>
 
-			</div>
-	<div id="step-4" class="step-container">
-		<div class="mb-8 border-b pb-6">
-			<h2 class="text-2xl font-bold text-gray-900">Your APM-025 Request is Ready</h2>
-			<p class="text-gray-600 mt-2">Download your completed form and initiate any required consultations below.
-			</p>
-		</div>
+				<!-- Step 4: Output -->
+				<div id="step-4" class="step-container">
+					<div class="mb-8 border-b pb-6">
+						<h2 class="text-2xl font-bold text-gray-900">Your APM-025 Request is Ready</h2>
+						<p class="text-gray-600 mt-2">Download your completed form and initiate any required consultations below.
+						</p>
+					</div>
 
 		<div id="pdf-download-section"
 			class="mb-8 p-5 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
@@ -253,11 +252,16 @@
 
 		<div id="consultation-alert" class="hidden mb-8 p-5 bg-amber-50 border border-amber-200 rounded-lg">
 			<h3 class="text-lg font-semibold text-amber-800 mb-2">⚠️ Consultation Required</h3>
-			<p class="text-amber-700 mb-4">Based on your activity type, you are required to consult with the following
-				campus offices well in advance of your start date. We have prepared draft emails for you.</p>
+			<p class="text-amber-700 mb-4">Based on your activity type, you are required to consult with campus offices well in advance of your start date.</p>
+			<p class="text-amber-800 font-medium mb-4 text-sm">Please initiate your required consultations by emailing the drafted text below. You must include the APM-025 PDF generated above, along with any written agreements concerning the outside activity to which you have access. <strong class="underline">If there are multiple contacts listed below, you must email BOTH of them.</strong></p>
 			<div class="flex flex-col gap-3" id="email-buttons">
 				<!-- Email buttons injected via JS -->
 			</div>
+		</div>
+
+		<div class="mb-8 p-5 bg-green-50 border border-green-200 rounded-lg">
+			<h3 class="text-lg font-semibold text-green-800 mb-2">✅ Final Step: Submit Request</h3>
+			<p class="text-green-700 text-sm">Once your consultations arrive and any issues are resolved, please email the consultation results along with your finalized form to <strong>bcpersonnel@ucdavis.edu</strong> for processing.</p>
 		</div>
 
 		<div class="mt-8 flex justify-end items-center border-t border-gray-100 pt-6">
@@ -298,8 +302,9 @@
 			{ id: 'q3', text: '3. Does the outside activity intersect and/or overlap with any UC Davis sponsored projects or non-monetary research agreements where you are the PI or key personnel?' },
 			{ id: 'q4', text: '4. Does the outside activity involve any UC Davis intellectual property?' },
 			{ id: 'q5', text: '5. Do you have a management role or financial interest in the organization?' },
-			{ id: 'q6', text: '6. Could you confirm that this is a paid appointment while you are on unpaid leave from UC Davis?' },
-			{ id: 'q7', text: '7. Could you confirm that the outside activity does not involve a start-up company that you founded or in which you have a management role?' }
+			{ id: 'q6', text: '6. Is this a paid appointment while you are on unpaid leave from UC Davis?' },
+			{ id: 'q7', text: '7. Does the activity involve a start-up company that you founded or in which you have a management role?' },
+			{ id: 'q8', text: '8. Is research expected as part of this activity?' }
 		];
 
 		// DOM Elements
@@ -316,14 +321,12 @@
 			// Populate Activities
 			activities.forEach((act, index) => {
 				const isChecked = index === 0 ? 'checked' : '';
-				const conditionalNote = act.rc === 'conditional' ? '<span class="block text-xs text-amber-600 mt-1">Requires Research Compliance consultation if research is also expected.</span>' : '';
-
+				
 				activityContainer.innerHTML += `
 					<label class="radio-card block cursor-pointer">
 						<input type="radio" name="activityType" value="${act.id}" class="sr-only" ${isChecked}>
 						<div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
 							<span class="font-medium text-gray-800">${act.text}</span>
-							${conditionalNote}
 						</div>
 					</label>
 				`;
@@ -376,7 +379,7 @@
 					}
 				});
 				if (!allAnswered) {
-					alert('Please answer all 7 screening questions before continuing.');
+					alert('Please answer all 8 screening questions before continuing.');
 					return;
 				}
 				generateOutput();
@@ -411,7 +414,6 @@
 				const summer = document.getElementById('summer-comp-group').dataset.val;
 				if (summer === 'yes') { try { form.getCheckBox('Check Box1').check() } catch (e) { } }
 				if (summer === 'no') { try { form.getCheckBox('Check Box2').check() } catch (e) { } }
-				if (summer === 'na') { try { form.getCheckBox('Check Box3').check() } catch (e) { } }
 
 				const appt = document.getElementById('formal-appt-group').dataset.val;
 				if (appt === 'yes') {
@@ -477,9 +479,11 @@
 			let needsTT = activity.tt;
 			let needsRC = activity.rc === true;
 
-			// If teaching in US, ask if research is expected (we'll just flag it for RC to be safe, or we could add logic)
-			if (activity.rc === 'conditional') {
-				// For simplicity in the wizard, we'll prompt them to contact RC just in case, but note the condition
+			// Check research question
+			const isResearchExpected = document.getElementById('group-q8').dataset.val;
+
+			// If teaching in US, ask if research is expected
+			if (activity.rc === 'conditional' && isResearchExpected === 'Yes') {
 				needsRC = true;
 			}
 
