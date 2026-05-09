@@ -131,11 +131,28 @@
 		"description": "Focuses on the creation of an employment plan for Unit 18 / Continuing Lecturers. Create an employment schedule, with IWC, then receive salary and benefit information and a CSV export.",
 		"lastUpdated": "March 6th, 2026",
 		"lastChange": "Updated to use a central JSON file for base rates for easier updating.",
-		"gridSpan": "card-span-2",
+		"gridSpan": "",
 		"buttons": [
 			{
 				"label": "Launch Tool →",
 				"url": "lecturerpay.html",
+				"style": "primary"
+			}
+		]
+	},
+	{
+		"id": "oats-helper",
+		"section": "apps",
+		"title": "OATS Helper",
+		"category": "HR",
+		"description": "Helps faculty complete APM-025 forms for Outside Professional Activities and generate email drafts to send to campus personnel.",
+		"lastUpdated": "May 9th, 2026",
+		"lastChange": "First version",
+		"gridSpan": "",
+		"buttons": [
+			{
+				"label": "Launch Tool →",
+				"url": "oats-helper.html",
 				"style": "primary"
 			}
 		]

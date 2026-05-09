@@ -169,7 +169,8 @@
 					<h3 class="text-lg font-bold text-gray-900 mb-4 border-t pt-4">Logistics</h3>
 					<div class="space-y-6 mb-6">
 						<div>
-							<p class="font-medium text-gray-800 mb-2 text-sm">Will you receive University summer
+							<p class="font-medium text-gray-800 mb-2 text-sm">Will you receive University of California
+								summer
 								compensation?</p>
 							<div class="toggle-group" id="summer-comp-group" data-val="">
 								<button type="button" class="toggle-btn" data-val="yes">Yes</button>
@@ -185,7 +186,8 @@
 							</div>
 						</div>
 						<div>
-							<p class="font-medium text-gray-800 mb-2 text-sm">Will you be compensated for this activity?
+							<p class="font-medium text-gray-800 mb-2 text-sm">Will you be compensated by the outside
+								entity for this activity?
 							</p>
 							<div class="toggle-group" id="compensated-group" data-val="">
 								<button type="button" class="toggle-btn" data-val="yes">Yes</button>
@@ -256,12 +258,8 @@
 						<h3 class="text-lg font-semibold text-amber-800 mb-2">Consultation Required</h3>
 						<p class="text-amber-700 mb-4">Based on your activity type, you are required to consult with
 							campus offices well in advance of your start date.</p>
-						<p class="text-amber-800 font-medium mb-4 text-sm">Please initiate your required consultations
-							by emailing the drafted text below. You must include the APM-025 PDF generated above, along
-							with any written agreements concerning the outside activity to which you have access.
-							<strong class="underline">If there are multiple contacts listed below, you must email BOTH
-								of them.</strong>
-						</p>
+						<p class="text-amber-700 mb-4">Please initiate your consultations by clicking the buttons below. An email will be drafted for you, so all you need to do is add the PDF we generated above (and any written agreements concerning the outside activity), and hit send.</p>
+						<p id="multiple-contacts-warning" class="hidden text-amber-800 font-medium mb-4">Please note that you must email both of the offices listed below.</p>
 						<div class="flex flex-col gap-3" id="email-buttons">
 							<!-- Email buttons injected via JS -->
 						</div>
@@ -521,6 +519,13 @@
 
 			if (needsTT || needsRC) {
 				alertDiv.classList.remove('hidden');
+
+				const warning = document.getElementById('multiple-contacts-warning');
+				if (needsTT && needsRC) {
+					warning.classList.remove('hidden');
+				} else {
+					warning.classList.add('hidden');
+				}
 
 				document.getElementById('final-step-alert').innerHTML = `
 					<h3 class="text-lg font-semibold text-green-800 mb-2">Final Step: Submit Request</h3>
