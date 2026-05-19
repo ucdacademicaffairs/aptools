@@ -76,10 +76,20 @@
 
 	<main class="w-full max-w-6xl mx-auto p-4 md:p-8 no-print">
 		<div class="space-y-6">
-			<div class="relative text-center mb-6 py-4">
-				<h2 class="text-4xl font-bold text-[#002855]">Student Appointment Notification Generator</h2>
-				<p class="text-lg text-gray-600 mt-1">Generate formal offer letters from employment data. It's a beta!
-					Please be careful.</p>
+			<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 py-4 border-b pb-6">
+				<div class="relative text-center md:text-left">
+					<h2 class="text-4xl font-bold text-[#002855]">Student Appointment Notification Generator</h2>
+					<p class="text-lg text-gray-600 mt-1">Generate formal offer letters from employment data. It's a beta! Please be careful.</p>
+				</div>
+				<div class="flex items-center gap-2 justify-center bg-white p-2 rounded-lg border shadow-sm">
+					<label for="academic-year-select" class="text-sm font-semibold text-gray-700 whitespace-nowrap">Academic Year:</label>
+					<select id="academic-year-select" class="h-9 px-3 border rounded text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-[#002855]">
+						<option value="2025-2026">2025-2026</option>
+						<option value="2026-2027">2026-2027</option>
+						<option value="2027-2028">2027-2028</option>
+						<option value="2028-2029">2028-2029</option>
+					</select>
+				</div>
 			</div>
 
 			<div class="card space-y-6">
@@ -216,7 +226,7 @@
 					</div>
 				</div>
 				<p class="text-sm text-gray-600 mb-4">Paste directly from Excel (Student Name, Email, Type, Quarter,
-					Step/Point, % Time, Supervisor) or add rows manually.</p>
+					Point, % Time, Supervisor) or add rows manually.</p>
 				<div class="overflow-x-auto">
 					<table class="w-full text-left border-collapse">
 						<thead>
@@ -225,7 +235,7 @@
 								<th class="p-2 border font-bold">Email</th>
 								<th class="p-2 border font-bold">Type</th>
 								<th class="p-2 border font-bold">Quarter</th>
-								<th class="p-2 border font-bold">Step/Point</th>
+								<th class="p-2 border font-bold">Point</th>
 								<th class="p-2 border font-bold">% Time</th>
 								<th class="p-2 border font-bold">Supervisor</th>
 								<th class="p-2 border text-center font-bold">Action</th>
@@ -295,6 +305,27 @@
 				'global-contact-name', 'global-contact-phone', 'global-contact-email'
 			];
 
+			let currentYearKey = "";
+
+			function updateSelectedYear(year) {
+				currentYearKey = year;
+				const yearScale = COST_DATA.SCALES[year];
+				if (yearScale) {
+					COST_DATA.GSR_SCALE = yearScale.GSR_SCALE;
+					COST_DATA.TA_SCALE = yearScale.TA_SCALE;
+					COST_DATA.AI_SCALE = yearScale.AI_SCALE;
+					COST_DATA.READER_TUTOR_RATE = yearScale.READER_TUTOR_RATE;
+				}
+			}
+
+			function getDefaultYear() {
+				const d = new Date();
+				const year = d.getFullYear();
+				const selectedYear = d.getMonth() >= 5 ? year : (year - 1);
+				const clampedYear = Math.max(2025, Math.min(2028, selectedYear));
+				return `${clampedYear}-${clampedYear + 1}`;
+			}
+
 			// ── Init ──────────────────────────────────────────────────────────────────
 			async function initialize() {
 				try {
@@ -302,6 +333,21 @@
 				} catch (e) {
 					alert("Error loading configuration. Please refresh."); return;
 				}
+
+				// Set default year and initialize scales
+				const defaultYear = getDefaultYear();
+				const yearSelect = document.getElementById('academic-year-select');
+				if (yearSelect) {
+					yearSelect.value = defaultYear;
+					updateSelectedYear(defaultYear);
+					yearSelect.addEventListener('change', (e) => {
+						updateSelectedYear(e.target.value);
+						fullRender();
+					});
+				} else {
+					updateSelectedYear(defaultYear);
+				}
+
 				persistentFields.forEach(id => {
 					const saved = localStorage.getItem(id);
 					if (saved) document.getElementById(id).value = saved;
@@ -529,8 +575,8 @@
 					const qOpts = ['Fall', 'Winter', 'Spring'].map(q => `<option ${r.quarter === q ? 'selected' : ''}>${q}</option>`).join('');
 
 					let stepOpts = '';
-					if (r.type === 'gsr') stepOpts = Object.keys(COST_DATA.GSR_SCALE || {}).map(s => `<option value="${s}" ${s === r.step ? 'selected' : ''}>Step ${s}</option>`).join('');
-					else if (r.type === 'ta') stepOpts = Object.keys(COST_DATA.TA_SCALE || {}).map(s => `<option value="${s}" ${s === r.step ? 'selected' : ''}>Step ${s}</option>`).join('');
+					if (r.type === 'gsr') stepOpts = Object.keys(COST_DATA.GSR_SCALE || {}).map(s => `<option value="${s}" ${s === r.step ? 'selected' : ''}>Point ${s}</option>`).join('');
+					else if (r.type === 'ta') stepOpts = Object.keys(COST_DATA.TA_SCALE || {}).map(s => `<option value="${s}" ${s === r.step ? 'selected' : ''}>Point ${s}</option>`).join('');
 					else if (r.type === 'ai') stepOpts = Object.keys(COST_DATA.AI_SCALE || {}).map(s => `<option value="${s}" ${s === r.step ? 'selected' : ''}>Point ${s}</option>`).join('');
 					else if (r.type === 'reader') stepOpts = `<option value="1">N/A</option>`;
 
@@ -569,10 +615,10 @@
 					const quarterOptions = ['Fall', 'Winter', 'Spring'].map(q =>
 						`<option ${q === appt.values.quarter ? 'selected' : ''}>${q}</option>`).join('');
 					let scaleOptions = '';
-					if (appt.type === 'gsr') scaleOptions = Object.keys(COST_DATA.GSR_SCALE).map(s => `<option value="${s}" ${s === appt.values.step ? 'selected' : ''}>Step ${s}</option>`).join('');
-					if (appt.type === 'ta') scaleOptions = Object.keys(COST_DATA.TA_SCALE).map(s => `<option value="${s}" ${s === appt.values.step ? 'selected' : ''}>Step ${s}</option>`).join('');
+					if (appt.type === 'gsr') scaleOptions = Object.keys(COST_DATA.GSR_SCALE).map(s => `<option value="${s}" ${s === appt.values.step ? 'selected' : ''}>Point ${s}</option>`).join('');
+					if (appt.type === 'ta') scaleOptions = Object.keys(COST_DATA.TA_SCALE).map(s => `<option value="${s}" ${s === appt.values.step ? 'selected' : ''}>Point ${s}</option>`).join('');
 					if (appt.type === 'ai') scaleOptions = Object.keys(COST_DATA.AI_SCALE).map(s => `<option value="${s}" ${s === appt.values.step ? 'selected' : ''}>Point ${s}</option>`).join('');
-					const stepLabel = appt.type === 'ai' ? 'Point' : 'Step';
+					const stepLabel = 'Point';
 					const dutiesHtml = appt.type === 'gsr' ? `
 					<div class="col-span-full">
 						<label class="block text-xs font-semibold">Brief Statement of Work Duties</label>
@@ -827,8 +873,7 @@
 					let title = g.type === 'ta' ? 'Teaching Assistant'
 						: g.type === 'ai' ? 'Associate Instructor'
 							: g.type === 'reader' ? 'Reader/Tutor' : 'Graduate Student Researcher';
-					if (g.type === 'ta' || g.type === 'gsr') title += ` (Step ${g.step})`;
-					if (g.type === 'ai') title += ` (Point ${g.step})`;
+					if (g.type !== 'reader') title += ` (Point ${g.step})`;
 					
 					const fteDisplay = isHourly
 						? `${Math.round(g.totalFte / 4.4)}% / ${g.totalFte} hours`
@@ -990,8 +1035,7 @@
 						let title = g.type === 'ta' ? 'Teaching Assistant'
 							: g.type === 'ai' ? 'Associate Instructor'
 								: g.type === 'reader' ? 'Reader/Tutor' : 'Graduate Student Researcher';
-						if (g.type === 'ta' || g.type === 'gsr') title += ` (Step ${g.step})`;
-						if (g.type === 'ai') title += ` (Point ${g.step})`;
+						if (g.type !== 'reader') title += ` (Point ${g.step})`;
 
 						const fteDisplay = isHourly
 							? `${Math.round(g.totalFte / 4.4)}% / ${g.totalFte} hours`

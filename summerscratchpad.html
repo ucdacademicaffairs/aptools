@@ -18,7 +18,7 @@
 <body>
     <div id="header-placeholder"></div>
 
-    <div class="relative text-center mb-6 py-4 mt-8">
+    <div class="relative text-center mb-6 py-4 mt-8 max-w-5xl mx-auto px-4 md:px-0">
         <div class="absolute inset-0 flex items-center justify-center -z-10 opacity-10">
             <!-- gear -->
             <svg class="w-24 h-24 text-[#002855] -rotate-12" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
@@ -37,11 +37,23 @@
                     d="M4 5.587c0 .69.28 1.25.775 1.672.497.42.992.63 1.663.63h.053c.69 0 1.27-.244 1.745-.685C9.17 6.76 9.41 6.16 9.41 5.413c0-.78-.29-1.424-.81-1.897-.523-.475-1.22-.72-2.03-.72-1.14 0-1.95.43-2.44 1.23-.49.803-.53 1.853-.13 2.825z" />
             </svg>
         </div>
-        <h2 class="text-4xl font-bold text-[#002855]">Summer Salary Scratchpad</h2>
-        <p class="text-lg text-gray-600 mt-1 font-medium">Updated for Academic Year 2025-26 rates</p>
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-6">
+            <div class="relative text-center md:text-left">
+                <h2 class="text-4xl font-bold text-[#002855]">Summer Salary Scratchpad</h2>
+            </div>
+            <div class="flex items-center gap-2 justify-center bg-white p-2 rounded-lg border shadow-sm">
+                <label for="academic-year-select" class="text-sm font-semibold text-gray-700 whitespace-nowrap">Academic Year:</label>
+                <select id="academic-year-select" class="h-9 px-3 border rounded text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-[#002855]">
+                    <option value="2025-2026">2025-2026</option>
+                    <option value="2026-2027">2026-2027</option>
+                    <option value="2027-2028">2027-2028</option>
+                    <option value="2028-2029">2028-2029</option>
+                </select>
+            </div>
+        </div>
     </div>
 
-    <div class="space-y-6 py-4 md:py-8 w-full max-w-5xl mx-auto px-4 md:px-0" id="app-container" style="display: none;">
+    <div class="space-y-6 py-4 py-8 w-full max-w-5xl mx-auto px-4 md:px-0" id="app-container" style="display: none;">
 
         <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
@@ -51,7 +63,7 @@
 
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Step</label>
+                        <label class="block text-sm font-medium text-gray-700">Point</label>
                         <select id="ta-step"
                             class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#002855] focus:border-[#002855] sm:text-sm rounded-md shadow-sm border"></select>
                     </div>
@@ -236,6 +248,29 @@
         // Utility to ensure clean numbers
         const getCleanNumber = (val) => parseFloat(String(val).replace(/[^0-9.-]/g, '')) || 0;
 
+        let currentYearKey = "";
+        let calcTAFunc = null;
+        let populateInstStepsFunc = null;
+
+        function getDefaultYear() {
+            const d = new Date();
+            const year = d.getFullYear();
+            const selectedYear = d.getMonth() >= 5 ? year : (year - 1);
+            const clampedYear = Math.max(2025, Math.min(2028, selectedYear));
+            return `${clampedYear}-${clampedYear + 1}`;
+        }
+
+        function updateSelectedYear(year) {
+            currentYearKey = year;
+            const yearScale = CONFIG.SCALES[year];
+            if (yearScale) {
+                CONFIG.GSR_SCALE = yearScale.GSR_SCALE;
+                CONFIG.TA_SCALE = yearScale.TA_SCALE;
+                CONFIG.AI_SCALE = yearScale.AI_SCALE;
+                CONFIG.READER_TUTOR_RATE = yearScale.READER_TUTOR_RATE;
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
 
             // Load external config
@@ -246,6 +281,21 @@
                 })
                 .then(data => {
                     CONFIG = data;
+                    
+                    const defaultYear = getDefaultYear();
+                    const yearSelect = document.getElementById('academic-year-select');
+                    if (yearSelect) {
+                        yearSelect.value = defaultYear;
+                        updateSelectedYear(defaultYear);
+                        yearSelect.addEventListener('change', (e) => {
+                            updateSelectedYear(e.target.value);
+                            if (calcTAFunc) calcTAFunc();
+                            if (populateInstStepsFunc) populateInstStepsFunc();
+                        });
+                    } else {
+                        updateSelectedYear(defaultYear);
+                    }
+
                     initializeTool();
                 })
                 .catch(error => {
@@ -286,22 +336,31 @@
                 calcRev(); // Initial run
             }
 
-            // TA logic
+             // TA logic
             function setupTA() {
                 const taStepSelect = document.getElementById('ta-step');
                 const taPercentSelect = document.getElementById('ta-percent');
 
                 // Populate TA Steps from config
-                const taSteps = Object.keys(CONFIG.TA_SCALE);
-                taSteps.forEach(step => {
-                    taStepSelect.appendChild(new Option(`Step ${step}`, step));
-                });
+                function populateTASteps() {
+                    const currentVal = taStepSelect.value;
+                    const taSteps = Object.keys(CONFIG.TA_SCALE);
+                    taStepSelect.innerHTML = '';
+                    taSteps.forEach(step => {
+                        taStepSelect.appendChild(new Option(`Point ${step}`, step));
+                    });
+                    if (currentVal && taSteps.includes(currentVal)) {
+                        taStepSelect.value = currentVal;
+                    }
+                }
+
+                populateTASteps();
 
                 // Set initial benefit rate text
                 document.getElementById('out-ta-ben-pct').textContent = `${(CONFIG.SUMMER_BENEFIT_RATES.ase * 100).toFixed(1)}%`;
 
                 function calcTA() {
-                    const step = taStepSelect.value;
+                    const step = taStepSelect.value || '1';
                     const percent = parseFloat(taPercentSelect.value) / 100;
                     const hours = percent * 240; // 100% is 240 hours
 
@@ -332,6 +391,11 @@
                 taStepSelect.addEventListener('change', calcTA);
                 taPercentSelect.addEventListener('change', calcTA);
                 calcTA(); // Initial run
+
+                calcTAFunc = () => {
+                    populateTASteps();
+                    calcTA();
+                };
             }
 
             // IOR logic
@@ -342,6 +406,7 @@
 
                 function populateInstSteps() {
                     const titleKey = instTitleSelect.value;
+                    const containerLabel = document.querySelector('#inst-step-container label');
 
                     if (titleKey === 'prof') {
                         document.getElementById('inst-step-container').style.display = 'none';
@@ -350,6 +415,13 @@
                         document.getElementById('inst-step-container').style.display = 'block';
                         document.getElementById('inst-salary-container').style.display = 'none';
 
+                        if (titleKey === 'ai') {
+                            if (containerLabel) containerLabel.textContent = 'Point';
+                        } else {
+                            if (containerLabel) containerLabel.textContent = 'Step';
+                        }
+
+                        const currentVal = instStepSelect.value;
                         instStepSelect.innerHTML = '';
                         let stepCount = 0;
                         if (titleKey === 'ai') {
@@ -361,7 +433,10 @@
                         }
 
                         for (let i = 1; i <= stepCount; i++) {
-                            instStepSelect.appendChild(new Option(`Step ${i}`, i));
+                            instStepSelect.appendChild(new Option(titleKey === 'ai' ? `Point ${i}` : `Step ${i}`, i));
+                        }
+                        if (currentVal && parseInt(currentVal, 10) <= stepCount) {
+                            instStepSelect.value = currentVal;
                         }
                     }
                     calcInst(); // Recalculate anytime steps drop down repopulates
@@ -425,6 +500,7 @@
                 document.getElementById('inst-salary-input').addEventListener('input', calcInst);
 
                 populateInstSteps(); // Initial setup
+                populateInstStepsFunc = populateInstSteps;
             }
         });
     </script>

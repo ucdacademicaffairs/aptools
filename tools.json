@@ -180,8 +180,8 @@
 		"title": "Student Employment Cost Calculator",
 		"category": "Finance",
 		"description": "Create an 'employment schedule' for graduate student employees and display the costs associated. Features proper proration of same-quarter multiple-appointment benefits and work-study. 'GSR Version' and 'STDT Version' are optimized for inclusion in external sites via iFrame.",
-		"lastUpdated": "April 9th, 2026",
-		"lastChange": "Belatedly added Associate Instructor appointments.",
+		"lastUpdated": "May 19th, 2026",
+		"lastChange": "Added dynamic academic year selector (2025-26 through 2028-29) and updated student salary steps to points.",
 		"gridSpan": "card-span-2",
 		"buttons": [
 			{
@@ -207,8 +207,8 @@
 		"title": "Summer Salary Scratchpad",
 		"category": "Finance",
 		"description": "Calculates detailed summer session compensation for TAs, AIs, and Lecturers based on annual salary rates and units, including benefit costs and maximum salary caps.",
-		"lastUpdated": "March 10th, 2026",
-		"lastChange": "Added revenue calculator.",
+		"lastUpdated": "May 19th, 2026",
+		"lastChange": "Added dynamic academic year selector (2025-26 through 2028-29) and renamed student step to point.",
 		"gridSpan": "",
 		"buttons": [
 			{

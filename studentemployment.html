@@ -68,8 +68,20 @@
 							d="M4 5.587c0 .69.28 1.25.775 1.672.497.42.992.63 1.663.63h.053c.69 0 1.27-.244 1.745-.685C9.17 6.76 9.41 6.16 9.41 5.413c0-.78-.29-1.424-.81-1.897-.523-.475-1.22-.72-2.03-.72-1.14 0-1.95.43-2.44 1.23-.49.803-.53 1.853-.13 2.825z" />
 					</svg>
 				</div>
-				<h2 class="text-4xl font-bold text-[#002855]">Student Employment Cost Calculator</h2>
-				<p class="text-lg text-gray-600 mt-1">At 10/1/25 Salary Rates</p>
+				<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-6">
+					<div class="relative text-center md:text-left">
+						<h2 class="text-4xl font-bold text-[#002855]">Student Employment Cost Calculator</h2>
+					</div>
+					<div class="flex items-center gap-2 justify-center bg-white p-2 rounded-lg border shadow-sm">
+						<label for="academic-year-select" class="text-sm font-semibold text-gray-700 whitespace-nowrap">Academic Year:</label>
+						<select id="academic-year-select" class="h-9 px-3 border rounded text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-[#002855]">
+							<option value="2025-2026">2025-2026</option>
+							<option value="2026-2027">2026-2027</option>
+							<option value="2027-2028">2027-2028</option>
+							<option value="2028-2029">2028-2029</option>
+						</select>
+					</div>
+				</div>
 			</div>
 
 			<div class="card">
@@ -172,6 +184,27 @@
 			// I'd also like to store the step-by-step calculation details for the "Show Your Work" section.
 			let calculationDetails = {};
 
+			let currentYearKey = "";
+
+			function updateSelectedYear(year) {
+				currentYearKey = year;
+				const yearScale = COST_DATA.SCALES[year];
+				if (yearScale) {
+					COST_DATA.GSR_SCALE = yearScale.GSR_SCALE;
+					COST_DATA.TA_SCALE = yearScale.TA_SCALE;
+					COST_DATA.AI_SCALE = yearScale.AI_SCALE;
+					COST_DATA.READER_TUTOR_RATE = yearScale.READER_TUTOR_RATE;
+				}
+			}
+
+			function getDefaultYear() {
+				const d = new Date();
+				const year = d.getFullYear();
+				const selectedYear = d.getMonth() >= 5 ? year : (year - 1);
+				const clampedYear = Math.max(2025, Math.min(2028, selectedYear));
+				return `${clampedYear}-${clampedYear + 1}`;
+			}
+
 			// First, define our initialization wrapper that fetches config
 			async function initialize() {
 				try {
@@ -182,6 +215,20 @@
 					console.error("Could not load annual configuration:", error);
 					alert("There was an error loading the configuration for this page. Please refresh.");
 					return;
+				}
+
+				const defaultYear = getDefaultYear();
+				const yearSelect = document.getElementById('academic-year-select');
+				if (yearSelect) {
+					yearSelect.value = defaultYear;
+					updateSelectedYear(defaultYear);
+					yearSelect.addEventListener('change', (e) => {
+						updateSelectedYear(e.target.value);
+						populateBaseCosts();
+						fullRender();
+					});
+				} else {
+					updateSelectedYear(defaultYear);
 				}
 
 				// Apply base costs to UI
@@ -310,15 +357,15 @@
 			function populateBaseCosts() {
 				baseCostsContainer.innerHTML = `
 				<div>
-					<h4 class="font-bold">GSR Annual Salary Scale (2025-26)</h4>
-					<div class="grid grid-cols-2 md:grid-cols-6 gap-2 mt-1">${Object.entries(COST_DATA.GSR_SCALE).map(([step, val]) => `<div><label class="text-xs">Step ${step}</label><input type="number" class="w-full p-1 border rounded" data-key="GSR_SCALE.${step}" value="${val}"></div>`).join('')}</div>
+					<h4 class="font-bold">GSR Annual Salary Scale (${currentYearKey})</h4>
+					<div class="grid grid-cols-2 md:grid-cols-6 gap-2 mt-1">${Object.entries(COST_DATA.GSR_SCALE).map(([step, val]) => `<div><label class="text-xs">Point ${step}</label><input type="number" class="w-full p-1 border rounded" data-key="GSR_SCALE.${step}" value="${val}"></div>`).join('')}</div>
 				</div>
 				<div>
-					<h4 class="font-bold">TA Annual Salary Scale (2025-26, 9-month)</h4>
-					<div class="grid grid-cols-2 md:grid-cols-3 gap-2 mt-1">${Object.entries(COST_DATA.TA_SCALE).map(([step, val]) => `<div><label class="text-xs">Step ${step}</label><input type="number" class="w-full p-1 border rounded" data-key="TA_SCALE.${step}" value="${val}"></div>`).join('')}</div>
+					<h4 class="font-bold">TA Annual Salary Scale (${currentYearKey}, 9-month)</h4>
+					<div class="grid grid-cols-2 md:grid-cols-3 gap-2 mt-1">${Object.entries(COST_DATA.TA_SCALE).map(([step, val]) => `<div><label class="text-xs">Point ${step}</label><input type="number" class="w-full p-1 border rounded" data-key="TA_SCALE.${step}" value="${val}"></div>`).join('')}</div>
 				</div>
 				<div>
-					<h4 class="font-bold">AI Annual Salary Scale (2025-26, 9-month)</h4>
+					<h4 class="font-bold">AI Annual Salary Scale (${currentYearKey}, 9-month)</h4>
 					<div class="grid grid-cols-2 md:grid-cols-7 gap-2 mt-1">${Object.entries(COST_DATA.AI_SCALE || {}).map(([step, val]) => `<div><label class="text-xs">Point ${step}</label><input type="number" class="w-full p-1 border rounded" data-key="AI_SCALE.${step}" value="${val}"></div>`).join('')}</div>
 				</div>
 				<div>
@@ -389,7 +436,7 @@
 						case 'gsr':
 							inputsHtml = `<div class="grid grid-cols-2 lg:grid-cols-7 gap-4 mt-2">
 								<div><label class="block text-xs">Quarter</label><select id="input-${appt.id}-quarter" data-calc="quarter" class="w-full p-1 border rounded">${quarterOptions}</select></div>
-								<div><label class="block text-xs">Step</label><select id="input-${appt.id}-step" data-calc="step" class="w-full p-1 border rounded">${Object.keys(COST_DATA.GSR_SCALE).map(step => `<option value="${step}" ${step === appt.values.step ? 'selected' : ''}>${step}</option>`).join('')}</select></div>
+								<div><label class="block text-xs">Point</label><select id="input-${appt.id}-step" data-calc="step" class="w-full p-1 border rounded">${Object.keys(COST_DATA.GSR_SCALE).map(step => `<option value="${step}" ${step === appt.values.step ? 'selected' : ''}>${step}</option>`).join('')}</select></div>
 								${percentTimeDropdown}
 								<div><label class="block text-xs">Total Hours</label><input type="number" class="w-full p-1 border rounded" value="${displayHours.toFixed(0)}" readonly></div>
 								<div class="text-center"><label class="block text-xs">Include NRST?</label><input type="checkbox" id="input-${appt.id}-nonResident" data-calc="nonResident" class="h-6 w-6 mt-1" ${appt.values.nonResident ? 'checked' : ''}></div>
@@ -400,7 +447,7 @@
 						case 'ta':
 							inputsHtml = `<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mt-2">
 								<div><label class="block text-xs">Quarter</label><select id="input-${appt.id}-quarter" data-calc="quarter" class="w-full p-1 border rounded">${quarterOptions}</select></div>
-								<div><label class="block text-xs">Step</label><select id="input-${appt.id}-step" data-calc="step" class="w-full p-1 border rounded">${Object.keys(COST_DATA.TA_SCALE).map(step => `<option value="${step}" ${step === appt.values.step ? 'selected' : ''}>${step}</option>`).join('')}</select></div>
+								<div><label class="block text-xs">Point</label><select id="input-${appt.id}-step" data-calc="step" class="w-full p-1 border rounded">${Object.keys(COST_DATA.TA_SCALE).map(step => `<option value="${step}" ${step === appt.values.step ? 'selected' : ''}>${step}</option>`).join('')}</select></div>
 								${percentTimeDropdown}
 								<div><label class="block text-xs">Total Hours</label><input type="number" class="w-full p-1 border rounded" value="${displayHours.toFixed(0)}" readonly></div>
 								<div class="text-center"><label class="block text-xs">Include NRST?</label><input type="checkbox" id="input-${appt.id}-nonResident" data-calc="nonResident" class="h-6 w-6 mt-1" ${appt.values.nonResident ? 'checked' : ''}></div>
