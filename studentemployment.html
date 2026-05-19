@@ -10,7 +10,7 @@
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="shared-tools.css">
-    <script src="header.js" defer></script>
+	<script src="header.js" defer></script>
 	<style>
 		.appointment-row {
 			border-bottom: 1px solid #eee;
@@ -45,36 +45,20 @@
 </head>
 
 <body>
-    <div id="header-placeholder"></div>
+	<div id="header-placeholder"></div>
 
 	<main class="w-full max-w-6xl mx-auto p-4 md:p-8">
 		<div class="space-y-6">
 			<div class="relative text-center mb-6 py-4">
-				<div class="absolute inset-0 flex items-center justify-center -z-10 opacity-10">
-					<!-- gear -->
-					<svg class="w-24 h-24 text-[#002855] -rotate-12" xmlns="http://www.w3.org/2000/svg"
-						fill="currentColor" viewBox="0 0 16 16">
-						<path
-							d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z" />
-						<path
-							d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319z" />
-					</svg>
-					<!-- coin -->
-					<svg class="w-20 h-20 text-[#FFBF00] rotate-12 -ml-8" xmlns="http://www.w3.org/2000/svg"
-						fill="currentColor" viewBox="0 0 16 16">
-						<path
-							d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm1.558-6.914c-1.025.23-1.85.748-2.454 1.362-.606.615-.958 1.441-.958 2.422 0 1.01.374 1.837.989 2.458.615.62 1.455.963 2.454.963 1.026 0 1.872-.37 2.488-.973.615-.602.96-1.448.96-2.464 0-1.01-.373-1.834-.988-2.457a3.413 3.413 0 0 0-2.488-.973zm-1.006-4.56c0 .69.28 1.25.775 1.672.497.42.992.63 1.663.63h.053c.69 0 1.27-.244 1.745-.685.472-.443.712-1.04.712-1.798 0-.78-.29-1.424-.81-1.897-.523-.475-1.22-.72-2.03-.72-1.14 0-1.95.43-2.44 1.23-.49.803-.53 1.853-.13 2.825z" />
-						<path
-							d="M4 5.587c0 .69.28 1.25.775 1.672.497.42.992.63 1.663.63h.053c.69 0 1.27-.244 1.745-.685C9.17 6.76 9.41 6.16 9.41 5.413c0-.78-.29-1.424-.81-1.897-.523-.475-1.22-.72-2.03-.72-1.14 0-1.95.43-2.44 1.23-.49.803-.53 1.853-.13 2.825z" />
-					</svg>
-				</div>
 				<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-6">
 					<div class="relative text-center md:text-left">
 						<h2 class="text-4xl font-bold text-[#002855]">Student Employment Cost Calculator</h2>
 					</div>
 					<div class="flex items-center gap-2 justify-center bg-white p-2 rounded-lg border shadow-sm">
-						<label for="academic-year-select" class="text-sm font-semibold text-gray-700 whitespace-nowrap">Academic Year:</label>
-						<select id="academic-year-select" class="h-9 px-3 border rounded text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-[#002855]">
+						<label for="academic-year-select"
+							class="text-sm font-semibold text-gray-700 whitespace-nowrap">Academic Year:</label>
+						<select id="academic-year-select"
+							class="h-9 px-3 border rounded text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-[#002855]">
 							<option value="2025-2026">2025-2026</option>
 							<option value="2026-2027">2026-2027</option>
 							<option value="2027-2028">2027-2028</option>
