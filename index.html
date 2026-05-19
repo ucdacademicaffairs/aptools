@@ -31,8 +31,15 @@
 	</header>
 
 	<main class="container">
+		<div class="news-banner animate-on-load" style="animation-delay: 50ms;">
+			<span class="news-badge">Latest News</span>
+			<span class="news-text">May 19, 2026: I am volunteering as a Forest Service ranger in Montana this summer,
+				but will remain online and working via satellite. <a href="montana.html">View More on That</a>. The
+				current priority where these tools are concerned is to update annual-config with the new ASE/GSR salary
+				scales, and let you choose academic years in all the tools which use them. </span>
+		</div>
+
 		<div class="intro-section animate-on-load" style="animation-delay: 100ms;">
-			<br>
 			<h2 class="section-heading">Mini-Apps</h2>
 			<div id="apps-grid" class="tools-grid">
 				<p style="grid-column: 1/-1; text-align: center; color: var(--text-secondary);">Loading tools...</p>
@@ -42,6 +49,14 @@
 		<div class="resources-section animate-on-load" style="animation-delay: 1000ms;">
 			<h2 class="section-heading">Resources</h2>
 			<div id="resources-grid" class="tools-grid"></div>
+		</div>
+
+		<div class="resources-section animate-on-load"
+			style="animation-delay: 1500ms; margin-top: 4.5rem; opacity: 0.7;">
+			<h2 class="section-heading"
+				style="text-shadow: 0 0 5px rgba(255, 255, 255, 0.4), 0 0 15px rgba(173, 181, 189, 0.4);">Archive /
+				Obsolete</h2>
+			<div id="archive-grid" class="tools-grid"></div>
 		</div>
 	</main>
 
@@ -77,9 +92,11 @@
 
 				const appsGrid = document.getElementById('apps-grid');
 				const resourceGrid = document.getElementById('resources-grid');
+				const archiveGrid = document.getElementById('archive-grid');
 
 				appsGrid.innerHTML = '';
 				resourceGrid.innerHTML = '';
+				archiveGrid.innerHTML = '';
 
 				let delayCounter = 200;
 
@@ -122,6 +139,8 @@
 
 					if (tool.section === 'resources') {
 						resourceGrid.appendChild(card);
+					} else if (tool.section === 'archive') {
+						archiveGrid.appendChild(card);
 					} else {
 						appsGrid.appendChild(card);
 					}
