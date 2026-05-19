@@ -33,10 +33,11 @@
 	<main class="container">
 		<div class="news-banner animate-on-load" style="animation-delay: 50ms;">
 			<span class="news-badge">Latest News</span>
-			<span class="news-text">May 19, 2026: I am volunteering as a Forest Service ranger in Montana this summer,
-				but will remain online and working via satellite. <a href="montana.html">View More on That</a>. The
-				current priority where these tools are concerned is to update annual-config with the new ASE/GSR salary
-				scales, and let you choose academic years in all the tools which use them. </span>
+			<span class="news-text">May 19, 2026: I am <a href="montana.html">volunteering as a Forest Service ranger in
+					Montana this summer</a>, but will remain online and working via satellite. The current priority
+				where these tools are concerned is to update annual-config.json with the new ASE/GSR salary scales, and
+				let you choose academic years dynamically in all the tools which use them. Also retired our first two
+				things, down at the bottom there.</span>
 		</div>
 
 		<div class="intro-section animate-on-load" style="animation-delay: 100ms;">
@@ -87,7 +88,7 @@
 
 		async function loadTools() {
 			try {
-				const response = await fetch('tools.json');
+				const response = await fetch('tools.json?t=' + new Date().getTime());
 				const tools = await response.json();
 
 				const appsGrid = document.getElementById('apps-grid');

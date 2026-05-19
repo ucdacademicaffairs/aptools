@@ -220,7 +220,7 @@
 	},
 	{
 		"id": "ipa-check",
-		"section": "apps",
+		"section": "archive",
 		"title": "IPA-Disclosure Double Checker",
 		"category": "Utilities",
 		"description": "Takes a Support Assignments XLSX exported from IPA and quickly pulls out name, email, and title to streamline the Disclosure Process check.",
