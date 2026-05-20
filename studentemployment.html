@@ -77,7 +77,8 @@
 					<button class="btn" data-type="gsr">GSR</button>
 					<button class="btn" data-type="ta">TA</button>
 					<button class="btn" data-type="ai">AI</button>
-					<button class="btn" data-type="reader">Reader/Tutor</button>
+					<button class="btn" data-type="reader">Reader</button>
+					<button class="btn" data-type="tutor">Tutor</button>
 					<button class="btn" data-type="student-assistant">Student Assistant</button>
 				</div>
 			</div>
@@ -178,6 +179,8 @@
 					COST_DATA.TA_SCALE = yearScale.TA_SCALE;
 					COST_DATA.AI_SCALE = yearScale.AI_SCALE;
 					COST_DATA.READER_TUTOR_RATE = yearScale.READER_TUTOR_RATE;
+					COST_DATA.TUTOR_INDIVIDUAL_RATE = yearScale.TUTOR_INDIVIDUAL_RATE;
+					COST_DATA.TUTOR_GROUP_RATE = yearScale.TUTOR_GROUP_RATE;
 				}
 			}
 
@@ -303,7 +306,7 @@
 				if (key === 'percentTime') {
 					appt.values.hours = (parseFloat(appt.values.percentTime) || 0) * COST_DATA.HOURS_PER_FTE_PERCENT;
 				}
-				if (key === 'workStudy') {
+				if (key === 'workStudy' || key === 'tutorType') {
 					fullRender();
 				} else {
 					calculateAllCosts();
@@ -353,9 +356,11 @@
 					<div class="grid grid-cols-2 md:grid-cols-7 gap-2 mt-1">${Object.entries(COST_DATA.AI_SCALE || {}).map(([step, val]) => `<div><label class="text-xs">Point ${step}</label><input type="number" class="w-full p-1 border rounded" data-key="AI_SCALE.${step}" value="${val}"></div>`).join('')}</div>
 				</div>
 				<div>
-					<h4 class="font-bold">Reader/Tutor Hourly Rate</h4>
+					<h4 class="font-bold">Reader & Tutor Hourly Rates</h4>
 					<div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-1">
-						<div><label class="text-xs">Rate ($/hr)</label><input type="number" class="w-full p-1 border rounded" data-key="READER_TUTOR_RATE" value="${COST_DATA.READER_TUTOR_RATE}"></div>
+						<div><label class="text-xs">Reader ($/hr)</label><input type="number" step="0.01" class="w-full p-1 border rounded" data-key="READER_TUTOR_RATE" value="${COST_DATA.READER_TUTOR_RATE}"></div>
+						<div><label class="text-xs">Tutor - Individual ($/hr)</label><input type="number" step="0.01" class="w-full p-1 border rounded" data-key="TUTOR_INDIVIDUAL_RATE" value="${COST_DATA.TUTOR_INDIVIDUAL_RATE}"></div>
+						<div><label class="text-xs">Tutor - Group ($/hr)</label><input type="number" step="0.01" class="w-full p-1 border rounded" data-key="TUTOR_GROUP_RATE" value="${COST_DATA.TUTOR_GROUP_RATE}"></div>
 					</div>
 				</div>
 				 <div>
@@ -397,6 +402,9 @@
 					},
 					costs: {}
 				};
+				if (type === 'tutor') {
+					newAppt.values.tutorType = 'Individual';
+				}
 				if (type !== 'gsr' && type !== 'ta' && type !== 'ai') {
 					delete newAppt.values.workStudy;
 					delete newAppt.values.workStudyUnits;
@@ -454,6 +462,21 @@
 								<div class="text-center"><label class="block text-xs">Include NRST?</label><input type="checkbox" id="input-${appt.id}-nonResident" data-calc="nonResident" class="h-6 w-6 mt-1" ${appt.values.nonResident ? 'checked' : ''}></div>
 							</div>`;
 							break;
+						case 'tutor':
+							inputsHtml = `<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mt-2">
+								<div><label class="block text-xs">Quarter</label><select id="input-${appt.id}-quarter" data-calc="quarter" class="w-full p-1 border rounded">${quarterOptions}</select></div>
+								<div>
+									<label class="block text-xs">Tutor Type</label>
+									<select id="input-${appt.id}-tutorType" data-calc="tutorType" class="w-full p-1 border rounded">
+										<option value="Individual" ${appt.values.tutorType === 'Individual' ? 'selected' : ''}>Individual</option>
+										<option value="Group" ${appt.values.tutorType === 'Group' ? 'selected' : ''}>Group</option>
+									</select>
+								</div>
+								${percentTimeDropdown}
+								<div><label class="block text-xs">Total Hours</label><input type="number" class="w-full p-1 border rounded" value="${displayHours.toFixed(0)}" readonly></div>
+								<div class="text-center"><label class="block text-xs">Include NRST?</label><input type="checkbox" id="input-${appt.id}-nonResident" data-calc="nonResident" class="h-6 w-6 mt-1" ${appt.values.nonResident ? 'checked' : ''}></div>
+							</div>`;
+							break;
 						case 'student-assistant':
 							inputsHtml = `<div class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
 								<div><label class="block text-xs">Quarter</label><select id="input-${appt.id}-quarter" data-calc="quarter" class="w-full p-1 border rounded">${quarterOptions}</select></div>
@@ -462,7 +485,7 @@
 							</div>`;
 							break;
 					}
-					const typeName = appt.type === 'student-assistant' ? 'Student Assistant' : (appt.type === 'reader' ? 'Reader/Tutor' : (appt.type === 'ai' ? 'Associate Instructor' : appt.type.toUpperCase()));
+					const typeName = appt.type === 'student-assistant' ? 'Student Assistant' : (appt.type === 'reader' ? 'Reader' : (appt.type === 'tutor' ? `Tutor (${appt.values.tutorType || 'Individual'})` : (appt.type === 'ai' ? 'Associate Instructor' : appt.type.toUpperCase())));
 					const gridColsClass = (appt.type === 'gsr' || appt.type === 'ta' || appt.type === 'ai') ? (appt.values.workStudy ? 'md:grid-cols-6' : 'md:grid-cols-5') : 'md:grid-cols-5';
 
 					return `<div class="appointment-row" id="appointment-${appt.id}" data-id="${appt.id}" data-type="${appt.type}">
@@ -530,6 +553,11 @@
 						const hours = parseFloat(appt.values.hours) || 0;
 						salary = hours * COST_DATA.READER_TUTOR_RATE;
 						salaryFormula = `${hours.toFixed(1)} hrs * ${formatCurrency(COST_DATA.READER_TUTOR_RATE)}/hr = ${formatCurrency(salary)}`;
+					} else if (appt.type === 'tutor') {
+						const hours = parseFloat(appt.values.hours) || 0;
+						const rate = appt.values.tutorType === 'Group' ? COST_DATA.TUTOR_GROUP_RATE : COST_DATA.TUTOR_INDIVIDUAL_RATE;
+						salary = hours * rate;
+						salaryFormula = `${hours.toFixed(1)} hrs * ${formatCurrency(rate)}/hr = ${formatCurrency(salary)}`;
 					} else if (appt.type === 'student-assistant') {
 						const hours = parseFloat(appt.values.hours) || 0, rate = parseFloat(appt.values.hourlyRate) || 0;
 						salary = hours * rate;
@@ -552,11 +580,11 @@
 					log.push(`<p>&nbsp;&nbsp;- ${typeName} #${appt.id} Salary: ${appt.costs.salaryFormula}</p>`);
 					log.push(`<p>&nbsp;&nbsp;- ${typeName} #${appt.id} Benefits: ${formatCurrency(appt.costs.salary)} * ${totalBenefitRate.toFixed(4)} = ${formatCurrency(appt.costs.benefits)}</p>`);
 				});
-				const titleTotals = { gsr: { percentTime: 0, salary: 0, eligible: false }, ta: { percentTime: 0, salary: 0, eligible: false }, ai: { percentTime: 0, salary: 0, eligible: false }, reader: { hours: 0, salary: 0, eligible: false } };
+				const titleTotals = { gsr: { percentTime: 0, salary: 0, eligible: false }, ta: { percentTime: 0, salary: 0, eligible: false }, ai: { percentTime: 0, salary: 0, eligible: false }, reader: { hours: 0, salary: 0, eligible: false }, tutor: { hours: 0, salary: 0, eligible: false } };
 				let totalStudentFTE = 0;
 				quarterAppts.forEach(appt => {
 					if (titleTotals[appt.type]) {
-						if (appt.type === 'reader') {
+						if (appt.type === 'reader' || appt.type === 'tutor') {
 							titleTotals[appt.type].hours += parseFloat(appt.values.hours) || 0;
 						} else if (appt.type === 'gsr' || appt.type === 'ta' || appt.type === 'ai') {
 							const percent = parseFloat(appt.values.percentTime) || 0;
@@ -568,23 +596,30 @@
 				});
 				log.push(`<p class="font-semibold mt-2">2. Fee Remission Eligibility Check:</p>`);
 				let eligibleTitles = [];
+				const combinedHours = titleTotals.reader.hours + titleTotals.tutor.hours;
 				Object.keys(titleTotals).forEach(type => {
 					let isEligible = false, statusText = '';
-					if (type === 'reader') {
-						isEligible = titleTotals[type].hours >= 110;
+					if (type === 'reader' || type === 'tutor') {
+						isEligible = combinedHours >= 110;
 						statusText = isEligible ? '<span style="color: #266040; font-weight: bold;">ELIGIBLE</span>' : '<span style="color: #c10330; font-weight: bold;">INELIGIBLE</span>';
-						log.push(`<p>&nbsp;&nbsp;- Reader/Tutor: Total hours ${titleTotals[type].hours.toFixed(0)} >= 110? -> ${statusText}</p>`);
 					} else if (type === 'gsr' || type === 'ta' || type === 'ai') {
 						const isConsolidatedEligible = totalStudentFTE >= 25;
 						isEligible = isConsolidatedEligible;
 						statusText = isEligible ? '<span style="color: #266040; font-weight: bold;">ELIGIBLE</span>' : '<span style="color: #c10330; font-weight: bold;">INELIGIBLE</span>';
-						log.push(`<p>&nbsp;&nbsp;- ${type.toUpperCase()} Group: Total Quarter Effort ${totalStudentFTE}% >= 25%? -> ${statusText}</p>`);
 					}
 					if (isEligible) {
 						titleTotals[type].eligible = true;
 						eligibleTitles.push(type);
 					}
 				});
+				if (titleTotals.reader.hours > 0 || titleTotals.tutor.hours > 0) {
+					const statusText = combinedHours >= 110 ? '<span style="color: #266040; font-weight: bold;">ELIGIBLE</span>' : '<span style="color: #c10330; font-weight: bold;">INELIGIBLE</span>';
+					log.push(`<p>&nbsp;&nbsp;- Reader/Tutor Combined: Total hours ${combinedHours.toFixed(0)} >= 110? -> ${statusText}</p>`);
+				}
+				if (titleTotals.gsr.percentTime > 0 || titleTotals.ta.percentTime > 0 || titleTotals.ai.percentTime > 0) {
+					const statusText = totalStudentFTE >= 25 ? '<span style="color: #266040; font-weight: bold;">ELIGIBLE</span>' : '<span style="color: #c10330; font-weight: bold;">INELIGIBLE</span>';
+					log.push(`<p>&nbsp;&nbsp;- GSR/TA/AI Group: Total Quarter Effort ${totalStudentFTE}% >= 25%? -> ${statusText}</p>`);
+				}
 				if (eligibleTitles.length === 0) {
 					log.push(`<p class="font-semibold mt-2">Result: No appointments eligible for fee remission.</p>`);
 					quarterAppts.forEach(appt => appt.costs.total = appt.costs.salary + appt.costs.benefits);

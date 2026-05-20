@@ -180,8 +180,8 @@
 		"title": "Student Employment Cost Calculator",
 		"category": "Finance",
 		"description": "Create an 'employment schedule' for graduate student employees and display the costs associated. Features proper proration of same-quarter multiple-appointment benefits and work-study. 'GSR Version' and 'STDT Version' are optimized for inclusion in external sites via iFrame.",
-		"lastUpdated": "May 19th, 2026",
-		"lastChange": "Added dynamic academic year selector (2025-26 through 2028-29) and updated student salary steps to points.",
+		"lastUpdated": "May 20th, 2026",
+		"lastChange": "Split Reader/Tutor appointment type into separate Reader and Tutor appointments, with specific hourly Tutor (Individual vs Group) scales, and aggregated hours for fee remission.",
 		"gridSpan": "card-span-2",
 		"buttons": [
 			{
