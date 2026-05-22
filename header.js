@@ -30,9 +30,9 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="header-content">
                 <div class="header-logo-container">
                     <div class="uc-badge"></div>
-                    <h1 class="header-title">Blue Cluster Heavy Industries</h1>
+                    <h1 class="header-title">Blue Cluster Tools</h1>
                 </div>
-                <a href="index.html" class="header-back-btn">Back to Tools ➔</a>
+                <a href="index.html" class="header-back-btn">Back to Index ➔</a>
             </div>
         </header>
         `;
