@@ -579,20 +579,24 @@
                     nextStep = nominalPromotionStep + (stepMod - 1.0);
                     nextStep = Math.max(1, nextStep); // Promotion usually at least Step 1
                 } else {
-                    const maxStep = rankData.steps[rankData.steps.length - 1];
-                    nextStep = currentStep + stepMod;
+                    if (currentStep === 'Above Scale') {
+                        nextStep = 'Above Scale';
+                    } else {
+                        const maxStep = rankData.steps[rankData.steps.length - 1];
+                        nextStep = currentStep + stepMod;
 
-                    if (typeof nextStep === 'number' && nextStep > maxStep) {
-                        if (currentRank === 'full') {
-                            nextStep = 'Above Scale';
-                        } else {
-                            nextStep = maxStep;
-                        }
-                    } else if (currentStep >= maxStep) {
-                        if (currentRank === 'full') {
-                            nextStep = 'Above Scale';
-                        } else {
-                            nextStep = maxStep;
+                        if (typeof nextStep === 'number' && nextStep > maxStep) {
+                            if (currentRank === 'full') {
+                                nextStep = 'Above Scale';
+                            } else {
+                                nextStep = maxStep;
+                            }
+                        } else if (currentStep >= maxStep) {
+                            if (currentRank === 'full') {
+                                nextStep = 'Above Scale';
+                            } else {
+                                nextStep = maxStep;
+                            }
                         }
                     }
                 }
@@ -608,10 +612,14 @@
                     milestoneLabel = 'Postponed Review Effective';
                 }
 
+                const detailStr = nextStep === 'Above Scale' 
+                    ? `${APM_LOGIC[series][nextRank].name}, Above Scale` 
+                    : `${APM_LOGIC[series][nextRank].name}, Step ${nextStep}`;
+
                 roadmap.push({
                     type: isPromotion ? 'promotion' : 'merit',
                     label: milestoneLabel,
-                    detail: `${APM_LOGIC[series][nextRank].name}, Step ${nextStep}`,
+                    detail: detailStr,
                     date: new Date(currentDate),
                     badge: isPromotion ? 'Promotion' : (isPlanned ? 'Planned' : 'Merit')
                 });
