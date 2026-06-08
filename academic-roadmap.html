@@ -338,21 +338,21 @@
             professor: {
                 assistant: {
                     name: 'Assistant Professor',
-                    steps: [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6],
+                    steps: [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5],
                     duration: (step) => 2,
-                    promotionEligible: [4, 4.5, 5, 5.5, 6],
+                    promotionEligible: [4, 4.5, 5, 5.5, 6, 6.5],
                     nextRank: 'associate'
                 },
                 associate: {
                     name: 'Associate Professor',
-                    steps: [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5],
+                    steps: [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5],
                     duration: (step) => (step < 4 ? 2 : 3),
-                    promotionEligible: [3, 3.5, 4, 4.5, 5],
+                    promotionEligible: [3, 3.5, 4, 4.5, 5, 5.5],
                     nextRank: 'full'
                 },
                 full: {
                     name: 'Professor',
-                    steps: [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9],
+                    steps: [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5],
                     duration: (step) => 3, // Exceptions usually at Step 5/9 but omitted for simplicity
                     promotionEligible: [],
                     nextRank: null
@@ -361,21 +361,21 @@
             'lecturer-soe': {
                 assistant: {
                     name: 'Assistant Professor of Teaching',
-                    steps: [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6],
+                    steps: [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5],
                     duration: (step) => 2,
-                    promotionEligible: [4, 4.5, 5, 5.5, 6],
+                    promotionEligible: [4, 4.5, 5, 5.5, 6, 6.5],
                     nextRank: 'associate'
                 },
                 associate: {
                     name: 'Associate Professor of Teaching',
-                    steps: [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5],
+                    steps: [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5],
                     duration: (step) => (step < 4 ? 2 : 3),
-                    promotionEligible: [3, 3.5, 4, 4.5, 5],
+                    promotionEligible: [3, 3.5, 4, 4.5, 5, 5.5],
                     nextRank: 'full'
                 },
                 full: {
                     name: 'Professor of Teaching',
-                    steps: [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9],
+                    steps: [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5],
                     duration: (step) => 3,
                     promotionEligible: [],
                     nextRank: null
