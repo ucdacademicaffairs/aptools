@@ -338,21 +338,21 @@
             professor: {
                 assistant: {
                     name: 'Assistant Professor',
-                    steps: [1, 2, 3, 4, 5, 6],
+                    steps: [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6],
                     duration: (step) => 2,
-                    promotionEligible: [4, 5, 6],
+                    promotionEligible: [4, 4.5, 5, 5.5, 6],
                     nextRank: 'associate'
                 },
                 associate: {
                     name: 'Associate Professor',
-                    steps: [1, 2, 3, 4, 5],
+                    steps: [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5],
                     duration: (step) => (step < 4 ? 2 : 3),
-                    promotionEligible: [3, 4, 5],
+                    promotionEligible: [3, 3.5, 4, 4.5, 5],
                     nextRank: 'full'
                 },
                 full: {
                     name: 'Professor',
-                    steps: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+                    steps: [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9],
                     duration: (step) => 3, // Exceptions usually at Step 5/9 but omitted for simplicity
                     promotionEligible: [],
                     nextRank: null
@@ -361,21 +361,21 @@
             'lecturer-soe': {
                 assistant: {
                     name: 'Assistant Professor of Teaching',
-                    steps: [1, 2, 3, 4, 5, 6],
+                    steps: [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6],
                     duration: (step) => 2,
-                    promotionEligible: [4, 5, 6],
+                    promotionEligible: [4, 4.5, 5, 5.5, 6],
                     nextRank: 'associate'
                 },
                 associate: {
                     name: 'Associate Professor of Teaching',
-                    steps: [1, 2, 3, 4, 5],
+                    steps: [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5],
                     duration: (step) => (step < 4 ? 2 : 3),
-                    promotionEligible: [3, 4, 5],
+                    promotionEligible: [3, 3.5, 4, 4.5, 5],
                     nextRank: 'full'
                 },
                 full: {
                     name: 'Professor of Teaching',
-                    steps: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+                    steps: [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9],
                     duration: (step) => 3,
                     promotionEligible: [],
                     nextRank: null
@@ -421,7 +421,7 @@
             });
 
             // Try to restore previous step if valid
-            if (data.steps.includes(parseInt(currentStep))) {
+            if (data.steps.includes(parseFloat(currentStep))) {
                 inputs.step.value = currentStep;
             }
             // Logic sync happens inside generateRoadmap
@@ -439,7 +439,7 @@
         function syncForecastDropdowns() {
             const series = inputs.series.value;
             let currentRank = inputs.rank.value;
-            let currentStep = parseInt(inputs.step.value) || 1;
+            let currentStep = parseFloat(inputs.step.value) || 1;
 
             inputs.forecasts.forEach((dropdown, idx) => {
                 const rankData = APM_LOGIC[series][currentRank];
@@ -499,7 +499,7 @@
 
             const series = inputs.series.value;
             const rank = inputs.rank.value;
-            const step = parseInt(inputs.step.value) || 1;
+            const step = parseFloat(inputs.step.value) || 1;
             const effDateString = inputs.date.value;
             if (!effDateString) return;
             const effDate = new Date(effDateString + 'T00:00:00'); // Ensure local time
