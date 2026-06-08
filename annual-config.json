@@ -146,17 +146,10 @@
 			]
 		}
 	},
-	"TUITION_FEES": {
-		"quarterly_tuition": 5196.53,
-		"quarterly_ship": 2664.00,
-		"quarterly_non_resident": 5034.00
-	},
 	"READER_TUTOR_RATE": 22.14,
+	"TUTOR_INDIVIDUAL_RATE": 22.14,
+	"TUTOR_GROUP_RATE": 22.14,
 	"HOURS_PER_FTE_PERCENT": 4.4,
-	"WORK_STUDY": {
-		"UNIT_SALARY_EQUIVALENT": 6526,
-		"SAVINGS_RATE": 0.75
-	},
 	"SUMMER_BENEFIT_RATES": {
 		"ase": 0.017,
 		"senate_lecturer": 0.1
@@ -227,6 +220,152 @@
 			"serviceEnd": "2024-03-22",
 			"payStart": "2023-11-01",
 			"payEnd": "2024-02-29"
+		}
+	},
+	"SCALES": {
+		"2025-2026": {
+			"GSR_SCALE": {
+				"1": 71895,
+				"2": 77467,
+				"3": 83471,
+				"4": 89941,
+				"5": 96912,
+				"6": 104423
+			},
+			"TA_SCALE": {
+				"1": 70720,
+				"2": 72842,
+				"3": 75027
+			},
+			"AI_SCALE": {
+				"1": 74096,
+				"2": 76319,
+				"3": 78609,
+				"4": 80967,
+				"5": 83396,
+				"6": 85898,
+				"7": 88475
+			},
+			"READER_TUTOR_RATE": 22.14,
+			"TUTOR_INDIVIDUAL_RATE": 22.14,
+			"TUTOR_GROUP_RATE": 22.14,
+			"TUITION_FEES": {
+				"quarterly_tuition": 5196.53,
+				"quarterly_ship": 2664.00,
+				"quarterly_non_resident": 5034.00
+			},
+			"WORK_STUDY": {
+				"UNIT_SALARY_EQUIVALENT": 6526,
+				"SAVINGS_RATE": 0.75
+			}
+		},
+		"2026-2027": {
+			"GSR_SCALE": {
+				"1": 76176,
+				"2": 80568,
+				"3": 86712,
+				"4": 93312,
+				"5": 100440,
+				"6": 107520
+			},
+			"TA_SCALE": {
+				"1": 73800,
+				"2": 76374,
+				"3": 78660
+			},
+			"AI_SCALE": {
+				"1": 77364,
+				"2": 79668,
+				"3": 82458,
+				"4": 84294,
+				"5": 86238,
+				"6": 88128,
+				"7": 90162
+			},
+			"READER_TUTOR_RATE": 22.81,
+			"TUTOR_INDIVIDUAL_RATE": 26.66,
+			"TUTOR_GROUP_RATE": 33.23,
+			"TUITION_FEES": {
+				"quarterly_tuition": 5419.30,
+				"quarterly_ship": 2940.00,
+				"quarterly_non_resident": 5034.00
+			},
+			"WORK_STUDY": {
+				"UNIT_SALARY_EQUIVALENT": 6526,
+				"SAVINGS_RATE": 0.75
+			}
+		},
+		"2027-2028": {
+			"GSR_SCALE": {
+				"1": 80712,
+				"2": 83784,
+				"3": 90072,
+				"4": 96816,
+				"5": 104088,
+				"6": 110712
+			},
+			"TA_SCALE": {
+				"1": 77004,
+				"2": 80082,
+				"3": 82476
+			},
+			"AI_SCALE": {
+				"1": 80765,
+				"2": 83178,
+				"3": 86508,
+				"4": 87750,
+				"5": 89172,
+				"6": 90414,
+				"7": 91872
+			},
+			"READER_TUTOR_RATE": 23.67,
+			"TUTOR_INDIVIDUAL_RATE": 27.62,
+			"TUTOR_GROUP_RATE": 34.40,
+			"TUITION_FEES": {
+				"quarterly_tuition": 5419.30,
+				"quarterly_ship": 2940.00,
+				"quarterly_non_resident": 5034.00
+			},
+			"WORK_STUDY": {
+				"UNIT_SALARY_EQUIVALENT": 6526,
+				"SAVINGS_RATE": 0.75
+			}
+		},
+		"2028-2029": {
+			"GSR_SCALE": {
+				"1": 85512,
+				"2": 87120,
+				"3": 93552,
+				"4": 100464,
+				"5": 107880,
+				"6": 114000
+			},
+			"TA_SCALE": {
+				"1": 80352,
+				"2": 83970,
+				"3": 86490
+			},
+			"AI_SCALE": {
+				"1": 84212,
+				"2": 86850,
+				"3": 90738,
+				"4": 91332,
+				"5": 92196,
+				"6": 92772,
+				"7": 93618
+			},
+			"READER_TUTOR_RATE": 24.56,
+			"TUTOR_INDIVIDUAL_RATE": 28.62,
+			"TUTOR_GROUP_RATE": 35.61,
+			"TUITION_FEES": {
+				"quarterly_tuition": 5419.30,
+				"quarterly_ship": 2940.00,
+				"quarterly_non_resident": 5034.00
+			},
+			"WORK_STUDY": {
+				"UNIT_SALARY_EQUIVALENT": 6526,
+				"SAVINGS_RATE": 0.75
+			}
 		}
 	}
 }

@@ -180,8 +180,8 @@
 		"title": "Student Employment Cost Calculator",
 		"category": "Finance",
 		"description": "Create an 'employment schedule' for graduate student employees and display the costs associated. Features proper proration of same-quarter multiple-appointment benefits and work-study. 'GSR Version' and 'STDT Version' are optimized for inclusion in external sites via iFrame.",
-		"lastUpdated": "April 9th, 2026",
-		"lastChange": "Belatedly added Associate Instructor appointments.",
+		"lastUpdated": "May 20th, 2026",
+		"lastChange": "Split Reader/Tutor appointment type into separate Reader and Tutor appointments, with specific hourly Tutor (Individual vs Group) scales, and aggregated hours for fee remission.",
 		"gridSpan": "card-span-2",
 		"buttons": [
 			{
@@ -207,8 +207,8 @@
 		"title": "Summer Salary Scratchpad",
 		"category": "Finance",
 		"description": "Calculates detailed summer session compensation for TAs, AIs, and Lecturers based on annual salary rates and units, including benefit costs and maximum salary caps.",
-		"lastUpdated": "March 10th, 2026",
-		"lastChange": "Added revenue calculator.",
+		"lastUpdated": "May 19th, 2026",
+		"lastChange": "Added dynamic academic year selector (2025-26 through 2028-29) and renamed student step to point.",
 		"gridSpan": "",
 		"buttons": [
 			{
@@ -220,7 +220,7 @@
 	},
 	{
 		"id": "ipa-check",
-		"section": "apps",
+		"section": "archive",
 		"title": "IPA-Disclosure Double Checker",
 		"category": "Utilities",
 		"description": "Takes a Support Assignments XLSX exported from IPA and quickly pulls out name, email, and title to streamline the Disclosure Process check.",
@@ -237,7 +237,7 @@
 	},
 	{
 		"id": "disclosure-flow",
-		"section": "resources",
+		"section": "archive",
 		"title": "Employee Disclosure Workflow",
 		"category": "Resources",
 		"description": "This ZIP folder contains each piece of the Employee Disclosure workflow. Email to be added to the AI model, or request a Zoom for help.",

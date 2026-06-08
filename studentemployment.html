@@ -4,13 +4,14 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Blue Cluster Student Payroll Calculator</title>
+	<title>Student Cost Calculator</title>
 	<script src="https://cdn.tailwindcss.com"></script>
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="shared-tools.css">
-    <script src="header.js" defer></script>
+	<script data-goatcounter="https://junipermonkeys.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+	<script src="header.js" defer></script>
 	<style>
 		.appointment-row {
 			border-bottom: 1px solid #eee;
@@ -45,31 +46,27 @@
 </head>
 
 <body>
-    <div id="header-placeholder"></div>
+	<div id="header-placeholder"></div>
 
 	<main class="w-full max-w-6xl mx-auto p-4 md:p-8">
 		<div class="space-y-6">
 			<div class="relative text-center mb-6 py-4">
-				<div class="absolute inset-0 flex items-center justify-center -z-10 opacity-10">
-					<!-- gear -->
-					<svg class="w-24 h-24 text-[#002855] -rotate-12" xmlns="http://www.w3.org/2000/svg"
-						fill="currentColor" viewBox="0 0 16 16">
-						<path
-							d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z" />
-						<path
-							d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319z" />
-					</svg>
-					<!-- coin -->
-					<svg class="w-20 h-20 text-[#FFBF00] rotate-12 -ml-8" xmlns="http://www.w3.org/2000/svg"
-						fill="currentColor" viewBox="0 0 16 16">
-						<path
-							d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm1.558-6.914c-1.025.23-1.85.748-2.454 1.362-.606.615-.958 1.441-.958 2.422 0 1.01.374 1.837.989 2.458.615.62 1.455.963 2.454.963 1.026 0 1.872-.37 2.488-.973.615-.602.96-1.448.96-2.464 0-1.01-.373-1.834-.988-2.457a3.413 3.413 0 0 0-2.488-.973zm-1.006-4.56c0 .69.28 1.25.775 1.672.497.42.992.63 1.663.63h.053c.69 0 1.27-.244 1.745-.685.472-.443.712-1.04.712-1.798 0-.78-.29-1.424-.81-1.897-.523-.475-1.22-.72-2.03-.72-1.14 0-1.95.43-2.44 1.23-.49.803-.53 1.853-.13 2.825z" />
-						<path
-							d="M4 5.587c0 .69.28 1.25.775 1.672.497.42.992.63 1.663.63h.053c.69 0 1.27-.244 1.745-.685C9.17 6.76 9.41 6.16 9.41 5.413c0-.78-.29-1.424-.81-1.897-.523-.475-1.22-.72-2.03-.72-1.14 0-1.95.43-2.44 1.23-.49.803-.53 1.853-.13 2.825z" />
-					</svg>
+				<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-6">
+					<div class="relative text-center md:text-left">
+						<h2 class="text-4xl font-bold text-[#002855]">Student Employment Cost Calculator</h2>
+					</div>
+					<div class="flex items-center gap-2 justify-center bg-white p-2 rounded-lg border shadow-sm">
+						<label for="academic-year-select"
+							class="text-sm font-semibold text-gray-700 whitespace-nowrap">Academic Year:</label>
+						<select id="academic-year-select"
+							class="h-9 px-3 border rounded text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-[#002855]">
+							<option value="2025-2026">2025-2026</option>
+							<option value="2026-2027">2026-2027</option>
+							<option value="2027-2028">2027-2028</option>
+							<option value="2028-2029">2028-2029</option>
+						</select>
+					</div>
 				</div>
-				<h2 class="text-4xl font-bold text-[#002855]">Student Employment Cost Calculator</h2>
-				<p class="text-lg text-gray-600 mt-1">At 10/1/25 Salary Rates</p>
 			</div>
 
 			<div class="card">
@@ -81,7 +78,8 @@
 					<button class="btn" data-type="gsr">GSR</button>
 					<button class="btn" data-type="ta">TA</button>
 					<button class="btn" data-type="ai">AI</button>
-					<button class="btn" data-type="reader">Reader/Tutor</button>
+					<button class="btn" data-type="reader">Reader</button>
+					<button class="btn" data-type="tutor">Tutor</button>
 					<button class="btn" data-type="student-assistant">Student Assistant</button>
 				</div>
 			</div>
@@ -172,6 +170,31 @@
 			// I'd also like to store the step-by-step calculation details for the "Show Your Work" section.
 			let calculationDetails = {};
 
+			let currentYearKey = "";
+
+			function updateSelectedYear(year) {
+				currentYearKey = year;
+				const yearScale = COST_DATA.SCALES[year];
+				if (yearScale) {
+					COST_DATA.GSR_SCALE = yearScale.GSR_SCALE;
+					COST_DATA.TA_SCALE = yearScale.TA_SCALE;
+					COST_DATA.AI_SCALE = yearScale.AI_SCALE;
+					COST_DATA.READER_TUTOR_RATE = yearScale.READER_TUTOR_RATE;
+					COST_DATA.TUTOR_INDIVIDUAL_RATE = yearScale.TUTOR_INDIVIDUAL_RATE;
+					COST_DATA.TUTOR_GROUP_RATE = yearScale.TUTOR_GROUP_RATE;
+					COST_DATA.TUITION_FEES = yearScale.TUITION_FEES;
+					COST_DATA.WORK_STUDY = yearScale.WORK_STUDY;
+				}
+			}
+
+			function getDefaultYear() {
+				const d = new Date();
+				const year = d.getFullYear();
+				const selectedYear = d.getMonth() >= 5 ? year : (year - 1);
+				const clampedYear = Math.max(2025, Math.min(2028, selectedYear));
+				return `${clampedYear}-${clampedYear + 1}`;
+			}
+
 			// First, define our initialization wrapper that fetches config
 			async function initialize() {
 				try {
@@ -182,6 +205,20 @@
 					console.error("Could not load annual configuration:", error);
 					alert("There was an error loading the configuration for this page. Please refresh.");
 					return;
+				}
+
+				const defaultYear = getDefaultYear();
+				const yearSelect = document.getElementById('academic-year-select');
+				if (yearSelect) {
+					yearSelect.value = defaultYear;
+					updateSelectedYear(defaultYear);
+					yearSelect.addEventListener('change', (e) => {
+						updateSelectedYear(e.target.value);
+						populateBaseCosts();
+						fullRender();
+					});
+				} else {
+					updateSelectedYear(defaultYear);
 				}
 
 				// Apply base costs to UI
@@ -272,7 +309,7 @@
 				if (key === 'percentTime') {
 					appt.values.hours = (parseFloat(appt.values.percentTime) || 0) * COST_DATA.HOURS_PER_FTE_PERCENT;
 				}
-				if (key === 'workStudy') {
+				if (key === 'workStudy' || key === 'tutorType') {
 					fullRender();
 				} else {
 					calculateAllCosts();
@@ -310,21 +347,23 @@
 			function populateBaseCosts() {
 				baseCostsContainer.innerHTML = `
 				<div>
-					<h4 class="font-bold">GSR Annual Salary Scale (2025-26)</h4>
-					<div class="grid grid-cols-2 md:grid-cols-6 gap-2 mt-1">${Object.entries(COST_DATA.GSR_SCALE).map(([step, val]) => `<div><label class="text-xs">Step ${step}</label><input type="number" class="w-full p-1 border rounded" data-key="GSR_SCALE.${step}" value="${val}"></div>`).join('')}</div>
+					<h4 class="font-bold">GSR Annual Salary Scale (${currentYearKey})</h4>
+					<div class="grid grid-cols-2 md:grid-cols-6 gap-2 mt-1">${Object.entries(COST_DATA.GSR_SCALE).map(([step, val]) => `<div><label class="text-xs">Point ${step}</label><input type="number" class="w-full p-1 border rounded" data-key="GSR_SCALE.${step}" value="${val}"></div>`).join('')}</div>
 				</div>
 				<div>
-					<h4 class="font-bold">TA Annual Salary Scale (2025-26, 9-month)</h4>
-					<div class="grid grid-cols-2 md:grid-cols-3 gap-2 mt-1">${Object.entries(COST_DATA.TA_SCALE).map(([step, val]) => `<div><label class="text-xs">Step ${step}</label><input type="number" class="w-full p-1 border rounded" data-key="TA_SCALE.${step}" value="${val}"></div>`).join('')}</div>
+					<h4 class="font-bold">TA Annual Salary Scale (${currentYearKey}, 9-month)</h4>
+					<div class="grid grid-cols-2 md:grid-cols-3 gap-2 mt-1">${Object.entries(COST_DATA.TA_SCALE).map(([step, val]) => `<div><label class="text-xs">Point ${step}</label><input type="number" class="w-full p-1 border rounded" data-key="TA_SCALE.${step}" value="${val}"></div>`).join('')}</div>
 				</div>
 				<div>
-					<h4 class="font-bold">AI Annual Salary Scale (2025-26, 9-month)</h4>
+					<h4 class="font-bold">AI Annual Salary Scale (${currentYearKey}, 9-month)</h4>
 					<div class="grid grid-cols-2 md:grid-cols-7 gap-2 mt-1">${Object.entries(COST_DATA.AI_SCALE || {}).map(([step, val]) => `<div><label class="text-xs">Point ${step}</label><input type="number" class="w-full p-1 border rounded" data-key="AI_SCALE.${step}" value="${val}"></div>`).join('')}</div>
 				</div>
 				<div>
-					<h4 class="font-bold">Reader/Tutor Hourly Rate</h4>
+					<h4 class="font-bold">Reader & Tutor Hourly Rates</h4>
 					<div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-1">
-						<div><label class="text-xs">Rate ($/hr)</label><input type="number" class="w-full p-1 border rounded" data-key="READER_TUTOR_RATE" value="${COST_DATA.READER_TUTOR_RATE}"></div>
+						<div><label class="text-xs">Reader ($/hr)</label><input type="number" step="0.01" class="w-full p-1 border rounded" data-key="READER_TUTOR_RATE" value="${COST_DATA.READER_TUTOR_RATE}"></div>
+						<div><label class="text-xs">Tutor - Individual ($/hr)</label><input type="number" step="0.01" class="w-full p-1 border rounded" data-key="TUTOR_INDIVIDUAL_RATE" value="${COST_DATA.TUTOR_INDIVIDUAL_RATE}"></div>
+						<div><label class="text-xs">Tutor - Group ($/hr)</label><input type="number" step="0.01" class="w-full p-1 border rounded" data-key="TUTOR_GROUP_RATE" value="${COST_DATA.TUTOR_GROUP_RATE}"></div>
 					</div>
 				</div>
 				 <div>
@@ -366,6 +405,9 @@
 					},
 					costs: {}
 				};
+				if (type === 'tutor') {
+					newAppt.values.tutorType = 'Individual';
+				}
 				if (type !== 'gsr' && type !== 'ta' && type !== 'ai') {
 					delete newAppt.values.workStudy;
 					delete newAppt.values.workStudyUnits;
@@ -389,7 +431,7 @@
 						case 'gsr':
 							inputsHtml = `<div class="grid grid-cols-2 lg:grid-cols-7 gap-4 mt-2">
 								<div><label class="block text-xs">Quarter</label><select id="input-${appt.id}-quarter" data-calc="quarter" class="w-full p-1 border rounded">${quarterOptions}</select></div>
-								<div><label class="block text-xs">Step</label><select id="input-${appt.id}-step" data-calc="step" class="w-full p-1 border rounded">${Object.keys(COST_DATA.GSR_SCALE).map(step => `<option value="${step}" ${step === appt.values.step ? 'selected' : ''}>${step}</option>`).join('')}</select></div>
+								<div><label class="block text-xs">Point</label><select id="input-${appt.id}-step" data-calc="step" class="w-full p-1 border rounded">${Object.keys(COST_DATA.GSR_SCALE).map(step => `<option value="${step}" ${step === appt.values.step ? 'selected' : ''}>${step}</option>`).join('')}</select></div>
 								${percentTimeDropdown}
 								<div><label class="block text-xs">Total Hours</label><input type="number" class="w-full p-1 border rounded" value="${displayHours.toFixed(0)}" readonly></div>
 								<div class="text-center"><label class="block text-xs">Include NRST?</label><input type="checkbox" id="input-${appt.id}-nonResident" data-calc="nonResident" class="h-6 w-6 mt-1" ${appt.values.nonResident ? 'checked' : ''}></div>
@@ -400,7 +442,7 @@
 						case 'ta':
 							inputsHtml = `<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mt-2">
 								<div><label class="block text-xs">Quarter</label><select id="input-${appt.id}-quarter" data-calc="quarter" class="w-full p-1 border rounded">${quarterOptions}</select></div>
-								<div><label class="block text-xs">Step</label><select id="input-${appt.id}-step" data-calc="step" class="w-full p-1 border rounded">${Object.keys(COST_DATA.TA_SCALE).map(step => `<option value="${step}" ${step === appt.values.step ? 'selected' : ''}>${step}</option>`).join('')}</select></div>
+								<div><label class="block text-xs">Point</label><select id="input-${appt.id}-step" data-calc="step" class="w-full p-1 border rounded">${Object.keys(COST_DATA.TA_SCALE).map(step => `<option value="${step}" ${step === appt.values.step ? 'selected' : ''}>${step}</option>`).join('')}</select></div>
 								${percentTimeDropdown}
 								<div><label class="block text-xs">Total Hours</label><input type="number" class="w-full p-1 border rounded" value="${displayHours.toFixed(0)}" readonly></div>
 								<div class="text-center"><label class="block text-xs">Include NRST?</label><input type="checkbox" id="input-${appt.id}-nonResident" data-calc="nonResident" class="h-6 w-6 mt-1" ${appt.values.nonResident ? 'checked' : ''}></div>
@@ -423,6 +465,21 @@
 								<div class="text-center"><label class="block text-xs">Include NRST?</label><input type="checkbox" id="input-${appt.id}-nonResident" data-calc="nonResident" class="h-6 w-6 mt-1" ${appt.values.nonResident ? 'checked' : ''}></div>
 							</div>`;
 							break;
+						case 'tutor':
+							inputsHtml = `<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mt-2">
+								<div><label class="block text-xs">Quarter</label><select id="input-${appt.id}-quarter" data-calc="quarter" class="w-full p-1 border rounded">${quarterOptions}</select></div>
+								<div>
+									<label class="block text-xs">Tutor Type</label>
+									<select id="input-${appt.id}-tutorType" data-calc="tutorType" class="w-full p-1 border rounded">
+										<option value="Individual" ${appt.values.tutorType === 'Individual' ? 'selected' : ''}>Individual</option>
+										<option value="Group" ${appt.values.tutorType === 'Group' ? 'selected' : ''}>Group</option>
+									</select>
+								</div>
+								${percentTimeDropdown}
+								<div><label class="block text-xs">Total Hours</label><input type="number" class="w-full p-1 border rounded" value="${displayHours.toFixed(0)}" readonly></div>
+								<div class="text-center"><label class="block text-xs">Include NRST?</label><input type="checkbox" id="input-${appt.id}-nonResident" data-calc="nonResident" class="h-6 w-6 mt-1" ${appt.values.nonResident ? 'checked' : ''}></div>
+							</div>`;
+							break;
 						case 'student-assistant':
 							inputsHtml = `<div class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
 								<div><label class="block text-xs">Quarter</label><select id="input-${appt.id}-quarter" data-calc="quarter" class="w-full p-1 border rounded">${quarterOptions}</select></div>
@@ -431,7 +488,7 @@
 							</div>`;
 							break;
 					}
-					const typeName = appt.type === 'student-assistant' ? 'Student Assistant' : (appt.type === 'reader' ? 'Reader/Tutor' : (appt.type === 'ai' ? 'Associate Instructor' : appt.type.toUpperCase()));
+					const typeName = appt.type === 'student-assistant' ? 'Student Assistant' : (appt.type === 'reader' ? 'Reader' : (appt.type === 'tutor' ? `Tutor (${appt.values.tutorType || 'Individual'})` : (appt.type === 'ai' ? 'Associate Instructor' : appt.type.toUpperCase())));
 					const gridColsClass = (appt.type === 'gsr' || appt.type === 'ta' || appt.type === 'ai') ? (appt.values.workStudy ? 'md:grid-cols-6' : 'md:grid-cols-5') : 'md:grid-cols-5';
 
 					return `<div class="appointment-row" id="appointment-${appt.id}" data-id="${appt.id}" data-type="${appt.type}">
@@ -499,6 +556,11 @@
 						const hours = parseFloat(appt.values.hours) || 0;
 						salary = hours * COST_DATA.READER_TUTOR_RATE;
 						salaryFormula = `${hours.toFixed(1)} hrs * ${formatCurrency(COST_DATA.READER_TUTOR_RATE)}/hr = ${formatCurrency(salary)}`;
+					} else if (appt.type === 'tutor') {
+						const hours = parseFloat(appt.values.hours) || 0;
+						const rate = appt.values.tutorType === 'Group' ? COST_DATA.TUTOR_GROUP_RATE : COST_DATA.TUTOR_INDIVIDUAL_RATE;
+						salary = hours * rate;
+						salaryFormula = `${hours.toFixed(1)} hrs * ${formatCurrency(rate)}/hr = ${formatCurrency(salary)}`;
 					} else if (appt.type === 'student-assistant') {
 						const hours = parseFloat(appt.values.hours) || 0, rate = parseFloat(appt.values.hourlyRate) || 0;
 						salary = hours * rate;
@@ -521,11 +583,11 @@
 					log.push(`<p>&nbsp;&nbsp;- ${typeName} #${appt.id} Salary: ${appt.costs.salaryFormula}</p>`);
 					log.push(`<p>&nbsp;&nbsp;- ${typeName} #${appt.id} Benefits: ${formatCurrency(appt.costs.salary)} * ${totalBenefitRate.toFixed(4)} = ${formatCurrency(appt.costs.benefits)}</p>`);
 				});
-				const titleTotals = { gsr: { percentTime: 0, salary: 0, eligible: false }, ta: { percentTime: 0, salary: 0, eligible: false }, ai: { percentTime: 0, salary: 0, eligible: false }, reader: { hours: 0, salary: 0, eligible: false } };
+				const titleTotals = { gsr: { percentTime: 0, salary: 0, eligible: false }, ta: { percentTime: 0, salary: 0, eligible: false }, ai: { percentTime: 0, salary: 0, eligible: false }, reader: { hours: 0, salary: 0, eligible: false }, tutor: { hours: 0, salary: 0, eligible: false } };
 				let totalStudentFTE = 0;
 				quarterAppts.forEach(appt => {
 					if (titleTotals[appt.type]) {
-						if (appt.type === 'reader') {
+						if (appt.type === 'reader' || appt.type === 'tutor') {
 							titleTotals[appt.type].hours += parseFloat(appt.values.hours) || 0;
 						} else if (appt.type === 'gsr' || appt.type === 'ta' || appt.type === 'ai') {
 							const percent = parseFloat(appt.values.percentTime) || 0;
@@ -537,23 +599,30 @@
 				});
 				log.push(`<p class="font-semibold mt-2">2. Fee Remission Eligibility Check:</p>`);
 				let eligibleTitles = [];
+				const combinedHours = titleTotals.reader.hours + titleTotals.tutor.hours;
 				Object.keys(titleTotals).forEach(type => {
 					let isEligible = false, statusText = '';
-					if (type === 'reader') {
-						isEligible = titleTotals[type].hours >= 110;
+					if (type === 'reader' || type === 'tutor') {
+						isEligible = combinedHours >= 110;
 						statusText = isEligible ? '<span style="color: #266040; font-weight: bold;">ELIGIBLE</span>' : '<span style="color: #c10330; font-weight: bold;">INELIGIBLE</span>';
-						log.push(`<p>&nbsp;&nbsp;- Reader/Tutor: Total hours ${titleTotals[type].hours.toFixed(0)} >= 110? -> ${statusText}</p>`);
 					} else if (type === 'gsr' || type === 'ta' || type === 'ai') {
 						const isConsolidatedEligible = totalStudentFTE >= 25;
 						isEligible = isConsolidatedEligible;
 						statusText = isEligible ? '<span style="color: #266040; font-weight: bold;">ELIGIBLE</span>' : '<span style="color: #c10330; font-weight: bold;">INELIGIBLE</span>';
-						log.push(`<p>&nbsp;&nbsp;- ${type.toUpperCase()} Group: Total Quarter Effort ${totalStudentFTE}% >= 25%? -> ${statusText}</p>`);
 					}
 					if (isEligible) {
 						titleTotals[type].eligible = true;
 						eligibleTitles.push(type);
 					}
 				});
+				if (titleTotals.reader.hours > 0 || titleTotals.tutor.hours > 0) {
+					const statusText = combinedHours >= 110 ? '<span style="color: #266040; font-weight: bold;">ELIGIBLE</span>' : '<span style="color: #c10330; font-weight: bold;">INELIGIBLE</span>';
+					log.push(`<p>&nbsp;&nbsp;- Reader/Tutor Combined: Total hours ${combinedHours.toFixed(0)} >= 110? -> ${statusText}</p>`);
+				}
+				if (titleTotals.gsr.percentTime > 0 || titleTotals.ta.percentTime > 0 || titleTotals.ai.percentTime > 0) {
+					const statusText = totalStudentFTE >= 25 ? '<span style="color: #266040; font-weight: bold;">ELIGIBLE</span>' : '<span style="color: #c10330; font-weight: bold;">INELIGIBLE</span>';
+					log.push(`<p>&nbsp;&nbsp;- GSR/TA/AI Group: Total Quarter Effort ${totalStudentFTE}% >= 25%? -> ${statusText}</p>`);
+				}
 				if (eligibleTitles.length === 0) {
 					log.push(`<p class="font-semibold mt-2">Result: No appointments eligible for fee remission.</p>`);
 					quarterAppts.forEach(appt => appt.costs.total = appt.costs.salary + appt.costs.benefits);

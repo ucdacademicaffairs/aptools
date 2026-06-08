@@ -11,6 +11,8 @@
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="shared-tools.css">
+	<script data-goatcounter="https://junipermonkeys.goatcounter.com/count"
+		async src="//gc.zgo.at/count.js"></script>
 	<script src="header.js" defer></script>
 	<style>
 		.appointment-row {
@@ -76,10 +78,20 @@
 
 	<main class="w-full max-w-6xl mx-auto p-4 md:p-8 no-print">
 		<div class="space-y-6">
-			<div class="relative text-center mb-6 py-4">
-				<h2 class="text-4xl font-bold text-[#002855]">Student Appointment Notification Generator</h2>
-				<p class="text-lg text-gray-600 mt-1">Generate formal offer letters from employment data. It's a beta!
-					Please be careful.</p>
+			<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 py-4 border-b pb-6">
+				<div class="relative text-center md:text-left">
+					<h2 class="text-4xl font-bold text-[#002855]">Student Appointment Notification Generator</h2>
+					<p class="text-lg text-gray-600 mt-1">Generate formal offer letters from employment data. It's a beta! Please be careful.</p>
+				</div>
+				<div class="flex items-center gap-2 justify-center bg-white p-2 rounded-lg border shadow-sm">
+					<label for="academic-year-select" class="text-sm font-semibold text-gray-700 whitespace-nowrap">Academic Year:</label>
+					<select id="academic-year-select" class="h-9 px-3 border rounded text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-[#002855]">
+						<option value="2025-2026">2025-2026</option>
+						<option value="2026-2027">2026-2027</option>
+						<option value="2027-2028">2027-2028</option>
+						<option value="2028-2029">2028-2029</option>
+					</select>
+				</div>
 			</div>
 
 			<div class="card space-y-6">
@@ -191,7 +203,8 @@
 						<button class="btn" data-type="gsr">GSR</button>
 						<button class="btn" data-type="ta">TA</button>
 						<button class="btn" data-type="ai">AI</button>
-						<button class="btn" data-type="reader">Reader/Tutor</button>
+						<button class="btn" data-type="reader">Reader</button>
+						<button class="btn" data-type="tutor">Tutor</button>
 					</div>
 				</div>
 
@@ -216,7 +229,7 @@
 					</div>
 				</div>
 				<p class="text-sm text-gray-600 mb-4">Paste directly from Excel (Student Name, Email, Type, Quarter,
-					Step/Point, % Time, Supervisor) or add rows manually.</p>
+					Point, % Time, Supervisor) or add rows manually.</p>
 				<div class="overflow-x-auto">
 					<table class="w-full text-left border-collapse">
 						<thead>
@@ -225,7 +238,7 @@
 								<th class="p-2 border font-bold">Email</th>
 								<th class="p-2 border font-bold">Type</th>
 								<th class="p-2 border font-bold">Quarter</th>
-								<th class="p-2 border font-bold">Step/Point</th>
+								<th class="p-2 border font-bold">Point</th>
 								<th class="p-2 border font-bold">% Time</th>
 								<th class="p-2 border font-bold">Supervisor</th>
 								<th class="p-2 border text-center font-bold">Action</th>
@@ -295,6 +308,31 @@
 				'global-contact-name', 'global-contact-phone', 'global-contact-email'
 			];
 
+			let currentYearKey = "";
+
+			function updateSelectedYear(year) {
+				currentYearKey = year;
+				const yearScale = COST_DATA.SCALES[year];
+				if (yearScale) {
+					COST_DATA.GSR_SCALE = yearScale.GSR_SCALE;
+					COST_DATA.TA_SCALE = yearScale.TA_SCALE;
+					COST_DATA.AI_SCALE = yearScale.AI_SCALE;
+					COST_DATA.READER_TUTOR_RATE = yearScale.READER_TUTOR_RATE;
+					COST_DATA.TUTOR_INDIVIDUAL_RATE = yearScale.TUTOR_INDIVIDUAL_RATE;
+					COST_DATA.TUTOR_GROUP_RATE = yearScale.TUTOR_GROUP_RATE;
+					COST_DATA.TUITION_FEES = yearScale.TUITION_FEES;
+					COST_DATA.WORK_STUDY = yearScale.WORK_STUDY;
+				}
+			}
+
+			function getDefaultYear() {
+				const d = new Date();
+				const year = d.getFullYear();
+				const selectedYear = d.getMonth() >= 5 ? year : (year - 1);
+				const clampedYear = Math.max(2025, Math.min(2028, selectedYear));
+				return `${clampedYear}-${clampedYear + 1}`;
+			}
+
 			// ── Init ──────────────────────────────────────────────────────────────────
 			async function initialize() {
 				try {
@@ -302,6 +340,21 @@
 				} catch (e) {
 					alert("Error loading configuration. Please refresh."); return;
 				}
+
+				// Set default year and initialize scales
+				const defaultYear = getDefaultYear();
+				const yearSelect = document.getElementById('academic-year-select');
+				if (yearSelect) {
+					yearSelect.value = defaultYear;
+					updateSelectedYear(defaultYear);
+					yearSelect.addEventListener('change', (e) => {
+						updateSelectedYear(e.target.value);
+						fullRender();
+					});
+				} else {
+					updateSelectedYear(defaultYear);
+				}
+
 				persistentFields.forEach(id => {
 					const saved = localStorage.getItem(id);
 					if (saved) document.getElementById(id).value = saved;
@@ -390,7 +443,7 @@
 				['Fall', 'Winter', 'Spring'].forEach(quarter => {
 					let total = 0;
 					appointments.filter(a => a.values.quarter === quarter).forEach(a => {
-						total += a.type === 'reader'
+						total += (a.type === 'reader' || a.type === 'tutor')
 							? (parseFloat(a.values.percentTime) || 0) / 4.4
 							: (parseFloat(a.values.percentTime) || 0);
 					});
@@ -433,9 +486,10 @@
 				appointments.push({
 					id: ++appointmentCounter, type,
 					values: {
-						quarter: 'Fall', step: '1', percentTime: type === 'reader' ? '110' : '50',
+						quarter: 'Fall', step: '1', percentTime: (type === 'reader' || type === 'tutor') ? '110' : '50',
 						supervisor: '', hideSupervisor: false,
-						workDuties: type === 'gsr' ? 'Conducting research related to...' : ''
+						workDuties: type === 'gsr' ? 'Conducting research related to...' : '',
+						tutorType: type === 'tutor' ? 'Individual' : undefined
 					},
 					costs: {}
 				});
@@ -501,14 +555,22 @@
 					let type = 'ta';
 					if (typeRaw.includes('ai') || typeRaw.includes('associate')) type = 'ai';
 					else if (typeRaw.includes('gsr') || typeRaw.includes('research')) type = 'gsr';
-					else if (typeRaw.includes('reader') || typeRaw.includes('tutor')) type = 'reader';
+					else if (typeRaw.includes('reader')) type = 'reader';
+					else if (typeRaw.includes('tutor')) type = 'tutor';
+
+					let step = cols[4] ? cols[4].trim() : '1';
+					if (type === 'gsr' || type === 'ta' || type === 'ai') {
+						step = step.replace(/[^0-9]/g, '') || '1';
+					} else if (type === 'tutor') {
+						step = step.toLowerCase().includes('group') ? 'Group' : 'Individual';
+					}
 
 					const data = {
 						name: cols[0] ? cols[0].trim() : '',
 						email: cols[1] ? cols[1].trim() : '',
 						type: type,
 						quarter: cols[3] ? cols[3].trim() : 'Fall',
-						step: cols[4] ? cols[4].replace(/[^0-9]/g, '') : '1',
+						step: step,
 						percentTime: cols[5] ? cols[5].replace(/[^0-9]/g, '') : '50',
 						supervisor: cols[6] ? cols[6].trim() : ''
 					};
@@ -525,18 +587,19 @@
 
 			function renderBulkTable() {
 				bulkTbody.innerHTML = bulkRows.map(r => {
-					const typeOpts = `<option value="ta" ${r.type === 'ta' ? 'selected' : ''}>TA</option><option value="gsr" ${r.type === 'gsr' ? 'selected' : ''}>GSR</option><option value="reader" ${r.type === 'reader' ? 'selected' : ''}>Reader</option><option value="ai" ${r.type === 'ai' ? 'selected' : ''}>AI</option>`;
+					const typeOpts = `<option value="ta" ${r.type === 'ta' ? 'selected' : ''}>TA</option><option value="gsr" ${r.type === 'gsr' ? 'selected' : ''}>GSR</option><option value="reader" ${r.type === 'reader' ? 'selected' : ''}>Reader</option><option value="tutor" ${r.type === 'tutor' ? 'selected' : ''}>Tutor</option><option value="ai" ${r.type === 'ai' ? 'selected' : ''}>AI</option>`;
 					const qOpts = ['Fall', 'Winter', 'Spring'].map(q => `<option ${r.quarter === q ? 'selected' : ''}>${q}</option>`).join('');
 
 					let stepOpts = '';
-					if (r.type === 'gsr') stepOpts = Object.keys(COST_DATA.GSR_SCALE || {}).map(s => `<option value="${s}" ${s === r.step ? 'selected' : ''}>Step ${s}</option>`).join('');
-					else if (r.type === 'ta') stepOpts = Object.keys(COST_DATA.TA_SCALE || {}).map(s => `<option value="${s}" ${s === r.step ? 'selected' : ''}>Step ${s}</option>`).join('');
+					if (r.type === 'gsr') stepOpts = Object.keys(COST_DATA.GSR_SCALE || {}).map(s => `<option value="${s}" ${s === r.step ? 'selected' : ''}>Point ${s}</option>`).join('');
+					else if (r.type === 'ta') stepOpts = Object.keys(COST_DATA.TA_SCALE || {}).map(s => `<option value="${s}" ${s === r.step ? 'selected' : ''}>Point ${s}</option>`).join('');
 					else if (r.type === 'ai') stepOpts = Object.keys(COST_DATA.AI_SCALE || {}).map(s => `<option value="${s}" ${s === r.step ? 'selected' : ''}>Point ${s}</option>`).join('');
+					else if (r.type === 'tutor') stepOpts = `<option value="Individual" ${r.step === 'Individual' ? 'selected' : ''}>Individual</option><option value="Group" ${r.step === 'Group' ? 'selected' : ''}>Group</option>`;
 					else if (r.type === 'reader') stepOpts = `<option value="1">N/A</option>`;
 
 					const pctOpts = [25, 50, 75].map(v => {
 						const hrs = Math.round(v * 4.4);
-						const val = r.type === 'reader' ? hrs : v;
+						const val = (r.type === 'reader' || r.type === 'tutor') ? hrs : v;
 						return `<option value="${val}" ${val == r.percentTime ? 'selected' : ''}>${v}%</option>`;
 					}).join('');
 
@@ -569,10 +632,10 @@
 					const quarterOptions = ['Fall', 'Winter', 'Spring'].map(q =>
 						`<option ${q === appt.values.quarter ? 'selected' : ''}>${q}</option>`).join('');
 					let scaleOptions = '';
-					if (appt.type === 'gsr') scaleOptions = Object.keys(COST_DATA.GSR_SCALE).map(s => `<option value="${s}" ${s === appt.values.step ? 'selected' : ''}>Step ${s}</option>`).join('');
-					if (appt.type === 'ta') scaleOptions = Object.keys(COST_DATA.TA_SCALE).map(s => `<option value="${s}" ${s === appt.values.step ? 'selected' : ''}>Step ${s}</option>`).join('');
+					if (appt.type === 'gsr') scaleOptions = Object.keys(COST_DATA.GSR_SCALE).map(s => `<option value="${s}" ${s === appt.values.step ? 'selected' : ''}>Point ${s}</option>`).join('');
+					if (appt.type === 'ta') scaleOptions = Object.keys(COST_DATA.TA_SCALE).map(s => `<option value="${s}" ${s === appt.values.step ? 'selected' : ''}>Point ${s}</option>`).join('');
 					if (appt.type === 'ai') scaleOptions = Object.keys(COST_DATA.AI_SCALE).map(s => `<option value="${s}" ${s === appt.values.step ? 'selected' : ''}>Point ${s}</option>`).join('');
-					const stepLabel = appt.type === 'ai' ? 'Point' : 'Step';
+					const stepLabel = 'Point';
 					const dutiesHtml = appt.type === 'gsr' ? `
 					<div class="col-span-full">
 						<label class="block text-xs font-semibold">Brief Statement of Work Duties</label>
@@ -591,7 +654,15 @@
 							<label class="block text-xs font-semibold">Quarter</label>
 							<select data-calc="quarter" class="w-full p-1 mt-1 h-[30px] border rounded leading-none">${quarterOptions}</select>
 						</div>
-						${appt.type !== 'reader' ? `
+						${appt.type === 'tutor' ? `
+						<div>
+							<label class="block text-xs font-semibold">Tutor Type</label>
+							<select data-calc="tutorType" class="w-full p-1 mt-1 h-[30px] border rounded leading-none">
+								<option value="Individual" ${appt.values.tutorType === 'Individual' ? 'selected' : ''}>Individual</option>
+								<option value="Group" ${appt.values.tutorType === 'Group' ? 'selected' : ''}>Group</option>
+							</select>
+						</div>` : ''}
+						${(appt.type !== 'reader' && appt.type !== 'tutor') ? `
 						<div>
 							<label class="block text-xs font-semibold">${stepLabel}</label>
 							<select data-calc="step" class="w-full p-1 mt-1 h-[30px] border rounded leading-none">${scaleOptions}</select>
@@ -601,7 +672,7 @@
 							<select data-calc="percentTime" class="w-full p-1 mt-1 h-[30px] border rounded leading-none">
 								${[25, 50, 75].map(v => {
 						const hrs = Math.round(v * 4.4);
-						const val = appt.type === 'reader' ? hrs : v;
+						const val = (appt.type === 'reader' || appt.type === 'tutor') ? hrs : v;
 						return `<option value="${val}" ${val == appt.values.percentTime ? 'selected' : ''}>${v}% / ${hrs} hours</option>`;
 					}).join('')}
 							</select>
@@ -631,8 +702,9 @@
 					else if (appt.type === 'ta') base = (COST_DATA.TA_SCALE[appt.values.step] || 0) / 9;
 					else if (appt.type === 'ai') base = (COST_DATA.AI_SCALE[appt.values.step] || 0) / 9;
 					else if (appt.type === 'reader') base = COST_DATA.READER_TUTOR_RATE;
+					else if (appt.type === 'tutor') base = appt.values.tutorType === 'Group' ? COST_DATA.TUTOR_GROUP_RATE : COST_DATA.TUTOR_INDIVIDUAL_RATE;
 					const fte = parseFloat(appt.values.percentTime) / 100;
-					appt.costs = { monthlyBase: base, monthlyActual: appt.type === 'reader' ? base : base * fte, fte };
+					appt.costs = { monthlyBase: base, monthlyActual: (appt.type === 'reader' || appt.type === 'tutor') ? base : base * fte, fte };
 				});
 			}
 
@@ -692,7 +764,8 @@
 			function buildLetterGroups() {
 				const groups = {};
 				appointments.forEach(appt => {
-					const key = `${appt.type}-${appt.values.step}-${appt.values.percentTime}-${appt.values.workDuties || ''}`;
+					const stepVal = appt.type === 'tutor' ? (appt.values.tutorType || 'Individual') : appt.values.step;
+					const key = `${appt.type}-${stepVal}-${appt.values.percentTime}-${appt.values.workDuties || ''}`;
 					(groups[key] = groups[key] || []).push(appt);
 				});
 				const qOrder = { Fall: 1, Winter: 2, Spring: 3 };
@@ -712,7 +785,8 @@
 						payDates: getCombinedPayDatesList(quartersArr),
 						serviceDates: getServiceDates(quartersArr),
 						duties: sample.values.workDuties || '',
-						step: sample.values.step
+						step: sample.values.step,
+						tutorType: sample.values.tutorType
 					};
 				});
 			}
@@ -727,6 +801,7 @@
 					else if (r.type === 'ta') base = (COST_DATA.TA_SCALE[r.step] || 0) / 9;
 					else if (r.type === 'ai') base = (COST_DATA.AI_SCALE[r.step] || 0) / 9;
 					else if (r.type === 'reader') base = COST_DATA.READER_TUTOR_RATE;
+					else if (r.type === 'tutor') base = r.step === 'Group' ? COST_DATA.TUTOR_GROUP_RATE : COST_DATA.TUTOR_INDIVIDUAL_RATE;
 					const fte = parseFloat(r.percentTime) / 100;
 
 					return {
@@ -738,11 +813,12 @@
 							percentTime: r.percentTime,
 							supervisor: r.supervisor,
 							hideSupervisor: hideAllSup,
-							workDuties: r.type === 'gsr' ? 'Conducting research related to your studies.' : ''
+							workDuties: r.type === 'gsr' ? 'Conducting research related to your studies.' : '',
+							tutorType: r.type === 'tutor' ? r.step : undefined
 						},
 						costs: {
 							monthlyBase: base,
-							monthlyActual: r.type === 'reader' ? base : base * fte,
+							monthlyActual: (r.type === 'reader' || r.type === 'tutor') ? base : base * fte,
 							fte: fte
 						}
 					};
@@ -750,7 +826,8 @@
 
 				const groups = {};
 				mockAppts.forEach(appt => {
-					const key = `${appt.type}-${appt.values.step}-${appt.values.percentTime}-${appt.values.workDuties || ''}`;
+					const stepVal = appt.type === 'tutor' ? (appt.values.tutorType || 'Individual') : appt.values.step;
+					const key = `${appt.type}-${stepVal}-${appt.values.percentTime}-${appt.values.workDuties || ''}`;
 					(groups[key] = groups[key] || []).push(appt);
 				});
 
@@ -771,7 +848,8 @@
 						payDates: getCombinedPayDatesList(quartersArr),
 						serviceDates: getServiceDates(quartersArr),
 						duties: sample.values.workDuties || '',
-						step: sample.values.step
+						step: sample.values.step,
+						tutorType: sample.values.tutorType
 					};
 				});
 			}
@@ -823,12 +901,13 @@
 
 				return groups.map(g => {
 					const isGsr = g.type === 'gsr';
-					const isHourly = g.type === 'reader';
+					const isHourly = (g.type === 'reader' || g.type === 'tutor');
 					let title = g.type === 'ta' ? 'Teaching Assistant'
 						: g.type === 'ai' ? 'Associate Instructor'
-							: g.type === 'reader' ? 'Reader/Tutor' : 'Graduate Student Researcher';
-					if (g.type === 'ta' || g.type === 'gsr') title += ` (Step ${g.step})`;
-					if (g.type === 'ai') title += ` (Point ${g.step})`;
+							: g.type === 'reader' ? 'Reader'
+								: g.type === 'tutor' ? `Tutor (${g.tutorType || 'Individual'})`
+									: 'Graduate Student Researcher';
+					if (g.type !== 'reader' && g.type !== 'tutor') title += ` (Point ${g.step})`;
 					
 					const fteDisplay = isHourly
 						? `${Math.round(g.totalFte / 4.4)}% / ${g.totalFte} hours`
@@ -986,12 +1065,13 @@
 					const { d, groups } = letter;
 					for (const g of groups) {
 						newPage();
-						const isGsr = g.type === 'gsr', isHourly = g.type === 'reader';
+						const isGsr = g.type === 'gsr', isHourly = (g.type === 'reader' || g.type === 'tutor');
 						let title = g.type === 'ta' ? 'Teaching Assistant'
 							: g.type === 'ai' ? 'Associate Instructor'
-								: g.type === 'reader' ? 'Reader/Tutor' : 'Graduate Student Researcher';
-						if (g.type === 'ta' || g.type === 'gsr') title += ` (Step ${g.step})`;
-						if (g.type === 'ai') title += ` (Point ${g.step})`;
+								: g.type === 'reader' ? 'Reader'
+									: g.type === 'tutor' ? `Tutor (${g.tutorType || 'Individual'})`
+										: 'Graduate Student Researcher';
+						if (g.type !== 'reader' && g.type !== 'tutor') title += ` (Point ${g.step})`;
 
 						const fteDisplay = isHourly
 							? `${Math.round(g.totalFte / 4.4)}% / ${g.totalFte} hours`
