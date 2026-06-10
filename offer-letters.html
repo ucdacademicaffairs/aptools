@@ -83,15 +83,6 @@
 					<h2 class="text-4xl font-bold text-[#002855]">Student Appointment Notification Generator</h2>
 					<p class="text-lg text-gray-600 mt-1">Generate formal offer letters from employment data. It's a beta! Please be careful.</p>
 				</div>
-				<div class="flex items-center gap-2 justify-center bg-white p-2 rounded-lg border shadow-sm">
-					<label for="academic-year-select" class="text-sm font-semibold text-gray-700 whitespace-nowrap">Academic Year:</label>
-					<select id="academic-year-select" class="h-9 px-3 border rounded text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-[#002855]">
-						<option value="2025-2026">2025-2026</option>
-						<option value="2026-2027">2026-2027</option>
-						<option value="2027-2028">2027-2028</option>
-						<option value="2028-2029">2028-2029</option>
-					</select>
-				</div>
 			</div>
 
 			<div class="card space-y-6">
@@ -164,9 +155,10 @@
 						<div>
 							<label class="block text-sm font-semibold text-gray-700">Academic Year</label>
 							<select id="global-year" class="w-full h-10 px-3 border rounded mt-1">
-								<option value="2025">2025-2026</option>
-								<option value="2026" selected>2026-2027</option>
-								<option value="2027">2027-2028</option>
+								<option value="2025-2026">2025-2026</option>
+								<option value="2026-2027">2026-2027</option>
+								<option value="2027-2028">2027-2028</option>
+								<option value="2028-2029">2028-2029</option>
 							</select>
 						</div>
 						<div>
@@ -343,7 +335,7 @@
 
 				// Set default year and initialize scales
 				const defaultYear = getDefaultYear();
-				const yearSelect = document.getElementById('academic-year-select');
+				const yearSelect = document.getElementById('global-year');
 				if (yearSelect) {
 					yearSelect.value = defaultYear;
 					updateSelectedYear(defaultYear);
