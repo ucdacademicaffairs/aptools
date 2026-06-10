@@ -202,6 +202,23 @@
 		]
 	},
 	{
+		"id": "offer-generator",
+		"section": "apps",
+		"title": "Offer Letter Generator",
+		"category": "HR",
+		"description": "Generates compliant offer letters for graduate students. I am still working on an automated sending flow.",
+		"lastUpdated": "June 10th, 2026",
+		"lastChange": "First public version. Updated with 2026 offer letter templates from GS.",
+		"gridSpan": "",
+		"buttons": [
+			{
+				"label": "Launch Tool →",
+				"url": "offer-letters.html",
+				"style": "primary"
+			}
+		]
+	},
+	{
 		"id": "summer-scratchpad",
 		"section": "apps",
 		"title": "Summer Salary Scratchpad",
