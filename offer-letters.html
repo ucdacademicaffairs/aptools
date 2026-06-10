@@ -1250,7 +1250,10 @@
 							btn.innerText = `Generating PDF ${i + 1} of ${students.length}…`;
 							const d = { ...globalData, studentName: student.name, studentEmail: student.email };
 							const groups = buildBulkLetterGroups(student.email);
-							const safeFilename = `Offer_Letter_${(d.studentName || 'Student').replace(/\s+/g, '_')}.pdf`;
+							const titlePart = groups.map(g => g.type.toUpperCase()).join('_') || 'Appt';
+							const ftePart = groups.map(g => g.totalFte).join('_') || 'FTE';
+							const qPart = groups[0] ? groups[0].quarter.replace(/, | and | /g, '') : 'Quarter';
+							const safeFilename = `Offer_Letter_${(d.studentName || 'Student').replace(/\s+/g, '_')}_${titlePart}_${ftePart}_${qPart}.pdf`;
 							const pdfBlob = await buildPdfBlob([{ d, groups }]);
 							zip.file(safeFilename, pdfBlob);
 						}
@@ -1379,7 +1382,10 @@
 							const student = students[i];
 							const d = { ...globalData, studentName: student.name, studentEmail: student.email };
 							const groups = buildBulkLetterGroups(student.email);
-							const safeFilename = `Offer_Letter_${(d.studentName || 'Student').replace(/\s+/g, '_')}.doc`;
+							const titlePart = groups.map(g => g.type.toUpperCase()).join('_') || 'Appt';
+							const ftePart = groups.map(g => g.totalFte).join('_') || 'FTE';
+							const qPart = groups[0] ? groups[0].quarter.replace(/, | and | /g, '') : 'Quarter';
+							const safeFilename = `Offer_Letter_${(d.studentName || 'Student').replace(/\s+/g, '_')}_${titlePart}_${ftePart}_${qPart}.doc`;
 							zip.file(safeFilename, generateWordBlob(d, groups));
 						}
 						btn.innerText = 'Zipping…';
