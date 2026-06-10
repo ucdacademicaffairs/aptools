@@ -7,6 +7,7 @@
 	<title>Offer Letter Generator</title>
 	<script src="https://cdn.tailwindcss.com"></script>
 	<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&display=swap" rel="stylesheet">
@@ -81,7 +82,7 @@
 			<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 py-4 border-b pb-6">
 				<div class="relative text-center md:text-left">
 					<h2 class="text-4xl font-bold text-[#002855]">Student Appointment Notification Generator</h2>
-					<p class="text-lg text-gray-600 mt-1">Generate formal offer letters from employment data. It's a beta! Please be careful.</p>
+					<p class="text-lg text-gray-600 mt-1">Generate formal offer letters from employment data.</p>
 				</div>
 			</div>
 
@@ -1233,7 +1234,6 @@
 				btn.innerText = 'Generating…'; btn.disabled = true;
 				try {
 					const globalData = collectLetterData();
-					let lettersList = [];
 
 					if (isBulkMode) {
 						const studentsMap = {};
@@ -1244,23 +1244,33 @@
 						const students = Object.values(studentsMap);
 						if (students.length === 0) throw new Error("No valid emails found in bulk rows.");
 
-						students.forEach(student => {
+						const zip = new JSZip();
+						for (let i = 0; i < students.length; i++) {
+							const student = students[i];
+							btn.innerText = `Generating PDF ${i + 1} of ${students.length}…`;
 							const d = { ...globalData, studentName: student.name, studentEmail: student.email };
 							const groups = buildBulkLetterGroups(student.email);
-							lettersList.push({ d, groups });
-						});
+							const safeFilename = `Offer_Letter_${(d.studentName || 'Student').replace(/\s+/g, '_')}.pdf`;
+							const pdfBlob = await buildPdfBlob([{ d, groups }]);
+							zip.file(safeFilename, pdfBlob);
+						}
+						btn.innerText = 'Zipping…';
+						const zipBlob = await zip.generateAsync({ type: 'blob' });
+						const url = URL.createObjectURL(zipBlob), a = document.createElement('a');
+						a.href = url;
+						a.download = 'Offer_Letters_Bulk.zip';
+						a.click();
+						URL.revokeObjectURL(url);
 					} else {
 						const groups = buildLetterGroups();
 						if (!groups.length) throw new Error('Please add at least one appointment.');
-						lettersList.push({ d: globalData, groups });
+						const blob = await buildPdfBlob([{ d: globalData, groups }]);
+						const url = URL.createObjectURL(blob), a = document.createElement('a');
+						a.href = url;
+						a.download = `Offer_Letter_${(globalData.studentName || 'Student').replace(/\s+/g, '_')}.pdf`;
+						a.click();
+						URL.revokeObjectURL(url);
 					}
-
-					const blob = await buildPdfBlob(lettersList);
-					const url = URL.createObjectURL(blob), a = document.createElement('a');
-					a.href = url;
-					a.download = isBulkMode ? 'Offer_Letters_Bulk.pdf' : `Offer_Letter_${(globalData.studentName || 'Student').replace(/\s+/g, '_')}.pdf`;
-					a.click();
-					URL.revokeObjectURL(url);
 				} catch (e) { console.error(e); alert('Error: ' + e.message); }
 				finally { btn.innerText = orig; btn.disabled = false; }
 			});
@@ -1340,16 +1350,57 @@
 			});
 
 			// ── Download Word ─────────────────────────────────────────────────────────
-			document.getElementById('download-word-btn').addEventListener('click', () => {
-				const d = collectLetterData();
-				const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-			<head><meta charset='utf-8'><title>Offer Letters</title>
-			<style>body{font-family:"Times New Roman",serif;font-size:11pt;}p{margin-bottom:11pt;}</style>
-			</head><body>${letterPreviewContainer.innerHTML.replace(/\n|\t/g, ' ')}</body></html>`;
-				const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
-				const url = URL.createObjectURL(blob), a = document.createElement('a');
-				a.href = url; a.download = `Offer_Letter_${(d.studentName || 'Student').replace(/\s+/g, '_')}.doc`; a.click();
-				URL.revokeObjectURL(url);
+			document.getElementById('download-word-btn').addEventListener('click', async () => {
+				const btn = document.getElementById('download-word-btn'), orig = btn.innerText;
+				btn.innerText = 'Generating…'; btn.disabled = true;
+				try {
+					const globalData = collectLetterData();
+					
+					function generateWordBlob(d, groups) {
+						const previewHtml = buildPreviewHtml(d, groups);
+						const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+					<head><meta charset='utf-8'><title>Offer Letters</title>
+					<style>body{font-family:"Times New Roman",serif;font-size:11pt;}p{margin-bottom:11pt;}</style>
+					</head><body>${previewHtml.replace(/\n|\t/g, ' ')}</body></html>`;
+						return new Blob(['\ufeff', html], { type: 'application/msword' });
+					}
+
+					if (isBulkMode) {
+						const studentsMap = {};
+						bulkRows.forEach(r => {
+							if (!r.email) return;
+							if (!studentsMap[r.email]) studentsMap[r.email] = { name: r.name, email: r.email };
+						});
+						const students = Object.values(studentsMap);
+						if (students.length === 0) throw new Error("No valid emails found in bulk rows.");
+
+						const zip = new JSZip();
+						for (let i = 0; i < students.length; i++) {
+							const student = students[i];
+							const d = { ...globalData, studentName: student.name, studentEmail: student.email };
+							const groups = buildBulkLetterGroups(student.email);
+							const safeFilename = `Offer_Letter_${(d.studentName || 'Student').replace(/\s+/g, '_')}.doc`;
+							zip.file(safeFilename, generateWordBlob(d, groups));
+						}
+						btn.innerText = 'Zipping…';
+						const zipBlob = await zip.generateAsync({ type: 'blob' });
+						const url = URL.createObjectURL(zipBlob), a = document.createElement('a');
+						a.href = url;
+						a.download = 'Offer_Letters_Bulk_Word.zip';
+						a.click();
+						URL.revokeObjectURL(url);
+					} else {
+						const groups = buildLetterGroups();
+						if (!groups.length) throw new Error('Please add at least one appointment.');
+						const blob = generateWordBlob(globalData, groups);
+						const url = URL.createObjectURL(blob), a = document.createElement('a');
+						a.href = url;
+						a.download = `Offer_Letter_${(globalData.studentName || 'Student').replace(/\s+/g, '_')}.doc`;
+						a.click();
+						URL.revokeObjectURL(url);
+					}
+				} catch (e) { console.error(e); alert('Error: ' + e.message); }
+				finally { btn.innerText = orig; btn.disabled = false; }
 			});
 
 		});
