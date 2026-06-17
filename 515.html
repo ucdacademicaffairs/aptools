@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>5-15 Report</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap"
+		rel="stylesheet">
+	<link rel="stylesheet" href="shared-tools.css">
+	<script src="header.js" defer></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+	<style>
+		.week-card h3 {
+			color: var(--ucd-blue);
+			font-weight: 700;
+		}
+
+		.week-card strong {
+			display: inline-block;
+			color: var(--ucd-blue);
+			font-weight: 600;
+			font-size: 0.8rem;
+			text-transform: uppercase;
+			letter-spacing: 0.04em;
+			margin-top: 0.75rem;
+		}
+
+		.week-card ul {
+			list-style: disc;
+			padding-left: 1.25rem;
+			margin: 0.15rem 0 0.5rem;
+		}
+
+		.week-card p {
+			margin: 0.15rem 0 0.5rem;
+		}
+
+		.week-divider {
+			text-align: center;
+			color: #9ca3af;
+			font-size: 0.8rem;
+			font-style: italic;
+			margin: 1.5rem 0;
+			border-top: 1px dashed #d1d5db;
+			padding-top: 0.75rem;
+		}
+	</style>
+</head>
+
+<body>
+
+	<div id="header-placeholder"></div>
+
+	<main class="w-full max-w-4xl mx-auto p-4 md:p-8 space-y-6">
+
+		<div class="relative text-center mb-8">
+			<h2 class="text-4xl font-bold text-[#002855]">5-15 Report</h2>
+			<p class="text-lg text-gray-600 mt-1">Discussion · Accomplishments · Active Priorities · Roadblocks &amp;
+				Challenges · Lessons Learned</p>
+			<p class="text-sm text-gray-500 mt-2">Newest week first. Reads straight from <code>515-data.md</code> —
+				edit that file and push to update this page.</p>
+		</div>
+
+		<p id="weeks-status" class="text-center text-gray-500">Loading 5-15 data…</p>
+		<div id="weeks" class="space-y-6"></div>
+
+	</main>
+
+	<script>
+		const LABELS = ["Discussion", "Accomplishments", "Active Priorities", "Roadblocks & Challenges", "Lessons Learned"];
+
+		fetch('515-data.md?t=' + Date.now())
+			.then(r => {
+				if (!r.ok) throw new Error('HTTP ' + r.status);
+				return r.text();
+			})
+			.then(renderWeeks)
+			.catch(err => {
+				document.getElementById('weeks-status').textContent = 'Could not load 515-data.md (' + err.message + ')';
+			});
+
+		function renderWeeks(md) {
+			const statusEl = document.getElementById('weeks-status');
+			const container = document.getElementById('weeks');
+			const lines = md.split('\n');
+
+			const blocks = [];
+			let current = null;
+			let inComment = false;
+
+			for (const raw of lines) {
+				const line = raw.replace(/\r$/, '');
+				if (line.trim().startsWith('<!--')) { inComment = true; continue; }
+				if (inComment) { if (line.includes('-->')) inComment = false; continue; }
+
+				if (/^##\s+/.test(line)) {
+					if (current) blocks.push(current);
+					current = { title: line.replace(/^##\s+/, '').trim(), bodyLines: [] };
+				} else if (/^-{3,}\s*$/.test(line.trim())) {
+					if (current) { blocks.push(current); current = null; }
+					blocks.push({ divider: true });
+				} else if (current) {
+					current.bodyLines.push(line);
+				}
+			}
+			if (current) blocks.push(current);
+
+			statusEl.remove();
+
+			if (!blocks.length) {
+				container.innerHTML = '<p class="text-center text-gray-500">No entries found in 515-data.md yet.</p>';
+				return;
+			}
+
+			for (const block of blocks) {
+				if (block.divider) {
+					const div = document.createElement('div');
+					div.className = 'week-divider';
+					div.textContent = '— original Google Sheets migration point —';
+					container.appendChild(div);
+					continue;
+				}
+
+				const card = document.createElement('div');
+				card.className = 'card week-card';
+				const bodyMd = block.bodyLines.join('\n').trim();
+				const bodyHtml = bodyMd ? marked.parse(bodyMd) : '<p class="text-gray-400 italic">No updates logged.</p>';
+
+				card.innerHTML =
+					'<h3 class="text-xl mb-1">' + escapeHtml(block.title) + '</h3>' +
+					'<div class="text-gray-700 text-sm">' + bodyHtml + '</div>';
+				container.appendChild(card);
+			}
+		}
+
+		function escapeHtml(s) {
+			const div = document.createElement('div');
+			div.textContent = s;
+			return div.innerHTML;
+		}
+	</script>
+</body>
+
+</html>
