@@ -1473,10 +1473,11 @@
 			benefitRateInput.addEventListener('input', runAllCalculations);
             
 			addDutyBtn.addEventListener('click', () => {
+                const desc = fedTitle.value === 'Lecturers' ? 'New Course' : 'Description Text';
                 if (currentApptType === 'Academic') {
-				    duties.push({ id: ++dutyCounter, quarter: 'Fall', description: 'New Course', iwc: 1.5 });
+				    duties.push({ id: ++dutyCounter, quarter: 'Fall', description: desc, iwc: 1.5 });
                 } else {
-                    duties.push({ id: ++dutyCounter, startDate: '', endDate: '', description: 'New Appt', percentFte: 100 });
+                    duties.push({ id: ++dutyCounter, startDate: '', endDate: '', description: desc, percentFte: 100 });
                 }
 				renderDuties();
 				runAllCalculations();
