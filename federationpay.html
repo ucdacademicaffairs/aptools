@@ -1368,22 +1368,23 @@
             }
 
             function renderTableHeaders() {
+                const isLecturer = fedTitle.value === 'Lecturers';
                 if (currentApptType === 'Academic') {
                     workloadThead.innerHTML = `<tr>
                         <th>Quarter</th>
                         <th>Description</th>
-                        <th class="w-1/4">IWC</th>
+                        <th class="w-1/4">${isLecturer ? 'IWC' : '% FTE'}</th>
                         <th class="w-16"></th>
                     </tr>`;
                     document.getElementById('summary-thead').innerHTML = `<tr>
                         <th>Quarter</th>
-                        <th class="text-right">IWC</th>
+                        <th class="text-right">${isLecturer ? 'IWC' : 'FTE'}</th>
                         <th class="text-right">Quarter FTE</th>
                         <th class="text-right">Salary</th>
                         <th class="text-right">Benefits</th>
                         <th class="text-right">Total Cost</th>
                     </tr>`;
-                    document.getElementById('summary-metric-1-label').textContent = 'Total IWC';
+                    document.getElementById('summary-metric-1-label').textContent = isLecturer ? 'Total IWC' : 'Avg FTE';
                 } else {
                     workloadThead.innerHTML = `<tr>
                         <th>Start Date</th>
@@ -1412,6 +1413,14 @@
 					row.dataset.id = duty.id;
                     
                     if (currentApptType === 'Academic') {
+                        const isLecturer = fedTitle.value === 'Lecturers';
+                        const inputHTML = isLecturer 
+                            ? `<input type="number" step="0.1" data-field="iwc" value="${duty.iwc || 1.5}" class="w-full rounded-md border-gray-300 shadow-sm">`
+                            : `<div class="relative">
+                                <input type="number" step="1" data-field="percentFte" value="${duty.percentFte || 100}" class="w-full rounded-md border-gray-300 shadow-sm pr-8">
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"><span class="text-gray-500 sm:text-sm">%</span></div>
+                               </div>`;
+
                         row.innerHTML = `
                         <td>
                             <select data-field="quarter" class="w-full rounded-md border-gray-300 shadow-sm">
@@ -1421,7 +1430,7 @@
                             </select>
                         </td>
                         <td><input type="text" data-field="description" value="${duty.description}" class="w-full rounded-md border-gray-300 shadow-sm"></td>
-                        <td><input type="number" step="0.1" data-field="iwc" value="${duty.iwc}" class="w-full rounded-md border-gray-300 shadow-sm"></td>
+                        <td>${inputHTML}</td>
                         <td><button class="btn btn-delete w-full text-lg p-0 h-10" data-action="delete">&#x2715;</button></td>
                         `;
                     } else {
@@ -1453,27 +1462,30 @@
 				let totalPay = 0, totalBenefits = 0;
                 let messages = [];
 
+                const isLecturer = fedTitle.value === 'Lecturers';
                 if (currentApptType === 'Academic') {
-                    const quarterlyData = { Fall: { iwc: 0 }, Winter: { iwc: 0 }, Spring: { iwc: 0 } };
-                    duties.forEach(duty => { quarterlyData[duty.quarter].iwc += parseFloat(duty.iwc) || 0; });
+                    const quarterlyData = { Fall: { amount: 0 }, Winter: { amount: 0 }, Spring: { amount: 0 } };
+                    duties.forEach(duty => { 
+                        quarterlyData[duty.quarter].amount += parseFloat(isLecturer ? duty.iwc : duty.percentFte) || 0; 
+                    });
 
                     Object.keys(quarterlyData).forEach(quarter => {
                         const data = quarterlyData[quarter];
-                        if (data.iwc === 0) return;
+                        if (data.amount === 0) return;
                         
-                        data.fte = data.iwc / 3.0;
-                        data.pay = annualSalary * (data.iwc / 9.0);
+                        data.fte = isLecturer ? (data.amount / 3.0) : (data.amount / 100.0);
+                        data.pay = annualSalary * (1/3.0) * data.fte;
                         data.benefits = data.pay * benefitRate;
                         data.totalCost = data.pay + data.benefits;
                         
-                        totalMetric1 += data.iwc;
+                        totalMetric1 += isLecturer ? data.amount : data.fte;
                         totalPay += data.pay;
                         totalBenefits += data.benefits;
 
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td>${quarter}</td>
-                            <td class="text-right">${data.iwc.toFixed(2)}</td>
+                            <td class="text-right">${isLecturer ? data.amount.toFixed(2) : (data.fte * 100).toFixed(2) + '%'}</td>
                             <td class="text-right">${(data.fte * 100).toFixed(2)}%</td>
                             <td class="text-right">${formatCurrency(data.pay)}</td>
                             <td class="text-right">${formatCurrency(data.benefits)}</td>
@@ -1484,8 +1496,9 @@
                         if (data.fte > 1) messages.push(`<p><strong>Caution:</strong> ${quarter} FTE exceeds 100%.</p>`);
                     });
 
-                    totalFteSum = totalMetric1 / 9.0;
-                    if (totalMetric1 > 9) messages.push(`<p><strong>Error:</strong> Total IWC exceeds 9.0 (100% annual).</p>`);
+                    totalFteSum = isLecturer ? (totalMetric1 / 9.0) : (totalMetric1 / 3.0);
+                    if (isLecturer && totalMetric1 > 9) messages.push(`<p><strong>Error:</strong> Total IWC exceeds 9.0 (100% annual).</p>`);
+                    if (!isLecturer && totalMetric1 > 3) messages.push(`<p><strong>Error:</strong> Total FTE exceeds 3.0 (100% annual).</p>`);
 
                 } else {
                     duties.forEach(duty => {
@@ -1525,7 +1538,11 @@
 
 				const totalCost = totalPay + totalBenefits;
 
-				document.getElementById('summary-metric-1-val').textContent = totalMetric1.toFixed(2);
+				if (currentApptType === 'Academic' && !isLecturer) {
+                    document.getElementById('summary-metric-1-val').textContent = (totalFteSum * 100).toFixed(2) + '%';
+                } else {
+                    document.getElementById('summary-metric-1-val').textContent = totalMetric1.toFixed(2);
+                }
 				document.getElementById('summary-fte-val').textContent = `${(totalFteSum * 100).toFixed(2)}%`;
 				document.getElementById('summary-pay-val').textContent = formatCurrency(totalPay);
 				document.getElementById('summary-cost-val').textContent = formatCurrency(totalCost);
@@ -1533,7 +1550,7 @@
                 document.getElementById('summary-tfoot').innerHTML = `
                     <tr>
                         <td><strong>Total</strong></td>
-                        <td class="text-right"><strong>${totalMetric1.toFixed(2)}</strong></td>
+                        <td class="text-right"><strong>${(currentApptType === 'Academic' && !isLecturer) ? (totalMetric1).toFixed(2) : totalMetric1.toFixed(2)}</strong></td>
                         <td class="text-right"></td>
                         <td class="text-right"><strong>${formatCurrency(totalPay)}</strong></td>
                         <td class="text-right"><strong>${formatCurrency(totalBenefits)}</strong></td>
@@ -1563,7 +1580,12 @@
 			addDutyBtn.addEventListener('click', () => {
                 const desc = fedTitle.value === 'Lecturers' ? 'New Course' : 'Description Text';
                 if (currentApptType === 'Academic') {
-				    duties.push({ id: ++dutyCounter, quarter: 'Fall', description: desc, iwc: 1.5 });
+                    const isLecturer = fedTitle.value === 'Lecturers';
+                    if (isLecturer) {
+				        duties.push({ id: ++dutyCounter, quarter: 'Fall', description: desc, iwc: 1.5 });
+                    } else {
+                        duties.push({ id: ++dutyCounter, quarter: 'Fall', description: desc, percentFte: 100 });
+                    }
                 } else {
                     duties.push({ id: ++dutyCounter, startDate: '', endDate: '', description: desc, percentFte: 100 });
                 }
