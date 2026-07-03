@@ -170,6 +170,10 @@
                         <input type="date" id="ol-date" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     </div>
                     <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Academic Year</label>
+                        <select id="ol-year" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></select>
+                    </div>
+                    <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Employee Name</label>
                         <input type="text" id="ol-name" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     </div>
@@ -210,1049 +214,42 @@
 	</main>
 
 	<script>
-        const FEDERATION_DATA = {
-    "Academic Administrator": {
-        "name": "Academic Administrator",
-        "variants": [
-            {
-                "exempt": "Exempt",
-                "represented": "Unknown",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/policy-covered-july-2025-scales/t34.pdf",
-                "scales": {
-                    "Grade 1": {
-                        "1": 66728.0,
-                        "2": 68216.0,
-                        "3": 69979.0,
-                        "4": 71544.0,
-                        "5": 73248.0,
-                        "6": 74842.0,
-                        "7": 76590.0,
-                        "8": 78387.0,
-                        "9": 80258.0,
-                        "10": 82267.0,
-                        "11": 84246.0,
-                        "12": 86485.0,
-                        "13": 88371.0,
-                        "14": 90459.0,
-                        "15": 92330.0
-                    },
-                    "Grade 2": {
-                        "1": 74842.0,
-                        "2": 76590.0,
-                        "3": 78387.0,
-                        "4": 80258.0,
-                        "5": 82267.0,
-                        "6": 84246.0,
-                        "7": 86485.0,
-                        "8": 88371.0,
-                        "9": 90459.0,
-                        "10": 92330.0,
-                        "11": 94231.0,
-                        "12": 96886.0,
-                        "13": 99461.0,
-                        "14": 101425.0,
-                        "15": 104049.0
-                    },
-                    "Grade 3": {
-                        "1": 84246.0,
-                        "2": 86485.0,
-                        "3": 88371.0,
-                        "4": 90459.0,
-                        "5": 92330.0,
-                        "6": 94231.0,
-                        "7": 96886.0,
-                        "8": 99461.0,
-                        "9": 101425.0,
-                        "10": 104049.0,
-                        "11": 106732.0,
-                        "12": 109158.0,
-                        "13": 111212.0,
-                        "14": 113789.0,
-                        "15": 116995.0
-                    },
-                    "Grade 4": {
-                        "1": 94231.0,
-                        "2": 96886.0,
-                        "3": 99461.0,
-                        "4": 101425.0,
-                        "5": 104049.0,
-                        "6": 106732.0,
-                        "7": 109158.0,
-                        "8": 111212.0,
-                        "9": 113789.0,
-                        "10": 116995.0,
-                        "11": 119617.0,
-                        "12": 122272.0,
-                        "13": 124881.0,
-                        "14": 128101.0,
-                        "34": 129328.0
-                    }
-                },
-                "type": "Fiscal"
-            },
-            {
-                "exempt": "Non Exempt",
-                "represented": "Unknown",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/policy-covered-july-2025-scales/t34-n.pdf",
-                "scales": {
-                    "Grade 1": {
-                        "1": 66732.48,
-                        "2": 68235.84,
-                        "3": 69989.76000000001,
-                        "4": 71555.76000000001,
-                        "5": 73267.92000000001,
-                        "6": 74854.8,
-                        "7": 76608.72,
-                        "8": 78404.4,
-                        "9": 80262.72,
-                        "10": 82267.2,
-                        "11": 84250.8,
-                        "12": 86505.84,
-                        "13": 88385.04,
-                        "14": 90473.04,
-                        "15": 92331.36
-                    },
-                    "Grade 2": {
-                        "1": 74854.8,
-                        "2": 76608.72,
-                        "3": 78404.4,
-                        "4": 80262.72,
-                        "5": 82267.2,
-                        "6": 84250.8,
-                        "7": 86505.84,
-                        "8": 88385.04,
-                        "9": 90473.04,
-                        "10": 92331.36,
-                        "11": 94231.44,
-                        "12": 96904.07999999999,
-                        "13": 99472.32,
-                        "14": 101435.04,
-                        "15": 104065.92000000001
-                    },
-                    "Grade 3": {
-                        "1": 84250.8,
-                        "2": 86505.84,
-                        "3": 88385.04,
-                        "4": 90473.04,
-                        "5": 92331.36,
-                        "6": 94231.44,
-                        "7": 96904.07999999999,
-                        "8": 99472.32,
-                        "9": 101435.04,
-                        "10": 104065.92000000001,
-                        "11": 106738.56,
-                        "12": 109160.64,
-                        "13": 111227.76000000001,
-                        "14": 113796.0,
-                        "15": 117011.52
-                    },
-                    "Grade 4": {
-                        "1": 129330.72,
-                        "2": 96904.07999999999,
-                        "3": 99472.32,
-                        "4": 101435.04,
-                        "5": 104065.92000000001,
-                        "6": 106738.56,
-                        "7": 109160.64,
-                        "8": 111227.76000000001,
-                        "9": 113796.0,
-                        "10": 117011.52,
-                        "11": 119621.52,
-                        "12": 122273.28,
-                        "13": 124883.28,
-                        "14": 128119.68
-                    }
-                },
-                "type": "Fiscal"
-            }
-        ]
-    },
-    "Agronomist (___ in AES)": {
-        "name": "Agronomist (___ in AES)",
-        "variants": [
-            {
-                "exempt": "Unknown (Academic)",
-                "represented": "Unknown",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/policy-covered-october-2025-scales/t1.pdf",
-                "scales": {
-                    "Assistant": {
-                        "3": 104700.0
-                    },
-                    "Associate": {
-                        "2": 125500.0
-                    },
-                    "Full": {
-                        "1": 212000.0
-                    }
-                },
-                "type": "Academic"
-            },
-            {
-                "exempt": "Unknown (Fiscal)",
-                "represented": "Unknown",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/policy-covered-october-2025-scales/t2.pdf",
-                "scales": {
-                    "Assistant": {
-                        "3": 121400.0
-                    },
-                    "Associate": {
-                        "2": 145700.0
-                    },
-                    "Full": {
-                        "1": 20500.0
-                    }
-                },
-                "type": "Fiscal"
-            }
-        ]
-    },
-    "Assistant OR Associate University Librarian": {
-        "name": "Assistant OR Associate University Librarian",
-        "variants": [
-            {
-                "exempt": "Exempt",
-                "represented": "Unknown",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/policy-covered-july-2025-scales/t27.pdf",
-                "scales": {
-                    "Assistant": {
-                        "3": 210800.0
-                    },
-                    "Associate": {
-                        "2": 22083.33
-                    }
-                },
-                "type": "Fiscal"
-            },
-            {
-                "exempt": "Non Exempt",
-                "represented": "Unknown",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/policy-covered-july-2025-scales/t27-n.pdf",
-                "scales": {
-                    "Assistant": {
-                        "3": 210804.47999999998
-                    },
-                    "Associate": {
-                        "2": 265008.96
-                    }
-                },
-                "type": "Fiscal"
-            }
-        ]
-    },
-    "Continuing Educator": {
-        "name": "Continuing Educator",
-        "variants": [
-            {
-                "exempt": "Exempt",
-                "represented": "Unknown",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/policy-covered-july-2025-scales/t31.pdf",
-                "scales": {
-                    "Level I": {
-                        "1": 189672.0
-                    }
-                },
-                "type": "Fiscal"
-            },
-            {
-                "exempt": "Non Exempt",
-                "represented": "Unknown",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/policy-covered-july-2025-scales/t31-n.pdf",
-                "scales": {
-                    "Level I": {
-                        "1": 189673.92
-                    }
-                },
-                "type": "Fiscal"
-            }
-        ]
-    },
-    "Librarian": {
-        "name": "Librarian",
-        "variants": [
-            {
-                "exempt": "Exempt",
-                "represented": "Non Represented",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/policy-covered-july-2025-scales/t26-a.pdf",
-                "scales": {
-                    "Assistant": {
-                        "1": 68278.0,
-                        "2": 70120.0,
-                        "3": 72014.0,
-                        "4": 73959.0,
-                        "5": 75958.0,
-                        "6": 78008.0,
-                        "7": 80116.0,
-                        "8": 82277.0,
-                        "9": 84500.0
-                    },
-                    "Associate": {
-                        "1": 75958.0,
-                        "2": 78008.0,
-                        "3": 80116.0,
-                        "4": 82277.0,
-                        "5": 84500.0,
-                        "6": 86780.0,
-                        "7": 89123.0,
-                        "8": 91531.0,
-                        "9": 94003.0,
-                        "10": 96539.0,
-                        "11": 99148.0,
-                        "12": 101825.0,
-                        "13": 104573.0,
-                        "14": 107396.0,
-                        "15": 110297.0,
-                        "16": 113275.0,
-                        "17": 116333.0,
-                        "18": 119473.0
-                    }
-                },
-                "type": "Fiscal"
-            },
-            {
-                "exempt": "Non Exempt",
-                "represented": "Non Represented",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/policy-covered-july-2025-scales/t26-a-n.pdf",
-                "scales": {
-                    "Assistant": {
-                        "1": 68298.48,
-                        "2": 70135.92000000001,
-                        "3": 72015.12000000001,
-                        "4": 73977.84,
-                        "5": 75961.44,
-                        "6": 78028.56,
-                        "7": 80116.56,
-                        "8": 82288.07999999999,
-                        "9": 84501.36
-                    },
-                    "Associate": {
-                        "1": 75961.44,
-                        "2": 78028.56,
-                        "3": 80116.56,
-                        "4": 82288.07999999999,
-                        "5": 84501.36,
-                        "6": 86798.16,
-                        "7": 89136.72,
-                        "8": 91537.92000000001,
-                        "9": 94022.64,
-                        "10": 96549.12000000001,
-                        "11": 99159.12000000001,
-                        "12": 101831.76000000001,
-                        "13": 104587.92000000001,
-                        "14": 107406.72,
-                        "15": 110309.04,
-                        "16": 113294.87999999999,
-                        "17": 116343.36,
-                        "18": 119475.36
-                    }
-                },
-                "type": "Fiscal"
-            },
-            {
-                "exempt": "Exempt",
-                "represented": "Represented",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/represented-july-2025-scales/t26-b.pdf",
-                "scales": {
-                    "Assistant": {
-                        "1": 72224.0,
-                        "2": 74174.0,
-                        "3": 76179.0,
-                        "4": 78235.0,
-                        "5": 80349.0,
-                        "6": 82516.0,
-                        "7": 84745.0
-                    },
-                    "Associate": {
-                        "1": 80349.0,
-                        "2": 82516.0,
-                        "3": 84745.0,
-                        "4": 87033.0,
-                        "5": 89382.0,
-                        "6": 91797.0,
-                        "7": 94277.0,
-                        "8": 96820.0,
-                        "9": 99436.0,
-                        "10": 102121.0,
-                        "11": 104877.0,
-                        "12": 107708.0,
-                        "13": 110617.0,
-                        "14": 113604.0,
-                        "15": 116671.0,
-                        "16": 119820.0
-                    }
-                },
-                "type": "Fiscal"
-            },
-            {
-                "exempt": "Non Exempt",
-                "represented": "Represented",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/represented-july-2025-scales/t26-b-n.pdf",
-                "scales": {
-                    "Assistant": {
-                        "1": 72244.8,
-                        "2": 74186.64,
-                        "3": 76191.12000000001,
-                        "4": 78237.36,
-                        "5": 80367.12000000001,
-                        "6": 82517.76000000001,
-                        "7": 84751.92000000001
-                    },
-                    "Associate": {
-                        "1": 80367.12000000001,
-                        "2": 82517.76000000001,
-                        "3": 84751.92000000001,
-                        "4": 87048.72,
-                        "5": 89387.28,
-                        "6": 91809.36,
-                        "7": 94294.07999999999,
-                        "8": 96820.56,
-                        "9": 99451.44,
-                        "10": 102124.07999999999,
-                        "11": 104880.23999999999,
-                        "12": 107719.92000000001,
-                        "13": 110622.23999999999,
-                        "14": 113608.07999999999,
-                        "15": 116677.44,
-                        "16": 119830.32
-                    }
-                },
-                "type": "Fiscal"
-            }
-        ]
-    },
-    "Professional Researcher": {
-        "name": "Professional Researcher",
-        "variants": [
-            {
-                "exempt": "Exempt",
-                "represented": "Non Represented",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/policy-covered-july-2025-scales/t13-a.pdf",
-                "scales": {
-                    "Assistant": {
-                        "3": 123900.0
-                    },
-                    "Associate": {
-                        "2": 148900.0
-                    }
-                },
-                "type": "Fiscal"
-            },
-            {
-                "exempt": "Non Exempt",
-                "represented": "Non Represented",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/policy-covered-july-2025-scales/t13-a-n.pdf",
-                "scales": {
-                    "Assistant": {
-                        "2": 123901.92000000001
-                    },
-                    "Associate": {
-                        "2": 130500.0,
-                        "3": 148916.15999999997
-                    }
-                },
-                "type": "Fiscal"
-            },
-            {
-                "exempt": "Exempt",
-                "represented": "Represented",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/represented-july-2025-scales/t13-b.pdf",
-                "scales": {
-                    "Assistant": {
-                        "3": 122100.0
-                    },
-                    "Associate": {
-                        "2": 146700.0
-                    }
-                },
-                "type": "Fiscal"
-            },
-            {
-                "exempt": "Non Exempt",
-                "represented": "Represented",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/represented-july-2025-scales/t13-b-n.pdf",
-                "scales": {
-                    "Assistant": {
-                        "2": 122106.23999999999
-                    },
-                    "Associate": {
-                        "2": 128620.8,
-                        "3": 146702.88
-                    }
-                },
-                "type": "Fiscal"
-            }
-        ]
-    },
-    "Professional Researcher, Business/Economics/Engineering": {
-        "name": "Professional Researcher, Business/Economics/Engineering",
-        "variants": [
-            {
-                "exempt": "Exempt",
-                "represented": "Non Represented",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/policy-covered-july-2025-scales/t14-a.pdf",
-                "scales": {
-                    "Assistant": {
-                        "3": 158400.0
-                    },
-                    "Associate": {
-                        "2": 176800.0
-                    }
-                },
-                "type": "Fiscal"
-            },
-            {
-                "exempt": "Non Exempt",
-                "represented": "Non Represented",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/policy-covered-july-2025-scales/t14-a-n.pdf",
-                "scales": {
-                    "Assistant": {
-                        "2": 158416.56
-                    },
-                    "Associate": {
-                        "2": 164805.84000000003,
-                        "3": 176811.84000000003
-                    }
-                },
-                "type": "Fiscal"
-            },
-            {
-                "exempt": "Exempt",
-                "represented": "Represented",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/represented-july-2025-scales/t14-b.pdf",
-                "scales": {
-                    "Assistant": {
-                        "3": 156000.0
-                    },
-                    "Associate": {
-                        "2": 174200.0
-                    }
-                },
-                "type": "Fiscal"
-            },
-            {
-                "exempt": "Non Exempt",
-                "represented": "Represented",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/represented-july-2025-scales/t14-b-n.pdf",
-                "scales": {
-                    "Assistant": {
-                        "2": 156015.36
-                    },
-                    "Associate": {
-                        "2": 162404.64,
-                        "3": 174201.84000000003
-                    }
-                },
-                "type": "Fiscal"
-            }
-        ]
-    },
-    "Project (e.g. Scientist)": {
-        "name": "Project (e.g. Scientist)",
-        "variants": [
-            {
-                "exempt": "Exempt",
-                "represented": "Non Represented",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/policy-covered-july-2025-scales/t37-a.pdf",
-                "scales": {
-                    "Assistant": {
-                        "3": 98900.0
-                    },
-                    "Associate": {
-                        "2": 117000.0
-                    }
-                },
-                "type": "Fiscal"
-            },
-            {
-                "exempt": "Non Exempt",
-                "represented": "Non Represented",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/policy-covered-july-2025-scales/t37-a-n.pdf",
-                "scales": {
-                    "Assistant": {
-                        "2": 98908.56
-                    },
-                    "Associate": {
-                        "2": 104003.28,
-                        "3": 117011.52
-                    }
-                },
-                "type": "Fiscal"
-            },
-            {
-                "exempt": "Exempt",
-                "represented": "Represented",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/represented-july-2025-scales/t37-b.pdf",
-                "scales": {
-                    "Assistant": {
-                        "3": 97600.0
-                    },
-                    "Associate": {
-                        "2": 115400.0
-                    }
-                },
-                "type": "Fiscal"
-            },
-            {
-                "exempt": "Non Exempt",
-                "represented": "Represented",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/represented-july-2025-scales/t37-b-n.pdf",
-                "scales": {
-                    "Assistant": {
-                        "2": 97614.0
-                    },
-                    "Associate": {
-                        "2": 102520.8,
-                        "3": 115403.76000000001
-                    }
-                },
-                "type": "Fiscal"
-            }
-        ]
-    },
-    "Project (e.g. Scientist), Business/Economics/Engineering": {
-        "name": "Project (e.g. Scientist), Business/Economics/Engineering",
-        "variants": [
-            {
-                "exempt": "Exempt",
-                "represented": "Non Represented",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/policy-covered-july-2025-scales/t38-a.pdf",
-                "scales": {
-                    "Assistant": {
-                        "3": 123700.0
-                    },
-                    "Associate": {
-                        "2": 136900.0
-                    }
-                },
-                "type": "Fiscal"
-            },
-            {
-                "exempt": "Non Exempt",
-                "represented": "Non Represented",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/policy-covered-july-2025-scales/t38-a-n.pdf",
-                "scales": {
-                    "Assistant": {
-                        "2": 123714.0
-                    },
-                    "Associate": {
-                        "2": 128620.8,
-                        "3": 136910.15999999997
-                    }
-                },
-                "type": "Fiscal"
-            },
-            {
-                "exempt": "Exempt",
-                "represented": "Represented",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/represented-july-2025-scales/t38-b.pdf",
-                "scales": {
-                    "Assistant": {
-                        "3": 121800.0
-                    },
-                    "Associate": {
-                        "2": 135100.0
-                    }
-                },
-                "type": "Fiscal"
-            },
-            {
-                "exempt": "Non Exempt",
-                "represented": "Represented",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/represented-july-2025-scales/t38-b-n.pdf",
-                "scales": {
-                    "Assistant": {
-                        "2": 121813.92000000001
-                    },
-                    "Associate": {
-                        "2": 126720.72,
-                        "3": 135114.47999999998
-                    }
-                },
-                "type": "Fiscal"
-            }
-        ]
-    },
-    "Specialist": {
-        "name": "Specialist",
-        "variants": [
-            {
-                "exempt": "Exempt",
-                "represented": "Non Represented",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/policy-covered-july-2025-scales/t24-a.pdf",
-                "scales": {
-                    "Assistant": {
-                        "3": 71300.0
-                    },
-                    "Associate": {
-                        "2": 89300.0
-                    }
-                },
-                "type": "Fiscal"
-            },
-            {
-                "exempt": "Non Exempt",
-                "represented": "Non Represented",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/policy-covered-july-2025-scales/t24-a-n.pdf",
-                "scales": {
-                    "Assistant": {
-                        "2": 71305.2
-                    },
-                    "Associate": {
-                        "2": 89303.76000000001
-                    }
-                },
-                "type": "Fiscal"
-            },
-            {
-                "exempt": "Exempt",
-                "represented": "Represented",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/represented-july-2025-scales/t24-b.pdf",
-                "scales": {
-                    "Assistant": {
-                        "3": 70700.0
-                    },
-                    "Associate": {
-                        "2": 88000.0
-                    }
-                },
-                "type": "Fiscal"
-            },
-            {
-                "exempt": "Non Exempt",
-                "represented": "Represented",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/represented-july-2025-scales/t24-b-n.pdf",
-                "scales": {
-                    "Assistant": {
-                        "2": 70720.56
-                    },
-                    "Associate": {
-                        "2": 88009.2
-                    }
-                },
-                "type": "Fiscal"
-            }
-        ]
-    },
-    "Professor of Cooperative Extension": {
-        "name": "Professor of Cooperative Extension",
-        "variants": [
-            {
-                "exempt": "Exempt",
-                "represented": "Unknown",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/policy-covered-july-2025-scales/t29.pdf",
-                "scales": {
-                    "Assistant": {
-                        "3": 118500.0
-                    },
-                    "Associate": {
-                        "2": 142300.0
-                    }
-                },
-                "type": "Fiscal"
-            },
-            {
-                "exempt": "Non Exempt",
-                "represented": "Unknown",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/policy-covered-july-2025-scales/t29-n.pdf",
-                "scales": {
-                    "Assistant": {
-                        "3": 118514.87999999999
-                    },
-                    "Associate": {
-                        "2": 142318.08
-                    }
-                },
-                "type": "Fiscal"
-            }
-        ]
-    },
-    "Lecturer": {
-        "name": "Lecturer",
-        "variants": [
-            {
-                "exempt": "Unknown",
-                "represented": "Unknown",
-                "link": "",
-                "scales": {
-                    "Pre-Six Year": {
-                        "1": 70977,
-                        "2": 73107,
-                        "3": 75301,
-                        "4": 77561,
-                        "5": 79887,
-                        "6": 82284,
-                        "7": 84752,
-                        "8": 87294,
-                        "9": 89913,
-                        "10": 92609,
-                        "11": 95388,
-                        "12": 98249,
-                        "13": 101198,
-                        "14": 104233,
-                        "15": 107361,
-                        "16": 110581,
-                        "17": 113897,
-                        "18": 117315,
-                        "19": 120835,
-                        "20": 124460,
-                        "21": 128194,
-                        "22": 132039,
-                        "23": 136000,
-                        "24": 140080,
-                        "25": 144283,
-                        "26": 148611,
-                        "27": 153069,
-                        "28": 157661,
-                        "29": 162391,
-                        "30": 167264,
-                        "31": 172281,
-                        "32": 177449,
-                        "33": 182772,
-                        "34": 188256,
-                        "35": 193904,
-                        "36": 199722
-                    },
-                    "Continuing": {
-                        "1": 79887,
-                        "2": 82284,
-                        "3": 84752,
-                        "4": 87294,
-                        "5": 89913,
-                        "6": 92609,
-                        "7": 95388,
-                        "8": 98249,
-                        "9": 101198,
-                        "10": 104233,
-                        "11": 107361,
-                        "12": 110581,
-                        "13": 113897,
-                        "14": 117315,
-                        "15": 120835,
-                        "16": 124460,
-                        "17": 128194,
-                        "18": 132039,
-                        "19": 136000,
-                        "20": 140080,
-                        "21": 144283,
-                        "22": 148611,
-                        "23": 153069,
-                        "24": 157661,
-                        "25": 162391,
-                        "26": 167264,
-                        "27": 172281,
-                        "28": 177449,
-                        "29": 182772,
-                        "30": 188256,
-                        "31": 193904,
-                        "32": 199722,
-                        "33": 205714,
-                        "34": 211884,
-                        "35": 218239,
-                        "36": 224786
-                    },
-                    "Senior Continuing": {
-                        "1": 95388,
-                        "2": 98249,
-                        "3": 101198,
-                        "4": 104233,
-                        "5": 107361,
-                        "6": 110581,
-                        "7": 113897,
-                        "8": 117315,
-                        "9": 120835,
-                        "10": 124460,
-                        "11": 128194,
-                        "12": 132039,
-                        "13": 136000,
-                        "14": 140080,
-                        "15": 144283,
-                        "16": 148611,
-                        "17": 153069,
-                        "18": 157661,
-                        "19": 162391,
-                        "20": 167264,
-                        "21": 172281,
-                        "22": 177449,
-                        "23": 182772,
-                        "24": 188256,
-                        "25": 193904,
-                        "26": 199722,
-                        "27": 205714,
-                        "28": 211884,
-                        "29": 218239,
-                        "30": 224786
-                    }
-                },
-                "type": "Academic"
-            }
-        ]
-    },
-    "Academic Coordinator": {
-        "name": "Academic Coordinator",
-        "variants": [
-            {
-                "type": "Academic",
-                "exempt": "Unknown",
-                "represented": "Unknown",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/policy-covered-july-2025-scales/t35-iii.pdf",
-                "scales": {
-                    "I": {
-                        "1": 56359.0,
-                        "2": 58982.0,
-                        "3": 61436.0,
-                        "4": 64228.0,
-                        "5": 66728.0,
-                        "6": 69979.0,
-                        "7": 73248.0,
-                        "8": 76590.0,
-                        "9": 80258.0,
-                        "10": 84246.0,
-                        "11": 88371.0,
-                        "12": 92330.0,
-                        "13": 96886.0,
-                        "14": 101425.0,
-                        "15": 106732.0
-                    },
-                    "II": {
-                        "1": 73248.0,
-                        "2": 76590.0,
-                        "3": 80258.0,
-                        "4": 84246.0,
-                        "5": 88371.0,
-                        "6": 92330.0,
-                        "7": 96886.0,
-                        "8": 101425.0,
-                        "9": 106732.0,
-                        "10": 111212.0,
-                        "11": 116995.0,
-                        "12": 122272.0,
-                        "13": 128101.0,
-                        "14": 135142.0,
-                        "15": 141646.0
-                    },
-                    "III": {
-                        "1": 92330.0,
-                        "2": 99461.0,
-                        "3": 106732.0,
-                        "4": 113789.0,
-                        "5": 122272.0,
-                        "6": 131906.0,
-                        "7": 141646.0,
-                        "8": 152674.0,
-                        "9": 164103.0
-                    }
-                }
-            },
-            {
-                "type": "Fiscal",
-                "exempt": "Exempt",
-                "represented": "Unknown",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/policy-covered-july-2025-scales/t36-iii.pdf",
-                "scales": {
-                    "I": {
-                        "1": 64228.0,
-                        "2": 66728.0,
-                        "3": 69979.0,
-                        "4": 73248.0,
-                        "5": 76590.0,
-                        "6": 80258.0,
-                        "7": 84246.0,
-                        "8": 88371.0,
-                        "9": 92330.0,
-                        "10": 96886.0,
-                        "11": 101425.0,
-                        "12": 106732.0,
-                        "13": 111212.0,
-                        "14": 116995.0,
-                        "15": 122272.0
-                    },
-                    "II": {
-                        "1": 84246.0,
-                        "2": 88371.0,
-                        "3": 92330.0,
-                        "4": 96886.0,
-                        "5": 101425.0,
-                        "6": 106732.0,
-                        "7": 111212.0,
-                        "8": 116995.0,
-                        "9": 122272.0,
-                        "10": 128101.0,
-                        "11": 135142.0,
-                        "12": 141646.0,
-                        "13": 148670.0,
-                        "14": 156356.0,
-                        "15": 164103.0
-                    },
-                    "III": {
-                        "1": 106732.0,
-                        "2": 113789.0,
-                        "3": 122272.0,
-                        "4": 131906.0,
-                        "5": 141646.0,
-                        "6": 152674.0,
-                        "7": 164103.0,
-                        "8": 176403.0,
-                        "9": 189672.0
-                    }
-                }
-            },
-            {
-                "type": "Fiscal",
-                "exempt": "Non Exempt",
-                "represented": "Unknown",
-                "link": "https://www.ucop.edu/academic-personnel-programs/_files/2025-26/policy-covered-july-2025-scales/t36n-iii.pdf",
-                "scales": {
-                    "I": {
-                        "1": 64247.76,
-                        "2": 66732.48,
-                        "3": 69989.76000000001,
-                        "4": 73267.92000000001,
-                        "5": 76608.72,
-                        "6": 80262.72,
-                        "7": 84250.8,
-                        "8": 88385.04,
-                        "9": 92331.36,
-                        "10": 96904.07999999999,
-                        "11": 101435.04,
-                        "12": 106738.56,
-                        "13": 111227.76000000001,
-                        "14": 117011.52,
-                        "15": 122273.28
-                    },
-                    "II": {
-                        "1": 84250.8,
-                        "2": 88385.04,
-                        "3": 92331.36,
-                        "4": 96904.07999999999,
-                        "5": 101435.04,
-                        "6": 106738.56,
-                        "7": 111227.76000000001,
-                        "8": 117011.52,
-                        "9": 122273.28,
-                        "10": 128119.68,
-                        "11": 135156.24000000002,
-                        "12": 141649.92,
-                        "13": 148686.47999999998,
-                        "14": 156370.32,
-                        "15": 164116.8
-                    },
-                    "III": {
-                        "1": 106738.56,
-                        "2": 113796.0,
-                        "3": 122273.28,
-                        "4": 131919.84,
-                        "5": 141649.92,
-                        "6": 152674.56,
-                        "7": 164116.8,
-                        "8": 176415.12,
-                        "9": 189673.92
-                    }
-                }
-            }
-        ]
-    }
-};
 
-		document.addEventListener('DOMContentLoaded', () => {
+		document.addEventListener('DOMContentLoaded', async () => {
+            // Salary scales live in federation-config.json (regenerated from the
+            // UCOP 2025-26 scale PDFs). Lecturer rates come from annual-config.json
+            // so they are maintained in one place alongside lecturerpay.html.
+            let FEDERATION_DATA;
+            try {
+                const [fedRes, annualRes] = await Promise.all([
+                    fetch('federation-config.json'),
+                    fetch('annual-config.json')
+                ]);
+                const fedConfig = await fedRes.json();
+                const annualConfig = await annualRes.json();
+                FEDERATION_DATA = fedConfig.titles;
+                const lecturer = annualConfig.LECTURER_SALARY_DATA;
+                const toScale = (salaries) => Object.fromEntries(salaries.map((v, i) => [String(i + 1), v]));
+                FEDERATION_DATA['Lecturer'] = {
+                    name: 'Lecturer',
+                    variants: [{
+                        exempt: 'Unknown',
+                        represented: 'Unknown',
+                        link: '',
+                        type: 'Academic',
+                        scales: {
+                            'Pre-Six Year': toScale(lecturer.preSix.salaries),
+                            'Continuing': toScale(lecturer.continuing.salaries),
+                            'Senior Continuing': toScale(lecturer.senior.salaries)
+                        }
+                    }]
+                };
+            } catch (error) {
+                console.error('Error loading configuration:', error);
+                alert('Failed to load salary configuration. Please ensure federation-config.json and annual-config.json are present.');
+                return;
+            }
+
 			let duties = [];
 			let dutyCounter = 0;
             let currentApptType = 'Fiscal'; 
@@ -1289,6 +286,9 @@
 
             function handleTitleChange() {
                 const titleKey = fedTitle.value;
+                duties = []; // duty rows are shaped per title (IWC vs %FTE vs date ranges)
+                renderDuties();
+                runAllCalculations();
                 if (!titleKey) {
                     variantControls.classList.add('hidden');
                     rankContainer.classList.add('hidden');
@@ -1335,11 +335,18 @@
                 const eVal = fedExempt.value;
                 const rVal = fedRep.value;
                 
-                let found = data.variants.find(v => (v.exempt === eVal || eVal === 'Unknown' || v.exempt === 'Unknown') && 
+                // Prefer an exact match; fall back to 'Unknown' wildcards only if
+                // nothing matches, so a variant with unknown status can never
+                // shadow an explicitly selected one.
+                let found = data.variants.find(v => v.exempt === eVal && v.represented === rVal);
+                if (!found) {
+                    found = data.variants.find(v => (v.exempt === eVal || eVal === 'Unknown' || v.exempt === 'Unknown') &&
                                                     (v.represented === rVal || rVal === 'Unknown' || v.represented === 'Unknown'));
+                }
                 if (found) {
                     if (found.type && found.type !== currentApptType) {
                         currentApptType = found.type;
+                        duties = []; // duty rows are shaped per type (quarters vs date ranges)
                         renderTableHeaders();
                         renderDuties();
                         runAllCalculations();
@@ -1404,7 +411,10 @@
                     return;
                 }
 
-                const steps = Object.keys(currentScales[rank]).sort((a,b) => parseInt(a) - parseInt(b));
+                const stepKeys = Object.keys(currentScales[rank]);
+                const steps = stepKeys.every(k => /^\d+$/.test(k))
+                    ? stepKeys.sort((a, b) => a - b)
+                    : stepKeys; // non-numeric keys (e.g. Min/Max ranges) keep config order
                 if (steps.length === 0) {
                     stepContainer.classList.add('hidden');
                 } else {
@@ -1536,8 +546,9 @@
                 const isLecturer = fedTitle.value === 'Lecturer';
                 if (currentApptType === 'Academic') {
                     const quarterlyData = { Fall: { amount: 0 }, Winter: { amount: 0 }, Spring: { amount: 0 } };
-                    duties.forEach(duty => { 
-                        quarterlyData[duty.quarter].amount += parseFloat(isLecturer ? duty.iwc : duty.percentFte) || 0; 
+                    duties.forEach(duty => {
+                        if (!quarterlyData[duty.quarter]) return;
+                        quarterlyData[duty.quarter].amount += parseFloat(isLecturer ? duty.iwc : duty.percentFte) || 0;
                     });
 
                     Object.keys(quarterlyData).forEach(quarter => {
@@ -1621,7 +632,7 @@
                 document.getElementById('summary-tfoot').innerHTML = `
                     <tr>
                         <td><strong>Total</strong></td>
-                        <td class="text-right"><strong>${(currentApptType === 'Academic' && !isLecturer) ? (totalMetric1).toFixed(2) : totalMetric1.toFixed(2)}</strong></td>
+                        <td class="text-right"><strong>${totalMetric1.toFixed(2)}</strong></td>
                         <td class="text-right"></td>
                         <td class="text-right"><strong>${formatCurrency(totalPay)}</strong></td>
                         <td class="text-right"><strong>${formatCurrency(totalBenefits)}</strong></td>
@@ -1687,6 +698,16 @@
             handleTitleChange(); 
 
             // Offer Letter Generation Logic
+            const olYear = document.getElementById('ol-year');
+            if (olYear) {
+                const now = new Date();
+                const ayStart = now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1;
+                for (let y = ayStart - 1; y <= ayStart + 2; y++) {
+                    olYear.appendChild(new Option(`${y}/${y + 1}`, `${y}/${y + 1}`));
+                }
+                olYear.value = `${ayStart}/${ayStart + 1}`;
+            }
+
             const generateDocBtn = document.getElementById('generate-doc-btn');
             if (generateDocBtn) {
                 generateDocBtn.addEventListener('click', () => {
@@ -1700,21 +721,17 @@
                     const school = document.getElementById('ol-school').value || 'Enter name of school/college here';
                     const concurrent = document.getElementById('ol-concurrent').value || 'Please list all other active/concurrent appointments at any UC campus, if applicable';
 
-                    const rank = document.getElementById('fedRank').value || 'N/A';
                     const step = document.getElementById('fedStep').value || 'N/A';
-                    const salary = document.getElementById('annualSalary').value || 'N/A';
+                    const salaryNum = getCleanNumber(annualSalaryInput.value);
+                    const salaryText = salaryNum > 0 ? formatCurrency(salaryNum) : 'N/A';
+                    const acadYear = olYear.value;
                     const point = step; // Typically step is the salary point for lecturers
 
-                    // Calculate Summary Data
                     const theDuties = duties || [];
-                    const qData = {};
-                    let earliestStart = '', latestEnd = '';
-                    // For lecturers, they usually have quarters.
-                    // Let's just map Fall/Winter/Spring to default dates or leave them blank
                     let apptTableHtml = `<tr>
                         <td style="border:1px solid black;padding:5px"><p>One year</p></td>
                         <td style="border:1px solid black;padding:5px"><p>1630 / Lecturer</p></td>
-                        <td style="border:1px solid black;padding:5px"><p>$${salary}</p></td>
+                        <td style="border:1px solid black;padding:5px"><p>${salaryText}</p></td>
                         <td style="border:1px solid black;padding:5px"><p>${point}</p></td>
                         <td style="border:1px solid black;padding:5px"><p></p></td>
                         <td style="border:1px solid black;padding:5px"><p></p></td>
@@ -1725,15 +742,17 @@
                     
                     if (theDuties.length > 0) {
                         theDuties.forEach(d => {
-                            let pTime = ((d.iwc / 3.0) * 100).toFixed(2);
-                            let mEarnings = ((parseFloat(salary.replace(/,/g, '')) * (d.iwc / 9.0)) / 3).toFixed(2); // very rough approx
+                            const iwc = parseFloat(d.iwc) || 0;
+                            const pTime = ((iwc / 3.0) * 100).toFixed(2);
+                            // One quarter's pay (annual x IWC/9) spread over the quarter's 3 pay months
+                            const mEarnings = salaryNum > 0 ? formatCurrency(salaryNum * (iwc / 9.0) / 3) : 'N/A';
                             qTableHtml += `<tr>
                                 <td style="border:1px solid black;padding:5px"><p>${d.quarter}</p></td>
-                                <td style="border:1px solid black;padding:5px"><p>2025/2026</p></td>
+                                <td style="border:1px solid black;padding:5px"><p>${acadYear}</p></td>
                                 <td style="border:1px solid black;padding:5px"><p></p></td>
                                 <td style="border:1px solid black;padding:5px"><p></p></td>
                                 <td style="border:1px solid black;padding:5px"><p>${pTime}%</p></td>
-                                <td style="border:1px solid black;padding:5px"><p>$${mEarnings}</p></td>
+                                <td style="border:1px solid black;padding:5px"><p>${mEarnings}</p></td>
                             </tr>`;
 
                             iwcTableHtml += `<tr>
@@ -1741,7 +760,7 @@
                                 <td style="border:1px solid black;padding:5px"><p>${d.description}</p></td>
                                 <td style="border:1px solid black;padding:5px"><p>${d.iwc}</p></td>
                                 <td style="border:1px solid black;padding:5px"><p>${d.quarter}</p></td>
-                                <td style="border:1px solid black;padding:5px"><p>2025/2026</p></td>
+                                <td style="border:1px solid black;padding:5px"><p>${acadYear}</p></td>
                             </tr>`;
                         });
                     } else {
