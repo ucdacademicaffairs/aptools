@@ -63,7 +63,7 @@
 		"description": "Lets you upload two IPA Budget Exports in Excel format to create a quick 'before and after' picture of the year-over-year change.",
 		"lastUpdated": "April 7th, 2026",
 		"lastChange": "Basic look/feel updates, plus a new PDF export function.",
-		"gridSpan": "card-span-2",
+		"gridSpan": "",
 		"buttons": [
 			{
 				"label": "Launch Tool →",
