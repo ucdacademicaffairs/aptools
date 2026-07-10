@@ -768,12 +768,16 @@
 					const quartersArr = [...new Set(group.map(a => a.values.quarter))];
 					const quarterString = quartersArr.length === 3 ? 'Fall, Winter, and Spring'
 						: quartersArr.length === 2 ? quartersArr.join(' and ') : quartersArr[0];
+					const supervisors = [...new Set(group.map(a => (a.values.supervisor || '').trim()).filter(Boolean))];
 					return {
 						type: sample.type, quarter: quarterString,
 						totalFte: parseFloat(sample.values.percentTime || 0),
-						supervisor: sample.values.supervisor || '[SUPERVISOR]',
+						supervisor: supervisors.join(' / ') || '[SUPERVISOR]',
 						monthlySal: sample.costs.monthlyActual,
-						hideSupervisor: quartersArr.length > 1 || group.some(a => a.values.hideSupervisor),
+						// GSR letters always name the PI/Supervisor: they have no
+						// omit option, and the "Description of Duties form" fallback
+						// wording only applies to ASE titles.
+						hideSupervisor: sample.type !== 'gsr' && (quartersArr.length > 1 || group.some(a => a.values.hideSupervisor)),
 						payDates: getCombinedPayDatesList(quartersArr),
 						serviceDates: getServiceDates(quartersArr),
 						duties: sample.values.workDuties || '',
@@ -831,12 +835,15 @@
 					const quartersArr = [...new Set(group.map(a => a.values.quarter))];
 					const quarterString = quartersArr.length === 3 ? 'Fall, Winter, and Spring'
 						: quartersArr.length === 2 ? quartersArr.join(' and ') : quartersArr[0];
+					const supervisors = [...new Set(group.map(a => (a.values.supervisor || '').trim()).filter(Boolean))];
 					return {
 						type: sample.type, quarter: quarterString,
 						totalFte: parseFloat(sample.values.percentTime || 0),
-						supervisor: sample.values.supervisor || '[SUPERVISOR]',
+						supervisor: supervisors.join(' / ') || '[SUPERVISOR]',
 						monthlySal: sample.costs.monthlyActual,
-						hideSupervisor: quartersArr.length > 1 || group.some(a => a.values.hideSupervisor),
+						// GSRs always show the PI/Supervisor (see buildLetterGroups);
+						// the bulk "Hide All Supervisors" checkbox applies to ASE titles only.
+						hideSupervisor: sample.type !== 'gsr' && (quartersArr.length > 1 || group.some(a => a.values.hideSupervisor)),
 						payDates: getCombinedPayDatesList(quartersArr),
 						serviceDates: getServiceDates(quartersArr),
 						duties: sample.values.workDuties || '',
