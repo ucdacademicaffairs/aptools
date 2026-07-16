@@ -472,14 +472,27 @@
 								continue;
 							}
 
+							// The "untrusted" HTML flavor of the export drops the leading empty
+							// cell on meeting rows that don't repeat the instructor, which shifts
+							// the whole row left by one (Type ends up in the Instructor column,
+							// Time under Days, and so on). Luckily instructor names in these
+							// reports always contain a comma ("Last, First") and meeting types
+							// never do — so if a short row has a comma-less "instructor", I know
+							// it's really the Type cell and I nudge the row back into place.
+							let cells = meetRow;
+							const instrCell = clean(meetRow[meetIndexes.instructor]);
+							if (meetRow.length < row.length && instrCell && !instrCell.includes(',')) {
+								cells = [...meetRow.slice(0, meetIndexes.instructor), '', ...meetRow.slice(meetIndexes.instructor)];
+							}
+
 							const meeting = {
-								type: meetIndexes.type !== -1 ? clean(meetRow[meetIndexes.type]) : '',
-								days: meetIndexes.days !== -1 ? clean(meetRow[meetIndexes.days]) : '',
-								time: meetIndexes.time !== -1 ? clean(meetRow[meetIndexes.time]) : '',
-								build: meetIndexes.build !== -1 ? clean(meetRow[meetIndexes.build]) : '',
-								room: meetIndexes.room !== -1 ? clean(meetRow[meetIndexes.room]) : '',
+								type: meetIndexes.type !== -1 ? clean(cells[meetIndexes.type]) : '',
+								days: meetIndexes.days !== -1 ? clean(cells[meetIndexes.days]) : '',
+								time: meetIndexes.time !== -1 ? clean(cells[meetIndexes.time]) : '',
+								build: meetIndexes.build !== -1 ? clean(cells[meetIndexes.build]) : '',
+								room: meetIndexes.room !== -1 ? clean(cells[meetIndexes.room]) : '',
 							};
-							const name = clean(meetRow[meetIndexes.instructor]);
+							const name = clean(cells[meetIndexes.instructor]);
 							if (name && !instructorNames.includes(name)) instructorNames.push(name);
 
 							// Only keep the row as a "meeting" if it actually says something.
