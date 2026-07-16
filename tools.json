@@ -162,9 +162,9 @@
 		"section": "apps",
 		"title": "Roster Parser",
 		"category": "Utilities",
-		"description": "Upload a roster export from SIS (XLS, XLSX, CSV) to return a simple list of 'course code / course number / instructor name / CRN'. Handles untrusted and trusted exports.",
-		"lastUpdated": "August 28th, 2025",
-		"lastChange": "Added a hybrid XLS handler.",
+		"description": "Upload a roster export from SIS (XLS, XLSX, CSV) to return a simple list of 'course code / course number / instructor name / CRN'. Handles untrusted and trusted exports. Now with a Report Builder for custom columns and course filtering.",
+		"lastUpdated": "July 16th, 2026",
+		"lastChange": "Added the Report Builder: pick your output columns (days, times, registered count, and more) and filter by course number or range.",
 		"gridSpan": "",
 		"buttons": [
 			{
