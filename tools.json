@@ -207,8 +207,8 @@
 		"title": "Offer Letter Generator",
 		"category": "HR",
 		"description": "Generates compliant offer letters for graduate students. I am still working on an automated sending flow.",
-		"lastUpdated": "June 10th, 2026",
-		"lastChange": "First public version. Updated with 2026 offer letter templates from GS.",
+		"lastUpdated": "July 20th, 2026",
+		"lastChange": "Reader/Tutor letters now show real biweekly pay dates (from the UCPath biweekly calendar) instead of monthly ones, with future dates projected automatically.",
 		"gridSpan": "",
 		"buttons": [
 			{

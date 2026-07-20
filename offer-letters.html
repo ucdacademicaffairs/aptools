@@ -717,6 +717,44 @@
 				const last = dates.pop();
 				return dates.join(', ') + ', and ' + last;
 			}
+			// --- Biweekly pay dates (Readers and Tutors) ---
+			// Hourly folks are paid on the UCPath biweekly cycle, not on the 1st of the
+			// month. Happily, that cycle is perfectly rigid: paychecks land every other
+			// Wednesday, and each one covers the two-week period ending on the Saturday
+			// eleven days earlier. I anchored this on the 2026 UCPath Biweekly Payroll
+			// Calendar (published 10/08/2025), where the first payday is January 14, 2026.
+			// Because the cadence never breaks, I can project it into any future year by
+			// just counting off 14s from that anchor.
+			const BIWEEKLY_ANCHOR_PAYDAY = Date.UTC(2026, 0, 14);
+			const MS_PER_DAY = 86400000;
+			function getBiweeklyPayDatesList(quarters) {
+				const startYear = parseInt(document.getElementById('global-year').value);
+				const paydays = [];
+				quarters.forEach(q => {
+					let calYear = startYear;
+					if (q === 'Winter' || q === 'Spring') calYear += 1;
+					const d = COST_DATA.QUARTER_DATES && COST_DATA.QUARTER_DATES[`${q} ${calYear}`];
+					if (!d) return;
+					// A workday belongs to the biweekly period ending on the first period-end
+					// date (a Saturday) on or after it — so the checks for this appointment
+					// run from the period containing the first day of service through the
+					// period containing the last day.
+					const toUTC = s => { const [y, m, dd] = s.split('-').map(Number); return Date.UTC(y, m - 1, dd); };
+					const anchorPeriodEnd = BIWEEKLY_ANCHOR_PAYDAY - 11 * MS_PER_DAY;
+					const periodEndOnOrAfter = t => anchorPeriodEnd + Math.ceil((t - anchorPeriodEnd) / (14 * MS_PER_DAY)) * 14 * MS_PER_DAY;
+					const lastPeriodEnd = periodEndOnOrAfter(toUTC(d.serviceEnd));
+					for (let pe = periodEndOnOrAfter(toUTC(d.serviceStart)); pe <= lastPeriodEnd; pe += 14 * MS_PER_DAY) {
+						paydays.push(pe + 11 * MS_PER_DAY);
+					}
+				});
+				if (!paydays.length) return '[PAY DATES]';
+				const dates = [...new Set(paydays)].sort((a, b) => a - b)
+					.map(t => new Date(t).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' }));
+				if (dates.length === 1) return dates[0];
+				if (dates.length === 2) return dates.join(' and ');
+				const last = dates.pop();
+				return dates.join(', ') + ', and ' + last;
+			}
 			function getServiceDates(quarters) {
 				const startYear = parseInt(document.getElementById('global-year').value);
 				let datesText = [];
@@ -778,7 +816,11 @@
 						// omit option, and the "Description of Duties form" fallback
 						// wording only applies to ASE titles.
 						hideSupervisor: sample.type !== 'gsr' && (quartersArr.length > 1 || group.some(a => a.values.hideSupervisor)),
-						payDates: getCombinedPayDatesList(quartersArr),
+						// Readers and Tutors are hourly, so they ride the biweekly payroll
+					// cycle; everyone else gets the monthly 1st-of-the-month dates.
+					payDates: (sample.type === 'reader' || sample.type === 'tutor')
+						? getBiweeklyPayDatesList(quartersArr)
+						: getCombinedPayDatesList(quartersArr),
 						serviceDates: getServiceDates(quartersArr),
 						duties: sample.values.workDuties || '',
 						step: sample.values.step,
@@ -844,7 +886,11 @@
 						// GSRs always show the PI/Supervisor (see buildLetterGroups);
 						// the bulk "Hide All Supervisors" checkbox applies to ASE titles only.
 						hideSupervisor: sample.type !== 'gsr' && (quartersArr.length > 1 || group.some(a => a.values.hideSupervisor)),
-						payDates: getCombinedPayDatesList(quartersArr),
+						// Readers and Tutors are hourly, so they ride the biweekly payroll
+					// cycle; everyone else gets the monthly 1st-of-the-month dates.
+					payDates: (sample.type === 'reader' || sample.type === 'tutor')
+						? getBiweeklyPayDatesList(quartersArr)
+						: getCombinedPayDatesList(quartersArr),
 						serviceDates: getServiceDates(quartersArr),
 						duties: sample.values.workDuties || '',
 						step: sample.values.step,
@@ -942,7 +988,7 @@
 					<p><strong>Subject:</strong> ${subject}</p>
 					<p>Dear ${d.studentName.split(' ')[0]},</p>
 					<p>I am pleased to offer you an appointment as a <strong>${title}</strong> in the <strong>${d.deptName}</strong> for the <strong>${g.quarter} quarter(s) of ${d.year}-${d.year + 1}</strong>.${supervisorLine}</p>
-					<p>This appointment is at <strong>${fteDisplay}</strong>. You will be paid ${salaryLine}. Your paychecks will be issued on <strong>${g.payDates}</strong>. The service dates for this appointment are <strong>${g.serviceDates}</strong>.</p>
+					<p>This appointment is at <strong>${fteDisplay}</strong>. You will be paid ${salaryLine}. Your paychecks will be issued ${isHourly ? 'biweekly ' : ''}on <strong>${g.payDates}</strong>. The service dates for this appointment are <strong>${g.serviceDates}</strong>.</p>
 					${isGsr ? `<p><strong>Short Statement of Required Work Duties:</strong> ${g.duties}</p>` : ''}
 					${timeReporting}
 					${boilerplateHtml(isGsr ? GSR_BOILERPLATE : ASE_BOILERPLATE)}
@@ -1143,7 +1189,7 @@
 							{ text: `${fteDisplay}.`, bold: true },
 							{ text: 'You will be paid', bold: false },
 							...salaryParts,
-							{ text: 'Your paychecks will be issued on', bold: false },
+							{ text: `Your paychecks will be issued ${isHourly ? 'biweekly ' : ''}on`, bold: false },
 							{ text: `${g.payDates}.`, bold: true },
 							{ text: 'The service dates for this appointment are', bold: false },
 							{ text: `${g.serviceDates}.`, bold: true }
