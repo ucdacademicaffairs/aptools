@@ -479,7 +479,7 @@
 					id: ++appointmentCounter, type,
 					values: {
 						quarter: 'Fall', step: '1', percentTime: (type === 'reader' || type === 'tutor') ? '110' : '50',
-						supervisor: '', hideSupervisor: false,
+						supervisor: '', hideSupervisor: false, assignment: '',
 						workDuties: type === 'gsr' ? 'Conducting research related to...' : '',
 						tutorType: type === 'tutor' ? 'Individual' : undefined
 					},
@@ -680,6 +680,11 @@
 								</label>` : ''}
 							</div>
 						</div>
+						${appt.type !== 'gsr' ? `
+						<div class="col-span-1 md:col-span-2 lg:col-span-3">
+							<label class="block text-xs font-semibold">${appt.type === 'tutor' ? 'Assigned Tutoring Center' : 'Assigned Course(s) & Section(s)'}</label>
+							<input type="text" data-calc="assignment" class="w-full p-1 mt-1 h-[30px] border rounded leading-none" value="${appt.values.assignment || ''}" placeholder="${appt.type === 'tutor' ? 'Optional — omitted from the letter if blank' : 'Leave blank to defer to a Supplemental Notice of Assignment'}">
+						</div>` : ''}
 						${dutiesHtml}
 					</div>
 				</div>`;
@@ -755,6 +760,74 @@
 				const last = dates.pop();
 				return dates.join(', ') + ', and ' + last;
 			}
+			// --- ASE Written Notice pieces (per the 2026 ASE template from GS) ---
+			// The template wants the letter to say "Written Notice of Appointment as
+			// <name and number of job code>", so here are the title codes. DOUBLE-CHECK
+			// these against UCPath before trusting them too hard — they're the standard
+			// systemwide codes, and they're deliberately easy to edit right here.
+			const ASE_JOB_CODES = { ta: '2310', ai: '1506', reader: '2500', tutor: '2510' };
+
+			// The template also wants "pay period effective dates" — the payroll periods
+			// behind the paychecks, which are NOT the same as the dates checks arrive.
+			// Monthly folks map onto whole months (Fall = October through December, paid
+			// Nov 1/Dec 1/Jan 1); hourly folks get the span of biweekly periods that
+			// cover their service dates, using the same anchor math as the paydays.
+			function getPayPeriodText(quarters, isHourly) {
+				const startYear = parseInt(document.getElementById('global-year').value);
+				const fmt = t => new Date(t).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+				const parts = [];
+				quarters.forEach(q => {
+					if (isHourly) {
+						let calYear = startYear;
+						if (q === 'Winter' || q === 'Spring') calYear += 1;
+						const d = COST_DATA.QUARTER_DATES && COST_DATA.QUARTER_DATES[`${q} ${calYear}`];
+						if (!d) return;
+						const toUTC = s => { const [y, m, dd] = s.split('-').map(Number); return Date.UTC(y, m - 1, dd); };
+						const anchorPeriodEnd = BIWEEKLY_ANCHOR_PAYDAY - 11 * MS_PER_DAY;
+						const periodEndOnOrAfter = t => anchorPeriodEnd + Math.ceil((t - anchorPeriodEnd) / (14 * MS_PER_DAY)) * 14 * MS_PER_DAY;
+						const firstStart = periodEndOnOrAfter(toUTC(d.serviceStart)) - 13 * MS_PER_DAY;
+						const lastEnd = periodEndOnOrAfter(toUTC(d.serviceEnd));
+						parts.push(`${q}: ${fmt(firstStart)} to ${fmt(lastEnd)}`);
+					} else {
+						if (q === 'Fall') parts.push(`${q}: October 1, ${startYear} to December 31, ${startYear}`);
+						if (q === 'Winter') parts.push(`${q}: January 1, ${startYear + 1} to March 31, ${startYear + 1}`);
+						if (q === 'Spring') parts.push(`${q}: April 1, ${startYear + 1} to June 30, ${startYear + 1}`);
+					}
+				});
+				if (!parts.length) return '[PAY PERIOD DATES]';
+				// One quarter reads like a sentence; several read like the service-dates list.
+				return parts.length === 1 ? parts[0].replace(/^[^:]+: /, '') : parts.join('; ');
+			}
+
+			// Shared ASE letter fragments, computed in ONE place so the on-screen
+			// preview and the PDF can never drift apart.
+			function aseFragments(g) {
+				const code = ASE_JOB_CODES[g.type] || 'XXXX';
+				const plainTitle = g.type === 'ta' ? 'Teaching Assistant'
+					: g.type === 'ai' ? 'Associate Instructor'
+						: g.type === 'reader' ? 'Reader' : 'Tutor';
+				const noticeTitle = g.type === 'ta' || g.type === 'ai'
+					? `${plainTitle} (Point ${g.step}, Title Code ${code})`
+					: g.type === 'tutor'
+						? `Tutor (${g.tutorType || 'Individual'}, Title Code ${code})`
+						: `Reader (Title Code ${code})`;
+				const isHourly = g.type === 'reader' || g.type === 'tutor';
+				// The workload rule of thumb: 100% = 40 hours/week, so 25% = 10, 50% = 20.
+				const pctFte = isHourly ? Math.round(g.totalFte / 4.4) : g.totalFte;
+				const hoursPerWeek = Math.round(pctFte * 0.4);
+				return {
+					noticeTitle, plainTitle, pctFte, hoursPerWeek,
+					scalesText: 'Academic Student Employee (ASE) wages are established on the appropriate salary scales, which can be found here: https://www.ucop.edu/academic-personnel-programs/compensation/. Your wage rate as a salaried ASE is dependent on your hiring campus. Additional information about campus-specific salary scales is available at: https://grad.ucdavis.edu/understanding-your-student-salary.',
+					workloadText: `A ${pctFte}% appointment corresponds to an average of ${hoursPerWeek} hours of work per week. Pursuant to Article 34 - Workload, if you have any concerns regarding exceeding your assigned workload maximum during the course of your appointment, you must immediately communicate these concerns to your instructor of record/supervisor. Your instructor of record/supervisor will then determine the priority duties and what, if any, adjustments need to be made to your workload.`,
+					leavesText: "Leaves of absences, including short-term and long-term leave, are governed by Article 18 - Leaves. Requests for any leave of absence must meet the eligibility criteria, and in some cases, must be approved by your instructor of record/supervisor or department in advance. Requests for any leave of absence must be in accordance with Article 18 and the University's policies and procedures. More information can be found here: https://grad.ucdavis.edu/family-and-medical-leave-funded-graduate-students.",
+					closingText: `I wish you much success as a ${plainTitle} and on behalf of the University I thank you for assuming this important responsibility.`,
+					// TAs/AIs/Readers without a known assignment defer to the Supplemental
+					// Notice, per the template. Tutors just omit the line if there's no center.
+					assignmentSentence: g.assignment
+						? (g.type === 'tutor' ? 'Your assigned tutoring center is: ' : 'Your assigned course(s) and section number(s) are: ')
+						: (g.type === 'tutor' ? '' : 'Your assigned course(s) and section number(s) will be provided in a Supplemental Notice of Assignment.')
+				};
+			}
 			function getServiceDates(quarters) {
 				const startYear = parseInt(document.getElementById('global-year').value);
 				let datesText = [];
@@ -807,6 +880,7 @@
 					const quarterString = quartersArr.length === 3 ? 'Fall, Winter, and Spring'
 						: quartersArr.length === 2 ? quartersArr.join(' and ') : quartersArr[0];
 					const supervisors = [...new Set(group.map(a => (a.values.supervisor || '').trim()).filter(Boolean))];
+					const assignments = [...new Set(group.map(a => (a.values.assignment || '').trim()).filter(Boolean))];
 					return {
 						type: sample.type, quarter: quarterString,
 						totalFte: parseFloat(sample.values.percentTime || 0),
@@ -822,6 +896,10 @@
 						? getBiweeklyPayDatesList(quartersArr)
 						: getCombinedPayDatesList(quartersArr),
 						serviceDates: getServiceDates(quartersArr),
+						// The template's "pay period effective dates" for the opening
+						// paragraph (ASE letters only; GSRs don't use it).
+						payPeriods: sample.type === 'gsr' ? '' : getPayPeriodText(quartersArr, sample.type === 'reader' || sample.type === 'tutor'),
+						assignment: assignments.join('; '),
 						duties: sample.values.workDuties || '',
 						step: sample.values.step,
 						tutorType: sample.values.tutorType
@@ -878,6 +956,7 @@
 					const quarterString = quartersArr.length === 3 ? 'Fall, Winter, and Spring'
 						: quartersArr.length === 2 ? quartersArr.join(' and ') : quartersArr[0];
 					const supervisors = [...new Set(group.map(a => (a.values.supervisor || '').trim()).filter(Boolean))];
+					const assignments = [...new Set(group.map(a => (a.values.assignment || '').trim()).filter(Boolean))];
 					return {
 						type: sample.type, quarter: quarterString,
 						totalFte: parseFloat(sample.values.percentTime || 0),
@@ -892,6 +971,10 @@
 						? getBiweeklyPayDatesList(quartersArr)
 						: getCombinedPayDatesList(quartersArr),
 						serviceDates: getServiceDates(quartersArr),
+						// The template's "pay period effective dates" for the opening
+						// paragraph (ASE letters only; GSRs don't use it).
+						payPeriods: sample.type === 'gsr' ? '' : getPayPeriodText(quartersArr, sample.type === 'reader' || sample.type === 'tutor'),
+						assignment: assignments.join('; '),
 						duties: sample.values.workDuties || '',
 						step: sample.values.step,
 						tutorType: sample.values.tutorType
@@ -957,8 +1040,9 @@
 									: 'Graduate Student Researcher';
 					if (g.type !== 'reader' && g.type !== 'tutor') title += ` (Point ${g.step})`;
 					
+					const ase = isGsr ? null : aseFragments(g);
 					const fteDisplay = isHourly
-						? `${Math.round(g.totalFte / 4.4)}% / ${g.totalFte} hours`
+						? `${ase.pctFte}% / approximately ${ase.hoursPerWeek} hours per week`
 						: `${g.totalFte}% / ${Math.round(g.totalFte * 4.4)} hours`;
 					const salaryLine = isHourly
 						? `at an hourly rate of ${formatCurrency(g.monthlySal)} per hour`
@@ -974,6 +1058,28 @@
 						: isGsr ? ''
 							: `<p><strong>Reporting in Time and Attendance System</strong> - You are responsible for honestly and accurately reporting the use of any leave or absences from work each month on the appropriate leave-reporting form and/or through your campus time and attendance system each month, in accordance with established local procedures. Failure to report an absence from work in any circumstance may result in an overpayment of public funds requiring your repayment. Submitting erroneous information in the time and attendance system will be subject to your submission being overridden and pay withheld for the time not worked. Failing to accurately report absences in any way and receiving an overpayment of funds is a serious violation of university policy that may result in disciplinary action, up to and including dismissal. If you have no absences or leave to report, you must still submit a report acknowledging no absences or leave to report in your local time and attendance system by the submission deadline as set by your campus. See information on UC Davis Time Reporting System (TRS)</p>`;
 
+					// ── Paragraphs that differ between the GSR letter and the ASE
+					// "Written Notice of Appointment" (2026 GS template) ──
+					const reportingLine = g.hideSupervisor
+						? ' Your supervisor will be noted on the Description of Duties form you receive prior to the quarter.'
+						: ` You will be reporting to <strong>${g.supervisor}</strong>.`;
+					const p1Html = isGsr
+						? `<p>I am pleased to offer you an appointment as a <strong>${title}</strong> in the <strong>${d.deptName}</strong> for the <strong>${g.quarter} quarter(s) of ${d.year}-${d.year + 1}</strong>.${supervisorLine}</p>`
+						: g.type === 'tutor'
+							? `<p>Congratulations! This letter constitutes your Written Notice of Appointment as a <strong>${ase.noticeTitle}</strong> in the <strong>${d.deptName}</strong>. The effective dates of your appointment will be <strong>${g.serviceDates}</strong>.${reportingLine}</p>`
+							: `<p>Congratulations! This letter constitutes your Written Notice of Appointment as a <strong>${ase.noticeTitle}</strong> in the <strong>${d.deptName}</strong> for the <strong>${g.quarter} quarter(s) of ${d.year}-${d.year + 1}</strong>. The service period effective dates of your appointment are <strong>${g.serviceDates}</strong>, or through the following week if you are responsible for duties related to submission of final grades. The pay period effective dates are <strong>${g.payPeriods}</strong>.${reportingLine}</p>`;
+					const assignmentHtml = (isGsr || !ase.assignmentSentence) ? ''
+						: (g.assignment
+							? `<p>${ase.assignmentSentence}<strong>${g.assignment}</strong>.</p>`
+							: `<p>${ase.assignmentSentence}</p>`);
+					const p2Html = isGsr
+						? `<p>This appointment is at <strong>${fteDisplay}</strong>. You will be paid ${salaryLine}. Your paychecks will be issued on <strong>${g.payDates}</strong>. The service dates for this appointment are <strong>${g.serviceDates}</strong>.</p>`
+						: `<p>This appointment is at <strong>${fteDisplay}</strong>. You will be paid ${salaryLine}. Your paychecks will be issued ${isHourly ? 'biweekly ' : ''}on <strong>${g.payDates}</strong>.</p>`;
+					const aseParasHtml = isGsr ? '' : `
+					<p>${ase.scalesText}</p>
+					<p><strong>Workload</strong> - ${ase.workloadText}</p>
+					<p><strong>Leaves of Absences</strong> - ${ase.leavesText}</p>`;
+
 					return `<div class="letter-preview mb-12">
 					<div class="letter-header-row">
 						<div>
@@ -987,8 +1093,10 @@
 					<p><strong>From:</strong> ${d.headOfDept}</p>
 					<p><strong>Subject:</strong> ${subject}</p>
 					<p>Dear ${d.studentName.split(' ')[0]},</p>
-					<p>I am pleased to offer you an appointment as a <strong>${title}</strong> in the <strong>${d.deptName}</strong> for the <strong>${g.quarter} quarter(s) of ${d.year}-${d.year + 1}</strong>.${supervisorLine}</p>
-					<p>This appointment is at <strong>${fteDisplay}</strong>. You will be paid ${salaryLine}. Your paychecks will be issued ${isHourly ? 'biweekly ' : ''}on <strong>${g.payDates}</strong>. The service dates for this appointment are <strong>${g.serviceDates}</strong>.</p>
+					${p1Html}
+					${assignmentHtml}
+					${p2Html}
+					${aseParasHtml}
 					${isGsr ? `<p><strong>Short Statement of Required Work Duties:</strong> ${g.duties}</p>` : ''}
 					${timeReporting}
 					${boilerplateHtml(isGsr ? GSR_BOILERPLATE : ASE_BOILERPLATE)}
@@ -999,6 +1107,7 @@
 						<p style="margin:0;">${d.contactPhone}</p>
 						<p style="margin:0;">${d.contactEmail}</p>
 					</div>
+					${isGsr ? '' : `<p style="margin-top:1rem;">${ase.closingText}</p>`}
 					<p style="margin-top:1rem;">Sincerely,</p>
 					<p style="height:2rem;margin:0;"></p>
 					<p style="margin-bottom:0;"><strong>${d.headOfDept}</strong></p>
@@ -1121,8 +1230,9 @@
 										: 'Graduate Student Researcher';
 						if (g.type !== 'reader' && g.type !== 'tutor') title += ` (Point ${g.step})`;
 
+						const ase = isGsr ? null : aseFragments(g);
 						const fteDisplay = isHourly
-							? `${Math.round(g.totalFte / 4.4)}% / ${g.totalFte} hours`
+							? `${ase.pctFte}% / approximately ${ase.hoursPerWeek} hours per week`
 							: `${g.totalFte}% / ${Math.round(g.totalFte * 4.4)} hours`;
 						const salaryText = isHourly
 							? `at an hourly rate of ${formatCurrency(g.monthlySal)} per hour`
@@ -1158,23 +1268,62 @@
 						drawParagraph(`Dear ${d.studentName.split(' ')[0]},`);
 						drawBlankLine(0.5);
 
-						const p1Parts = [
-							{ text: 'I am pleased to offer you an appointment as a', bold: false },
-							{ text: title, bold: true },
-							{ text: 'in the', bold: false },
-							{ text: d.deptName, bold: true },
-							{ text: 'for the', bold: false },
-							{ text: `${g.quarter} quarter(s) of ${d.year}-${d.year + 1}.`, bold: true }
-						];
+						// ASE letters open with the template's "Written Notice of Appointment"
+						// paragraph (with a Tutor-specific variant); GSR letters keep theirs.
+						let p1Parts;
+						if (isGsr) {
+							p1Parts = [
+								{ text: 'I am pleased to offer you an appointment as a', bold: false },
+								{ text: title, bold: true },
+								{ text: 'in the', bold: false },
+								{ text: d.deptName, bold: true },
+								{ text: 'for the', bold: false },
+								{ text: `${g.quarter} quarter(s) of ${d.year}-${d.year + 1}.`, bold: true }
+							];
+						} else if (g.type === 'tutor') {
+							p1Parts = [
+								{ text: 'Congratulations! This letter constitutes your Written Notice of Appointment as a', bold: false },
+								{ text: ase.noticeTitle, bold: true },
+								{ text: 'in the', bold: false },
+								{ text: `${d.deptName}.`, bold: true },
+								{ text: 'The effective dates of your appointment will be', bold: false },
+								{ text: `${g.serviceDates}.`, bold: true }
+							];
+						} else {
+							p1Parts = [
+								{ text: 'Congratulations! This letter constitutes your Written Notice of Appointment as a', bold: false },
+								{ text: ase.noticeTitle, bold: true },
+								{ text: 'in the', bold: false },
+								{ text: d.deptName, bold: true },
+								{ text: 'for the', bold: false },
+								{ text: `${g.quarter} quarter(s) of ${d.year}-${d.year + 1}.`, bold: true },
+								{ text: 'The service period effective dates of your appointment are', bold: false },
+								{ text: `${g.serviceDates},`, bold: true },
+								{ text: 'or through the following week if you are responsible for duties related to submission of final grades. The pay period effective dates are', bold: false },
+								{ text: `${g.payPeriods}.`, bold: true }
+							];
+						}
 
 						if (g.hideSupervisor) {
 							p1Parts.push({ text: 'Your supervisor will be noted on the Description of Duties form you receive prior to the quarter.', bold: false });
+						} else if (isGsr) {
+							p1Parts.push({ text: 'Your PI/Supervisor for this appointment will be', bold: false });
+							p1Parts.push({ text: `${g.supervisor}.`, bold: true });
 						} else {
-							p1Parts.push({ text: `Your ${isGsr ? 'PI/Supervisor' : 'supervisor'} for this appointment will be`, bold: false });
+							p1Parts.push({ text: 'You will be reporting to', bold: false });
 							p1Parts.push({ text: `${g.supervisor}.`, bold: true });
 						}
 
 						drawMixed(p1Parts);
+
+						// Assigned course(s)/section(s) — or the Supplemental Notice deferral.
+						if (!isGsr && ase.assignmentSentence) {
+							if (g.assignment) {
+								drawMixed([{ text: ase.assignmentSentence, bold: false }, { text: `${g.assignment}.`, bold: true }]);
+							} else {
+								drawParagraph(ase.assignmentSentence);
+							}
+						}
 
 						const salaryParts = isHourly
 							? [{ text: `at an hourly rate of ${formatCurrency(g.monthlySal)} per hour.`, bold: false }]
@@ -1190,12 +1339,22 @@
 							{ text: 'You will be paid', bold: false },
 							...salaryParts,
 							{ text: `Your paychecks will be issued ${isHourly ? 'biweekly ' : ''}on`, bold: false },
-							{ text: `${g.payDates}.`, bold: true },
-							{ text: 'The service dates for this appointment are', bold: false },
-							{ text: `${g.serviceDates}.`, bold: true }
+							{ text: `${g.payDates}.`, bold: true }
 						];
+						// The ASE service dates moved up into the opening paragraph, so only
+						// GSR letters still carry them here.
+						if (isGsr) {
+							p2Parts.push({ text: 'The service dates for this appointment are', bold: false });
+							p2Parts.push({ text: `${g.serviceDates}.`, bold: true });
+						}
 
 						drawMixed(p2Parts);
+
+						if (!isGsr) {
+							drawParagraph(ase.scalesText);
+							drawMixed([{ text: 'Workload', bold: true }, { text: ` - ${ase.workloadText}`, bold: false }]);
+							drawMixed([{ text: 'Leaves of Absences', bold: true }, { text: ` - ${ase.leavesText}`, bold: false }]);
+						}
 
 						if (isGsr) drawMixed([{ text: 'Short Statement of Required Work Duties: ', bold: true }, { text: g.duties, bold: false }]);
 
@@ -1213,6 +1372,7 @@
 						drawParagraph(d.contactPhone, { spaceAfter: 0 });
 						drawParagraph(d.contactEmail);
 						drawBlankLine(0.5);
+						if (!isGsr) drawParagraph(ase.closingText);
 						drawParagraph('Sincerely,');
 						drawBlankLine(2);
 						drawParagraph(d.headOfDept, { bold: true, spaceAfter: 0 });

@@ -208,7 +208,7 @@
 		"category": "HR",
 		"description": "Generates compliant offer letters for graduate students. I am still working on an automated sending flow.",
 		"lastUpdated": "July 20th, 2026",
-		"lastChange": "Reader/Tutor letters now show real biweekly pay dates (from the UCPath biweekly calendar) instead of monthly ones, with future dates projected automatically.",
+		"lastChange": "ASE letters brought into line with the 2026 GS template: Written Notice of Appointment framing with title codes, pay period effective dates, course/section assignments (with Supplemental Notice deferral), Workload and Leaves articles, salary scales info, and a Tutor-specific opening. Plus biweekly pay dates for hourly folks.",
 		"gridSpan": "",
 		"buttons": [
 			{
