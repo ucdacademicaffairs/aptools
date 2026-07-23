@@ -122,15 +122,30 @@
 					<h4 class="font-bold text-gray-800 mb-4 text-xs tracking-widest uppercase">Hiring Department
 						Information</h4>
 					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-5">
-						<div class="lg:col-span-3">
+						<div class="lg:col-span-2">
 							<label class="block text-sm font-semibold text-gray-700">Hiring Department</label>
 							<input type="text" id="global-dept-name" class="w-full h-10 px-3 border rounded mt-1"
 								placeholder="Department of History">
 						</div>
-						<div class="lg:col-span-3">
+						<div class="lg:col-span-2">
 							<label class="block text-sm font-semibold text-gray-700">Head of Hiring Dept/Unit</label>
 							<input type="text" id="global-head-of-dept" class="w-full h-10 px-3 border rounded mt-1"
 								placeholder="Dr. Sarah Smith, Chair">
+						</div>
+						<div class="lg:col-span-2">
+							<label class="block text-sm font-semibold text-gray-700">
+								Head of Hiring Dept/Unit Signature
+								<span class="text-gray-400 font-normal ml-1">(optional — JPG or PNG)</span>
+							</label>
+							<div class="flex items-center gap-2 mt-1">
+								<input type="file" id="signature-upload" accept="image/jpeg,image/png"
+									class="block w-full text-sm text-gray-500 file:mr-2 file:py-2 file:px-3 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#002855] file:text-white hover:file:bg-[#001a3a] cursor-pointer">
+								<button id="signature-clear" class="btn btn-delete text-sm hidden">Clear</button>
+							</div>
+							<div id="signature-preview-wrap" class="hidden mt-2">
+								<img id="signature-preview-img" class="max-h-10 border rounded shadow-sm"
+									alt="Signature preview">
+							</div>
 						</div>
 						<div class="md:col-span-2 lg:col-span-2">
 							<label class="block text-sm font-semibold text-gray-700">Dept Contact Name</label>
@@ -290,6 +305,8 @@
 			let appointments = [];
 			let appointmentCounter = 0;
 			let letterheadDataUrl = null;  // base64 data URL of uploaded letterhead image
+			let signatureDataUrl = null;   // base64 data URL of the dept head's signature image
+			let signatureDisplayDims = null; // capped display size — measured once at upload
 
 			let isBulkMode = false;
 			let bulkRows = [];
@@ -427,6 +444,37 @@
 				document.getElementById('letterhead-upload').value = '';
 				document.getElementById('letterhead-preview-wrap').classList.add('hidden');
 				document.getElementById('letterhead-clear').classList.add('hidden');
+			});
+
+			// ── Signature image (same dance as the letterhead) ────────────────────────
+			document.getElementById('signature-upload').addEventListener('change', function (e) {
+				const file = e.target.files[0];
+				if (!file) return;
+				const reader = new FileReader();
+				reader.onload = function (ev) {
+					signatureDataUrl = ev.target.result;
+					// Measure the image once so the letters can use explicit pixel
+					// dimensions — Word ignores max-width/max-height CSS, so this is
+					// what keeps a 4000px scan from eating the page in the .doc export.
+					const probe = new Image();
+					probe.onload = function () {
+						const scale = Math.min(48 / probe.height, 220 / probe.width, 1);
+						signatureDisplayDims = { w: Math.round(probe.width * scale), h: Math.round(probe.height * scale) };
+					};
+					probe.src = signatureDataUrl;
+					document.getElementById('signature-preview-img').src = signatureDataUrl;
+					document.getElementById('signature-preview-wrap').classList.remove('hidden');
+					document.getElementById('signature-clear').classList.remove('hidden');
+				};
+				reader.readAsDataURL(file);
+			});
+
+			document.getElementById('signature-clear').addEventListener('click', function () {
+				signatureDataUrl = null;
+				signatureDisplayDims = null;
+				document.getElementById('signature-upload').value = '';
+				document.getElementById('signature-preview-wrap').classList.add('hidden');
+				document.getElementById('signature-clear').classList.add('hidden');
 			});
 
 			// ── FTE warnings ──────────────────────────────────────────────────────────
@@ -1109,7 +1157,9 @@
 					</div>
 					${isGsr ? '' : `<p style="margin-top:1rem;">${ase.closingText}</p>`}
 					<p style="margin-top:1rem;">Sincerely,</p>
-					<p style="height:2rem;margin:0;"></p>
+					${signatureDataUrl
+						? `<img src="${signatureDataUrl}" alt="Signature"${signatureDisplayDims ? ` width="${signatureDisplayDims.w}" height="${signatureDisplayDims.h}"` : ''} style="display:block;margin:4px 0;max-height:48px;max-width:220px;">`
+						: '<p style="height:2rem;margin:0;"></p>'}
 					<p style="margin-bottom:0;"><strong>${d.headOfDept}</strong></p>
 					<p>Cc: Employment File</p>
 					<div style="margin-top:2rem;">
@@ -1151,6 +1201,24 @@
 						letterheadDims = { w: letterheadImage.width * scale, h: letterheadImage.height * scale };
 					} catch (e) {
 						console.warn('Could not embed letterhead image:', e);
+					}
+				}
+
+				// Embed the signature image if provided, capped to signature size — a
+				// 4000px scan should shrink down to a signature, not eat the page.
+				let signatureImage = null, signatureDims = null;
+				if (signatureDataUrl) {
+					try {
+						const isJpeg = signatureDataUrl.startsWith('data:image/jpeg') || signatureDataUrl.startsWith('data:image/jpg');
+						const b64 = signatureDataUrl.split(',')[1];
+						const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+						signatureImage = isJpeg
+							? await pdfDoc.embedJpg(bytes)
+							: await pdfDoc.embedPng(bytes);
+						const scale = Math.min(36 / signatureImage.height, 180 / signatureImage.width);
+						signatureDims = { w: signatureImage.width * scale, h: signatureImage.height * scale };
+					} catch (e) {
+						console.warn('Could not embed signature image:', e);
 					}
 				}
 
@@ -1374,7 +1442,15 @@
 						drawBlankLine(0.5);
 						if (!isGsr) drawParagraph(ase.closingText);
 						drawParagraph('Sincerely,');
-						drawBlankLine(2);
+						if (signatureImage && signatureDims) {
+							// Drop the signature in where the blank signing space would be.
+							ensureSpace(signatureDims.h + LINE_H);
+							y -= signatureDims.h;
+							page.drawImage(signatureImage, { x: ML, y: y, width: signatureDims.w, height: signatureDims.h });
+							y -= 4;
+						} else {
+							drawBlankLine(2);
+						}
 						drawParagraph(d.headOfDept, { bold: true, spaceAfter: 0 });
 						drawParagraph('Cc: Employment File');
 
