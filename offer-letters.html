@@ -903,9 +903,9 @@
 				const hoursPerWeek = Math.round(pctFte * 0.4);
 				return {
 					noticeTitle, plainTitle, pctFte, hoursPerWeek,
-					scalesText: 'Academic Student Employee (ASE) wages are established on the appropriate salary scales, which can be found here: https://www.ucop.edu/academic-personnel-programs/compensation/. Your wage rate as a salaried ASE is dependent on your hiring campus. Additional information about campus-specific salary scales is available at: https://grad.ucdavis.edu/understanding-your-student-salary.',
-					workloadText: `A ${pctFte}% appointment corresponds to an average of ${hoursPerWeek} hours of work per week. Pursuant to Article 34 - Workload, if you have any concerns regarding exceeding your assigned workload maximum during the course of your appointment, you must immediately communicate these concerns to your instructor of record/supervisor. Your instructor of record/supervisor will then determine the priority duties and what, if any, adjustments need to be made to your workload.`,
-					leavesText: "Leaves of absences, including short-term and long-term leave, are governed by Article 18 - Leaves. Requests for any leave of absence must meet the eligibility criteria, and in some cases, must be approved by your instructor of record/supervisor or department in advance. Requests for any leave of absence must be in accordance with Article 18 and the University's policies and procedures. More information can be found here: https://grad.ucdavis.edu/family-and-medical-leave-funded-graduate-students.",
+					scalesText: 'Academic Student Employee (ASE) wages are established on the appropriate salary scales, which can be found here: [https://www.ucop.edu/academic-personnel-programs/compensation/](https://www.ucop.edu/academic-personnel-programs/compensation/). Your wage rate as a salaried ASE is dependent on your hiring campus. Additional information about campus specific salary scales is available on the following link: [Salary Scales and Information](https://grad.ucdavis.edu/understanding-your-student-salary).',
+					workloadText: `A ${pctFte}% appointment corresponds to an average of ${hoursPerWeek} hours of work per week. Pursuant to [Article 34 – Workload](https://ucnet.universityofcalifornia.edu/wp-content/uploads/labor/bargaining-units/bx/docs/bx_34-workload_2022-2025.pdf), if you have any concerns regarding exceeding your assigned workload maximum during the course of your appointment, you must immediately communicate these concerns to your instructor of record/supervisor. Your instructor of record/supervisor will then determine the priority duties and what, if any, adjustments need to be made to your workload.`,
+					leavesText: "Leaves of absences, including short-term and long-term leave, are governed by [Article 18 – Leaves](https://ucnet.universityofcalifornia.edu/wp-content/uploads/labor/bargaining-units/bx/docs/bx_18-leaves_2022-2025.pdf). Requests for any leave of absence must meet the eligibility criteria, and in some cases, must be approved by your instructor of record/supervisor or department in advance. Requests for any leave of absence must be in accordance with Article 18 and the University's policies and procedures. More information can be found here: [UC Davis Family and Medical Leave for Funded Graduate Students](https://grad.ucdavis.edu/family-and-medical-leave-funded-graduate-students).",
 					closingText: `I wish you much success as a ${plainTitle} and on behalf of the University I thank you for assuming this important responsibility.`,
 					// TAs/AIs/Readers without a known assignment defer to the Supplemental
 					// Notice, per the template. Tutors just omit the line if there's no center.
@@ -1070,39 +1070,65 @@
 
 			// ── Boilerplate text (shared between preview and PDF) ─────────────────────
 			const ASE_BOILERPLATE = [
-				{ label: 'Academic Eligibility Standards', text: ' - The UC Davis Office of Graduate Studies is the administrative home for graduate students. Your appointment is subject to regular review by the Graduate Division. University policy for graduate student employment requires that you meet and maintain all academic eligibility standards appropriate to this appointment (such as, enrollment, GPA, units of incomplete grades, academic progress, etc.). Further information regarding eligibility, restrictions and benefits may be found in the Academic Personnel Manual UCD Appendix II-B and on the web at https://grad.ucdavis.edu/student-employment.' },
-				{ label: null, text: 'If you are an international graduate student or a permanent resident who is not a citizen of a country where English is the primary or dominant language, as endorsed by the UC Davis Graduate Council, this appointment is contingent upon your demonstration of oral English proficiency by passing one of the English Language Proficiency Exams listed on the Graduate Studies website: https://grad.ucdavis.edu/policies.' },
-				{ label: 'Represented Position', text: ' - Your position is covered by a collective bargaining agreement between the University of California and the United Automobile, Aerospace, and Agricultural Implement Workers of America (UAW). A copy of the collective bargaining agreement is available at: https://ucnet.universityofcalifornia.edu/labor/bargaining-units/bx/contract.html. Should you require assistance, you may contact the UAW. The University is required to release names and department addresses of all ASEs to the UAW each academic term. A UAW membership election form can be found at: https://uaw2865.org/join/' },
-				{ label: 'Employment Standing', text: " - This offer of employment is contingent on remaining in good employment standing. Appointments are dependent on maintaining satisfactory performance and adherence to the provisions of the collective bargaining agreement, including, but not limited to No-Strikes, Non-Discrimination, and Respectful Work Environment articles as well as University policies, procedures, and conduct standards applicable to your position. More information on such University policies can be found here: UC Davis Academic Personnel Manual and the Human Resources Policy & Procedure Manual (PPM)." },
+				{ label: 'Academic Eligibility Standards', text: ' - The UC Davis Office of Graduate Studies is the administrative home for graduate students. Your appointment is subject to regular review by the Graduate Division. University policy for graduate student employment requires that you meet and maintain all academic eligibility standards appropriate to this appointment (such as, enrollment, GPA, units of incomplete grades, academic progress, etc.). Further information regarding eligibility, restrictions and benefits may be found in the Academic Personnel Manual [UCD Appendix II-B](https://aadocs.ucdavis.edu/policies/apm/ucd-app-ii/appendix-ii-b.pdf) and on the web at [https://grad.ucdavis.edu/student-employment](https://grad.ucdavis.edu/student-employment).' },
+				{ label: null, text: 'If you are an international graduate student or a permanent resident who is not a citizen of a country where English is the primary or dominant language, as endorsed by the UC Davis Graduate Council, this appointment is contingent upon your demonstration of oral English proficiency by passing one of the English Language Proficiency Exams listed on the Graduate Studies website: [https://grad.ucdavis.edu/policies](https://grad.ucdavis.edu/policies).' },
+				{ label: 'Represented Position', text: ' - Your position is covered by a collective bargaining agreement between the University of California and the United Automobile, Aerospace, and Agricultural Implement Workers of America (UAW). A copy of the collective bargaining agreement is available at: [https://ucnet.universityofcalifornia.edu/labor/bargaining-units/bx/contract.html](https://ucnet.universityofcalifornia.edu/labor/bargaining-units/bx/contract.html). Should you require assistance, you may contact the UAW. The University is required to release names and department addresses of all ASEs to the UAW each academic term. A UAW membership election form can be found at: [https://uaw2865.org/join/](https://uaw2865.org/join/)' },
+				{ label: 'Employment Standing', text: " - This offer of employment is contingent on remaining in good employment standing. Appointments are dependent on maintaining satisfactory performance and adherence to the provisions of the collective bargaining agreement, including, but not limited to No-Strikes, Non-Discrimination, and Respectful Work Environment articles as well as University policies, procedures, and conduct standards applicable to your position. More information on such University policies can be found here: [UC Davis Academic Personnel Manual](https://academicaffairs.ucdavis.edu/apm/apm-toc) and the [Human Resources Policy & Procedure Manual (PPM)](https://hr.ucdavis.edu/departments/elr/policies/ppm)." },
 				{ label: 'Disclosure Requirement', text: ' - This offer is contingent upon you clearing an Employment Misconduct Disclosure review where you will be required to disclose any final administrative or judicial decisions within the last seven years determining that you committed any misconduct and provide information related to investigations and appeals.' },
-				{ label: 'New Employee Orientation', text: ' - All first-time Teaching Assistants at UC Davis are required to attend a campuswide TA orientation https://cee.ucdavis.edu/tao. This orientation introduces new TAs to teaching at UC Davis, what is expected of TAs, and what TAs can expect in terms of instructional support and TA training.' },
+				{ label: 'New Employee Orientation', text: ' - All first-time Teaching Assistants at UC Davis are required to attend a campuswide TA orientation [https://cee.ucdavis.edu/tao](https://cee.ucdavis.edu/tao). This orientation introduces new TAs to teaching at UC Davis, what is expected of TAs, and what TAs can expect in terms of instructional support and TA training.' },
 				{ label: 'Employment File', text: ' - The University of California will establish and maintain a file that will contain information related to your employment. New material may be added to your file over the course of your employment. Should you wish to review your employment file, please contact Hiring Department/Unit Contact listed below.' },
-				{ label: 'Fee Remissions', text: ' - Pursuant to Article 11A - Fee Remission, eligible graduate student employees appointed at 25% or greater are entitled to 100% remission of tuition and the Student Services Fee and Partial Fee Remission covering 100% of campus fees, not to exceed the maximum campus fees for each campus. UC will cover Nonresident Supplemental Tuition for up to three (3) years for eligible ASEs enrolled in a doctoral program and employed at 25% or greater who have advanced to candidacy in their degree program https://grad.ucdavis.edu/non-resident-supplemental-tuition-programs. After the UCOP NRST Waiver period, UC Davis offers a non-competitive fellowship program – the Post-candidacy Nonresident Supplemental Tuition Fellowship Program – which provides a fellowship to offset the cost of NRST for the fourth and fifth years (6 calendar quarters) after advancement to candidacy https://grad.ucdavis.edu/non-resident-supplemental-tuition-programs. However, early termination of the appointment may result in a reduced fee and tuition remission. ASEs hired from the self-supporting graduate programs are not eligible for fee remissions greater than the state-supported equivalent rates. https://grad.ucdavis.edu/tuition-and-fee-remission' },
-				{ label: 'Childcare Benefit', text: ' - Pursuant to Article 4 - Childcare, ASEs with an eligible appointment shall be eligible to participate in the Childcare Reimbursement Program. Information and related forms can be found at: https://hr.ucdavis.edu/departments/worklife-wellness/student-parent/ucd-grant' },
-				{ label: 'Accommodations', text: ' - Academic Student Employees who are disabled or become disabled should notify their supervisor or department to request reasonable accommodations, in advance of their start date or any time during their appointment, in accordance with Article 24 - Reasonable Accommodation. An ASE who anticipates a need for access to an all-gender restroom or lactation room during the course of their appointment should refer to Article 21- Non-Discrimination in Employment and contact their hiring department/unit contact listed below or UC Davis Employee & Labor Relations as soon as possible after receiving this written notice of appointment.' },
-				{ label: 'Defined Contribution and UC Retirement Plan(s)', text: ' - Your default investment for the DC Plan is the UC Pathway Fund, a target date fund that automatically adjusts its asset allocation over time based on your expected retirement date. You may change your investment option at any time by logging into your Fidelity account on NetBenefits.com.' },
+				{ label: 'Fee Remissions', text: ' - Pursuant to [Article 11A – Fee Remission](https://ucnet.universityofcalifornia.edu/wp-content/uploads/labor/bargaining-units/bx/docs/bx_11-fee-remission_2022-2025.pdf), eligible graduate student employees appointed at 25% or greater are entitled to 100% remission of tuition and the Student Services Fee and Partial Fee Remission covering 100% of campus fees, not to exceed the maximum campus fees for each campus. UC will cover Nonresident Supplemental Tuition for up to three (3) years for eligible ASEs enrolled in a doctoral program and employed at 25% or greater who have advanced to candidacy in their degree program [https://grad.ucdavis.edu/non-resident-supplemental-tuition-programs](https://grad.ucdavis.edu/non-resident-supplemental-tuition-programs). After the UCOP NRST Waiver period, UC Davis offers a non-competitive fellowship program – the Post-candidacy Nonresident Supplemental Tuition Fellowship Program – which provides a fellowship to offset the cost of NRST for the fourth and fifth years (6 calendar quarters) after advancement to candidacy [https://grad.ucdavis.edu/non-resident-supplemental-tuition-programs](https://grad.ucdavis.edu/non-resident-supplemental-tuition-programs). However, early termination of the appointment may result in a reduced fee and tuition remission. ASEs hired from the self-supporting graduate programs are not eligible for fee remissions greater than the state-supported equivalent rates. [https://grad.ucdavis.edu/tuition-and-fee-remission](https://grad.ucdavis.edu/tuition-and-fee-remission)' },
+				{ label: 'Childcare Benefit', text: ' - Pursuant to [Article 4 – Childcare](https://ucnet.universityofcalifornia.edu/wp-content/uploads/labor/bargaining-units/bx/docs/bx_04-childcare_2022-2025.pdf), ASEs with an eligible appointment shall be eligible to participate in the Childcare Reimbursement Program. Information and related forms can be found at: [https://hr.ucdavis.edu/departments/worklife-wellness/student-parent/ucd-grant](https://hr.ucdavis.edu/departments/worklife-wellness/student-parent/ucd-grant)' },
+				{ label: 'Accommodations', text: ' - Academic Student Employees who are disabled or become disabled should notify their supervisor or department to request reasonable accommodations, in advance of their start date or any time during their appointment, in accordance with [Article 24 – Reasonable Accommodation](https://ucnet.universityofcalifornia.edu/wp-content/uploads/labor/bargaining-units/bx/docs/bx_24-reasonable-accommodation_2022-2025.pdf). An ASE who anticipates a need for access to an all-gender restroom or lactation room during the course of their appointment should refer to [Article 21- Non-Discrimination in Employment](https://ucnet.universityofcalifornia.edu/wp-content/uploads/labor/bargaining-units/bx/docs/bx_21-non-discrimination-in-employment_2022-2025.pdf) and contact their hiring department/unit contact listed below or [UC Davis Employee & Labor Relations](https://hr.ucdavis.edu/departments/elr/unit-assignments-davis) as soon as possible after receiving this written notice of appointment.' },
+				{ label: 'Defined Contribution and UC Retirement Plan(s)', text: ' - Your default investment for the DC Plan is the UC Pathway Fund, a target date fund that automatically adjusts its asset allocation over time based on your expected retirement date. You may change your investment option at any time by logging into your Fidelity account on [NetBenefits.com](https://nb.fidelity.com/static/mybenefits/netbenefitslogin/).' },
 				{ label: 'Work Authorization', text: " - This offer of employment is contingent upon your ability to prove that you are authorized to work in the United States, as required by the Immigration Reform and Control Act of 1986. Also, the State of California requires that we inform all academic appointees of the Political Reform Act of 1974. This Act prohibits public officials from participating in governmental decisions when personal financial interests may be affected by those decisions. The Act requires that all government employees and officials disqualify themselves from participating in a governmental decision when a financial conflict of interest is present." },
 				{ label: 'Direct Deposit', text: " - Please note that direct deposit information expires 60 days following an employee's separation date and is not reactivated upon reappointment. All employees who are rehired or reappointed are encouraged to review their direct deposit information regularly via UCPath to avoid any delays in processing your paycheck." },
 			];
 			const GSR_BOILERPLATE = [
-				{ label: 'Leaves of Absences', text: ' - Leaves of absences, including short-term and long-term leave, are governed by Article 17 - Leaves. Requests for any leave of absence must meet the eligibility criteria, and in some cases, must be approved by your PI/supervisor or department in advance. More information can be found here: UC Davis Family and Medical Leave for Funded Graduate Students.' },
-				{ label: 'Personal Time Off', text: ' - Eligible GSRs shall have the ability to request the use of Personal Time Off (PTO) days, in accordance with Article 23 - Personal Time Off. If you experience a break in service as a GSR between one (1) and thirty (30) calendar days, and are reappointed under the same PI/Supervisor, you must submit a written request for any unused PTO to rollover to your new appointment, which shall not exceed a total balance of eighteen (18) PTO days.' },
-				{ label: 'Reporting in Time and Attendance System', text: ' - You are responsible for honestly and accurately reporting the use of any PTO or leaves of absences on the appropriate leave-reporting form and/or through your campus time and attendance system each month, in accordance with established local procedures. Failure to report an absence from work in any circumstance may result in an overpayment of public or research funds requiring your repayment. Submitting erroneous information in the time and attendance system will be subject to your submission being overridden and pay withheld for the time not worked. Failing to accurately report leave in any way and receiving an overpayment of funds is a serious violation of university policy that may result in disciplinary action, up to and including dismissal. If you have no absences or leave to report, you must still submit a report acknowledging no absences or leaves to report in your local time and attendance system by the submission deadline as set by your campus. See information on UC Davis Time Reporting System (TRS)' },
-				{ label: 'Academic Eligibility Standards', text: ' - The UC Davis Office of Graduate Studies is the administrative home for graduate students. Your appointment is subject to regular review by the Graduate Division. University policy for graduate student employment requires that you meet and maintain all academic eligibility standards appropriate to this appointment (such as, enrollment, GPA, units of incomplete grades, academic progress, etc.). Further information regarding eligibility, restrictions and benefits may be found in the Academic Personnel Manual UCD Appendix II-B and on the web at https://grad.ucdavis.edu/student-employment.' },
-				{ label: 'Represented Position', text: " - Your position is covered by a collective bargaining agreement between the University of California and the United Automobile, Aerospace, and Agricultural Implement Workers of America (UAW). A copy of the collective bargaining agreement is available at: https://ucnet.universityofcalifornia.edu/resources/employment-policies-contracts/bargaining-units/graduate-student-researchers/contract/. Should you require assistance, you may contact the UAW. The University is required to release names and department addresses of all GSRs to the UAW each academic term. A UAW membership election form can be found at: https://uaw2865.org/join/." },
-				{ label: 'New Employee Orientation', text: ' - All first-time Graduate Student Researchers at UC Davis are required to attend a New Employee Orientation with representatives from UAW 4811. At this orientation, union leaders will familiarize you with your rights, protections, and benefits as a student employee under the UC-UAW 4811 Collective Bargaining Agreement. https://grad.ucdavis.edu/student-employment' },
-				{ label: 'Employment Standing', text: " - This offer of employment is contingent on remaining in good employment standing. Appointments are dependent on maintaining satisfactory performance and adherence to the provisions of the collective bargaining agreement, including, but not limited to No-Strikes, Non-Discrimination, and Respectful Work Environment articles as well as University policies, procedures, and conduct standards applicable to your position. More information on such University policies can be found here: UC Davis Academic Personnel Manual and the Human Resources Policy & Procedure Manual (PPM)." },
+				{ label: 'Leaves of Absences', text: ' - Leaves of absences, including short-term and long-term leave, are governed by [Article 17 – Leaves](https://ucnet.universityofcalifornia.edu/wp-content/uploads/labor/bargaining-units/br/docs/br_17_leaves_2022-2025.pdf). Requests for any leave of absence must meet the eligibility criteria, and in some cases, must be approved by your PI/supervisor or department in advance. More information can be found here: [UC Davis Family and Medical Leave for Funded Graduate Students](https://grad.ucdavis.edu/family-and-medical-leave-funded-graduate-students).' },
+				{ label: 'Personal Time Off', text: ' - Eligible GSRs shall have the ability to request the use of Personal Time Off (PTO) days, in accordance with [Article 23 - Personal Time Off](https://ucnet.universityofcalifornia.edu/wp-content/uploads/labor/bargaining-units/br/docs/br_23_personal-time-off_2022-2025.pdf). If you experience a break in service as a GSR between one (1) and thirty (30) calendar days, and are reappointed under the same PI/Supervisor, you must submit a written request for any unused PTO to rollover to your new appointment, which shall not exceed a total balance of eighteen (18) PTO days.' },
+				{ label: 'Reporting in Time and Attendance System', text: ' - You are responsible for honestly and accurately reporting the use of any PTO or leaves of absences on the appropriate leave-reporting form and/or through your campus time and attendance system each month, in accordance with established local procedures. Failure to report an absence from work in any circumstance may result in an overpayment of public or research funds requiring your repayment. Submitting erroneous information in the time and attendance system will be subject to your submission being overridden and pay withheld for the time not worked. Failing to accurately report leave in any way and receiving an overpayment of funds is a serious violation of university policy that may result in disciplinary action, up to and including dismissal. If you have no absences or leave to report, you must still submit a report acknowledging no absences or leaves to report in your local time and attendance system by the submission deadline as set by your campus. See information on [UC Davis Time Reporting System (TRS)](https://financeandbusiness.ucdavis.edu/systems/trs)' },
+				{ label: 'Academic Eligibility Standards', text: ' - The UC Davis Office of Graduate Studies is the administrative home for graduate students. Your appointment is subject to regular review by the Graduate Division. University policy for graduate student employment requires that you meet and maintain all academic eligibility standards appropriate to this appointment (such as, enrollment, GPA, units of incomplete grades, academic progress, etc.). Further information regarding eligibility, restrictions and benefits may be found in the Academic Personnel Manual [UCD Appendix II-B](https://aadocs.ucdavis.edu/policies/apm/ucd-app-ii/appendix-ii-b.pdf) and on the web at [https://grad.ucdavis.edu/student-employment](https://grad.ucdavis.edu/student-employment).' },
+				{ label: 'Represented Position', text: " - Your position is covered by a collective bargaining agreement between the University of California and the United Automobile, Aerospace, and Agricultural Implement Workers of America (UAW). A copy of the collective bargaining agreement is available at: [https://ucnet.universityofcalifornia.edu/resources/employment-policies-contracts/bargaining-units/graduate-student-researchers/contract/](https://ucnet.universityofcalifornia.edu/resources/employment-policies-contracts/bargaining-units/graduate-student-researchers/contract/). Should you require assistance, you may contact the UAW. The University is required to release names and department addresses of all GSRs to the UAW each academic term. A UAW membership election form can be found at: [https://uaw2865.org/join/](https://uaw2865.org/join/)." },
+				{ label: 'New Employee Orientation', text: ' - All first-time Graduate Student Researchers at UC Davis are required to attend a New Employee Orientation with representatives from UAW 4811. At this orientation, union leaders will familiarize you with your rights, protections, and benefits as a student employee under the UC-UAW 4811 Collective Bargaining Agreement. [https://grad.ucdavis.edu/student-employment](https://grad.ucdavis.edu/student-employment)' },
+				{ label: 'Employment Standing', text: " - This offer of employment is contingent on remaining in good employment standing. Appointments are dependent on maintaining satisfactory performance and adherence to the provisions of the collective bargaining agreement, including, but not limited to No-Strikes, Non-Discrimination, and Respectful Work Environment articles as well as University policies, procedures, and conduct standards applicable to your position. More information on such University policies can be found here: [UC Davis Academic Personnel Manual](https://academicaffairs.ucdavis.edu/apm/apm-toc) and the [Human Resources Policy & Procedure Manual (PPM)](https://hr.ucdavis.edu/departments/elr/policies/ppm)." },
 				{ label: 'Disclosure Requirement', text: ' - This offer is contingent upon you clearing an Employment Misconduct Disclosure review where you will be required to disclose any final administrative or judicial decisions within the last seven years determining that you committed any misconduct and provide information related to investigations and appeals.' },
 				{ label: 'Employment File', text: ' - The University of California will establish and maintain a file that will contain information related to your employment. New material may be added to your file over the course of your employment. Should you wish to review your employment file, please contact Hiring Department/Unit Contact listed below.' },
-				{ label: 'Fee Remissions', text: " - Pursuant to Article 11B - GSR Fee Remission, eligible graduate student employees appointed at 25% or greater are entitled to 100% remission of tuition and the Student Services Fee and Partial Fee Remission covering 100% of campus fees, not to exceed the maximum campus fees for each campus. A UC Davis registered graduate student with a GSR appointment totaling 25% or greater of full-time for an entire given quarter is eligible to participate in the university’s Fee Remission Program for remission of fees as noted above and nonresident supplemental tuition (NRST if applicable) in accordance with the university policy. UC will cover Nonresident Supplemental Tuition for up to three (3) years for eligible GSRs enrolled in a doctoral program and employed at 25% or greater who have advanced to candidacy in their degree program. After the UCOP NRST Waiver period, UC Davis offers a non-competitive fellowship program – the Post-candidacy Nonresident Supplemental Tuition Fellowship Program – which provides a fellowship to offset the cost of NRST for the fourth and fifth years (6 calendar quarters) after advancement to candidacy https://grad.ucdavis.edu/non-resident-supplemental-tuition-programs. However, early termination of the appointment may result in a reduced fee and tuition remission. GSRs hired from the self-supporting graduate programs are not eligible for fee remissions greater than the state-supported equivalent rates. (see Fee Remission Program)" },
-				{ label: 'Childcare Benefit', text: ' - Pursuant to Article 4 - Childcare, GSRs with an eligible appointment shall be eligible to participate in the Childcare Reimbursement Program. Information and related forms can be found at: https://hr.ucdavis.edu/departments/worklife-wellness/student-parent/ucd-grant' },
-				{ label: 'Accommodations', text: ' - Graduate Student Researchers who are disabled or become disabled should notify their PI/supervisor or department to request reasonable accommodations, in advance of their start date or any time during their appointment, in accordance with Article 24 - Reasonable Accommodation. A GSR who anticipates a need for access to an all-gender restroom or lactation room during the course of their appointment should refer to Article 20- Non-Discrimination in Employment and contact their hiring department/unit contact listed below or UC Davis Employee & Labor Relations as soon as possible after receiving this written notice of appointment.' },
-				{ label: 'Defined Contribution and UC Retirement Plan(s)', text: ' - Your default investment for the DC Plan is the UC Pathway Fund, a target date fund that automatically adjusts its asset allocation over time based on your expected retirement date. You may change your investment option at any time by logging into your Fidelity account on NetBenefits.com.' },
+				{ label: 'Fee Remissions', text: " - Pursuant to [Article 11B – GSR Fee Remission](https://ucnet.universityofcalifornia.edu/labor/bargaining-units/br/docs/br_10_fee-remission_2022-2025.pdf), eligible graduate student employees appointed at 25% or greater are entitled to 100% remission of tuition and the Student Services Fee and Partial Fee Remission covering 100% of campus fees, not to exceed the maximum campus fees for each campus. A UC Davis registered graduate student with a GSR appointment totaling 25% or greater of full-time for an entire given quarter is eligible to participate in the university’s [Fee Remission Program](https://grad.ucdavis.edu/tuition-and-fee-remission) for remission of fees as noted above and nonresident supplemental tuition (NRST if applicable) in accordance with the university policy. UC will cover Nonresident Supplemental Tuition for up to three (3) years for eligible GSRs enrolled in a doctoral program and employed at 25% or greater who have advanced to candidacy in their degree program. After the UCOP NRST Waiver period, UC Davis offers a non-competitive fellowship program – the Post-candidacy Nonresident Supplemental Tuition Fellowship Program – which provides a fellowship to offset the cost of NRST for the fourth and fifth years (6 calendar quarters) after advancement to candidacy [https://grad.ucdavis.edu/non-resident-supplemental-tuition-programs](https://grad.ucdavis.edu/non-resident-supplemental-tuition-programs). However, early termination of the appointment may result in a reduced fee and tuition remission. GSRs hired from the self-supporting graduate programs are not eligible for fee remissions greater than the state-supported equivalent rates. (see [Fee Remission Program](https://grad.ucdavis.edu/tuition-and-fee-remission))" },
+				{ label: 'Childcare Benefit', text: ' - Pursuant to [Article 4 – Childcare](https://ucnet.universityofcalifornia.edu/wp-content/uploads/labor/bargaining-units/br/docs/br_04_childcare_2022-2025.pdf), GSRs with an eligible appointment shall be eligible to participate in the Childcare Reimbursement Program. Information and related forms can be found at: [https://hr.ucdavis.edu/departments/worklife-wellness/student-parent/ucd-grant](https://hr.ucdavis.edu/departments/worklife-wellness/student-parent/ucd-grant)' },
+				{ label: 'Accommodations', text: ' - Graduate Student Researchers who are disabled or become disabled should notify their PI/supervisor or department to request reasonable accommodations, in advance of their start date or any time during their appointment, in accordance with [Article 24 – Reasonable Accommodation](https://ucnet.universityofcalifornia.edu/labor/bargaining-units/br/docs/br_24_reasonable-accommodation_2022-2025.pdf). A GSR who anticipates a need for access to an all-gender restroom or lactation room during the course of their appointment should refer to [Article 20- Non-Discrimination in Employment](https://ucnet.universityofcalifornia.edu/labor/bargaining-units/br/docs/br_20_non-discrimination-in-employmnt_2022-2025.pdf) and contact their hiring department/unit contact listed below or [UC Davis Employee & Labor Relations](https://hr.ucdavis.edu/departments/elr/unit-assignments-davis) as soon as possible after receiving this written notice of appointment.' },
+				{ label: 'Defined Contribution and UC Retirement Plan(s)', text: ' - Your default investment for the DC Plan is the UC Pathway Fund, a target date fund that automatically adjusts its asset allocation over time based on your expected retirement date. You may change your investment option at any time by logging into your Fidelity account on [NetBenefits.com](https://nb.fidelity.com/static/mybenefits/netbenefitslogin/).' },
 				{ label: 'Work Authorization', text: " - This offer of employment is contingent upon your ability to prove that you are authorized to work in the United States, as required by the Immigration Reform and Control Act of 1986. Also, the State of California requires that we inform all academic appointees of the Political Reform Act of 1974. This Act prohibits public officials from participating in governmental decisions when personal financial interests may be affected by those decisions. The Act requires that all government employees and officials disqualify themselves from participating in a governmental decision when a financial conflict of interest is present." },
 				{ label: 'Direct Deposit', text: " - Please note that direct deposit information expires 60 days following an employee's separation date and is not reactivated upon reappointment. All employees who are rehired or reappointed are encouraged to review their direct deposit information regularly via UCPath to avoid any delays in processing your paycheck." },
 			];
 
 			// ── HTML preview ──────────────────────────────────────────────────────────
+			// ── Inline links ──────────────────────────────────────────────────────────
+			// The templates hyperlink phrases like "Article 11A – Fee Remission" rather
+			// than spelling out the URL, so I write links into the letter text as
+			// [anchor](url) and let each output format render them its own way. One
+			// source, three renderers — no chance of the preview and the PDF disagreeing.
+			const LINK_MARKUP = /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g;
+			const HAS_LINK = /\[[^\]]+\]\(https?:\/\//; // not global, so .test() stays stateless
+
+			function linkifyHtml(text) {
+				return text.replace(LINK_MARKUP, '<a href="$2">$1</a>');
+			}
+
+			// Splits text into runs of {text, url}, where url is null for ordinary prose.
+			function splitLinkRuns(text) {
+				const runs = [];
+				let last = 0;
+				text.replace(LINK_MARKUP, (match, label, url, i) => {
+					if (i > last) runs.push({ text: text.slice(last, i), url: null });
+					runs.push({ text: label, url });
+					last = i + match.length;
+					return match;
+				});
+				if (last < text.length) runs.push({ text: text.slice(last), url: null });
+				return runs;
+			}
+
 			function boilerplateHtml(items) {
 				return items.map(item => item.label
 					? `<p><strong>${item.label}</strong>${item.text}</p>`
@@ -1116,7 +1142,9 @@
 					? `<img src="${letterheadDataUrl}" class="letterhead-img" alt="Letterhead">`
 					: '';
 
-				return groups.map(g => {
+				// linkifyHtml runs over the finished letter so every [anchor](url) becomes
+				// a real link, wherever in the letter it came from.
+				return linkifyHtml(groups.map(g => {
 					const isGsr = g.type === 'gsr';
 					const isHourly = (g.type === 'reader' || g.type === 'tutor');
 					let title = g.type === 'ta' ? 'Teaching Assistant'
@@ -1140,9 +1168,9 @@
 						? 'Notification of Graduate Student Researcher Appointment (via DocuSign)'
 						: 'Notification of Academic Student Employee Appointment (via DocuSign)';
 					const timeReporting = isHourly
-						? `<p>You are responsible for honestly and accurately reporting your hours worked on an affirmative basis, including any leaves of absence taken. Such reporting must be done through the appropriate time and attendance reporting form and/or through your campus time and attendance system, by the submission deadline and procedures as set by your campus. Failure to accurately report work hours or an absence from work in any circumstance may result in an overpayment of public funds requiring your repayment. Submitting erroneous information in the time and attendance system will be subject to your submission being overridden and pay withheld for the time not worked. Failing to accurately report work hours or absences in any way and receiving an overpayment of funds is a serious violation of university policy that may result in disciplinary action, up to and including dismissal. See information on UC Davis Time Reporting System (TRS)</p>`
+						? `<p>You are responsible for honestly and accurately reporting your hours worked on an affirmative basis, including any leaves of absence taken. Such reporting must be done through the appropriate time and attendance reporting form and/or through your campus time and attendance system, by the submission deadline and procedures as set by your campus. Failure to accurately report work hours or an absence from work in any circumstance may result in an overpayment of public funds requiring your repayment. Submitting erroneous information in the time and attendance system will be subject to your submission being overridden and pay withheld for the time not worked. Failing to accurately report work hours or absences in any way and receiving an overpayment of funds is a serious violation of university policy that may result in disciplinary action, up to and including dismissal. See information on [UC Davis Time Reporting System (TRS)](https://financeandbusiness.ucdavis.edu/systems/trs)</p>`
 						: isGsr ? ''
-							: `<p><strong>Reporting in Time and Attendance System</strong> - You are responsible for honestly and accurately reporting the use of any leave or absences from work each month on the appropriate leave-reporting form and/or through your campus time and attendance system each month, in accordance with established local procedures. Failure to report an absence from work in any circumstance may result in an overpayment of public funds requiring your repayment. Submitting erroneous information in the time and attendance system will be subject to your submission being overridden and pay withheld for the time not worked. Failing to accurately report absences in any way and receiving an overpayment of funds is a serious violation of university policy that may result in disciplinary action, up to and including dismissal. If you have no absences or leave to report, you must still submit a report acknowledging no absences or leave to report in your local time and attendance system by the submission deadline as set by your campus. See information on UC Davis Time Reporting System (TRS)</p>`;
+							: `<p><strong>Reporting in Time and Attendance System</strong> - You are responsible for honestly and accurately reporting the use of any leave or absences from work each month on the appropriate leave-reporting form and/or through your campus time and attendance system each month, in accordance with established local procedures. Failure to report an absence from work in any circumstance may result in an overpayment of public funds requiring your repayment. Submitting erroneous information in the time and attendance system will be subject to your submission being overridden and pay withheld for the time not worked. Failing to accurately report absences in any way and receiving an overpayment of funds is a serious violation of university policy that may result in disciplinary action, up to and including dismissal. If you have no absences or leave to report, you must still submit a report acknowledging no absences or leave to report in your local time and attendance system by the submission deadline as set by your campus. See information on [UC Davis Time Reporting System (TRS)](https://financeandbusiness.ucdavis.edu/systems/trs)</p>`;
 
 					// ── Paragraphs that differ between the GSR letter and the ASE
 					// "Written Notice of Appointment" (2026 GS template) ──
@@ -1208,12 +1236,12 @@
 						</div>
 					</div>
 				</div>`;
-				}).join('<hr style="margin:2rem 0;">');
+				}).join('<hr style="margin:2rem 0;">'));
 			}
 
 			// ── pdf-lib PDF builder ───────────────────────────────────────────────────
 			async function buildPdfBlob(lettersList) {
-				const { PDFDocument, StandardFonts, rgb } = PDFLib;
+				const { PDFDocument, StandardFonts, rgb, PDFString } = PDFLib;
 				const pdfDoc = await PDFDocument.create();
 				const regular = await pdfDoc.embedFont(StandardFonts.TimesRoman);
 				const bold = await pdfDoc.embedFont(StandardFonts.TimesRomanBold);
@@ -1223,7 +1251,7 @@
 				const CW = PW - ML - MR;
 				const NORMAL = 11, SMALL = 9, TINY = 6;
 				const LINE_H = NORMAL * 1.45;
-				const white = rgb(1, 1, 1), black = rgb(0, 0, 0);
+				const white = rgb(1, 1, 1), black = rgb(0, 0, 0), linkBlue = rgb(0, 0.2, 0.6);
 
 				// Embed letterhead image if provided
 				let letterheadImage = null, letterheadDims = null;
@@ -1276,7 +1304,26 @@
 				function newPage() { page = pdfDoc.addPage([PW, PH]); y = PH - MT; }
 				function ensureSpace(n) { if (y - n < MB) newPage(); }
 
+				// A real clickable region in the PDF. pdf-lib has no drawLink, so the
+				// annotation goes on by hand.
+				function addLinkAnnot(x1, y1, x2, y2, url) {
+					try {
+						const annot = pdfDoc.context.obj({
+							Type: 'Annot', Subtype: 'Link',
+							Rect: [x1, y1, x2, y2],
+							Border: [0, 0, 0], // no ugly box around it
+							A: { Type: 'Action', S: 'URI', URI: PDFString.of(url) }
+						});
+						page.node.addAnnot(pdfDoc.context.register(annot));
+					} catch (e) {
+						console.warn('Could not add link annotation:', e);
+					}
+				}
+
 				function drawParagraph(text, opts = {}) {
+					// Anything with a link in it goes through drawMixed, which knows how
+					// to colour, underline, and register the clickable bits.
+					if (HAS_LINK.test(text)) return drawMixed([{ text, bold: opts.bold }], opts);
 					const font = opts.bold ? bold : regular;
 					const size = opts.size || NORMAL, lh = size * 1.45;
 					const indent = opts.indent || ML, maxW = CW - (indent - ML);
@@ -1292,23 +1339,81 @@
 					const indent = opts.indent || ML;
 					const spaceW = regular.widthOfTextAtSize(' ', size);
 					const maxW = CW - (indent - ML);
+					// Some of these URLs are longer than the page is wide, and a URL has no
+					// spaces to wrap at, so I chop the over-long ones into pieces that fit.
+					// The break goes after a / - . or _ where there is one, so the seam
+					// falls somewhere the eye expects. Pieces are glued back together at
+					// layout time — no space gets inserted into the middle of a URL.
+					function fitWord(w, f) {
+						if (f.widthOfTextAtSize(w, size) <= maxW) return [w];
+						const pieces = [];
+						let cur = '';
+						for (const ch of w) {
+							if (cur && f.widthOfTextAtSize(cur + ch, size) > maxW) {
+								const sep = Math.max(cur.lastIndexOf('/'), cur.lastIndexOf('-'), cur.lastIndexOf('.'), cur.lastIndexOf('_'));
+								if (sep > 0 && sep < cur.length - 1) { pieces.push(cur.slice(0, sep + 1)); cur = cur.slice(sep + 1); }
+								else { pieces.push(cur); cur = ''; }
+							}
+							cur += ch;
+						}
+						if (cur) pieces.push(cur);
+						return pieces;
+					}
+
 					const words = [];
 					for (const part of parts) {
 						const f = part.bold ? bold : regular;
-						for (const w of part.text.split(' ')) { if (w) words.push({ w, f }); }
+						// Each word remembers whether it belongs to a link, so wrapping a
+						// link across lines still works.
+						for (const run of splitLinkRuns(part.text)) {
+							for (const w of run.text.split(' ')) {
+								if (!w) continue;
+								fitWord(w, f).forEach((piece, i) => words.push({ w: piece, f, url: run.url, glue: i > 0 }));
+							}
+						}
 					}
+					// "glue" means this piece continues the previous one, so it gets no
+					// leading space.
 					const lines = [[]];
+					let lineW = 0;
 					for (const wobj of words) {
 						const cur = lines[lines.length - 1];
-						const lineW = cur.reduce((acc, o, i) => acc + o.f.widthOfTextAtSize(o.w, size) + (i > 0 ? spaceW : 0), 0);
-						const addW = (cur.length > 0 ? spaceW : 0) + wobj.f.widthOfTextAtSize(wobj.w, size);
-						if (lineW + addW <= maxW || cur.length === 0) { cur.push(wobj); } else { lines.push([wobj]); }
+						const pre = (cur.length === 0 || wobj.glue) ? 0 : spaceW;
+						const wW = wobj.f.widthOfTextAtSize(wobj.w, size);
+						if (cur.length === 0 || lineW + pre + wW <= maxW) {
+							cur.push(wobj); lineW += pre + wW;
+						} else {
+							lines.push([wobj]); lineW = wW;
+						}
 					}
 					ensureSpace(lines.length * lh + (opts.spaceBefore || 0));
 					if (opts.spaceBefore) y -= opts.spaceBefore;
 					for (const line of lines) {
 						let x = indent;
-						for (const { w, f } of line) { page.drawText(w, { x, y, font: f, size, color: black }); x += f.widthOfTextAtSize(w, size) + spaceW; }
+						// Consecutive words of the same link get one underline and one
+						// clickable rectangle, so the spaces between them are live too.
+						let run = null;
+						const flushLink = () => {
+							if (!run) return;
+							page.drawLine({
+								start: { x: run.x1, y: y - 1.5 }, end: { x: run.x2, y: y - 1.5 },
+								thickness: 0.5, color: linkBlue
+							});
+							addLinkAnnot(run.x1, y - 2.5, run.x2, y + size * 0.85, run.url);
+							run = null;
+						};
+						line.forEach((wobj, i) => {
+							const { w, f, url, glue } = wobj;
+							if (i > 0 && !glue) x += spaceW;
+							const wW = f.widthOfTextAtSize(w, size);
+							page.drawText(w, { x, y, font: f, size, color: url ? linkBlue : (opts.color || black) });
+							if (url) {
+								if (run && run.url === url) run.x2 = x + wW;
+								else { flushLink(); run = { url, x1: x, x2: x + wW }; }
+							} else flushLink();
+							x += wW;
+						});
+						flushLink();
 						y -= lh;
 					}
 					y -= (opts.spaceAfter !== undefined ? opts.spaceAfter : lh * 0.3);
@@ -1465,9 +1570,9 @@
 						if (isGsr) drawMixed([{ text: 'Short Statement of Required Work Duties: ', bold: true }, { text: g.duties, bold: false }]);
 
 						if (isHourly) {
-							drawParagraph('You are responsible for honestly and accurately reporting your hours worked on an affirmative basis, including any leaves of absence taken. Such reporting must be done through the appropriate time and attendance reporting form and/or through your campus time and attendance system, by the submission deadline and procedures as set by your campus. Failure to accurately report work hours or an absence from work in any circumstance may result in an overpayment of public funds requiring your repayment. Submitting erroneous information in the time and attendance system will be subject to your submission being overridden and pay withheld for the time not worked. Failing to accurately report work hours or absences in any way and receiving an overpayment of funds is a serious violation of university policy that may result in disciplinary action, up to and including dismissal. See information on UC Davis Time Reporting System (TRS)');
+							drawParagraph('You are responsible for honestly and accurately reporting your hours worked on an affirmative basis, including any leaves of absence taken. Such reporting must be done through the appropriate time and attendance reporting form and/or through your campus time and attendance system, by the submission deadline and procedures as set by your campus. Failure to accurately report work hours or an absence from work in any circumstance may result in an overpayment of public funds requiring your repayment. Submitting erroneous information in the time and attendance system will be subject to your submission being overridden and pay withheld for the time not worked. Failing to accurately report work hours or absences in any way and receiving an overpayment of funds is a serious violation of university policy that may result in disciplinary action, up to and including dismissal. See information on [UC Davis Time Reporting System (TRS)](https://financeandbusiness.ucdavis.edu/systems/trs)');
 						} else if (!isGsr) {
-							drawMixed([{ text: 'Reporting in Time and Attendance System', bold: true }, { text: ' - You are responsible for honestly and accurately reporting the use of any leave or absences from work each month on the appropriate leave-reporting form and/or through your campus time and attendance system each month, in accordance with established local procedures. Failure to report an absence from work in any circumstance may result in an overpayment of public funds requiring your repayment. Submitting erroneous information in the time and attendance system will be subject to your submission being overridden and pay withheld for the time not worked. Failing to accurately report absences in any way and receiving an overpayment of funds is a serious violation of university policy that may result in disciplinary action, up to and including dismissal. If you have no absences or leave to report, you must still submit a report acknowledging no absences or leave to report in your local time and attendance system by the submission deadline as set by your campus. See information on UC Davis Time Reporting System (TRS)', bold: false }]);
+							drawMixed([{ text: 'Reporting in Time and Attendance System', bold: true }, { text: ' - You are responsible for honestly and accurately reporting the use of any leave or absences from work each month on the appropriate leave-reporting form and/or through your campus time and attendance system each month, in accordance with established local procedures. Failure to report an absence from work in any circumstance may result in an overpayment of public funds requiring your repayment. Submitting erroneous information in the time and attendance system will be subject to your submission being overridden and pay withheld for the time not worked. Failing to accurately report absences in any way and receiving an overpayment of funds is a serious violation of university policy that may result in disciplinary action, up to and including dismissal. If you have no absences or leave to report, you must still submit a report acknowledging no absences or leave to report in your local time and attendance system by the submission deadline as set by your campus. See information on [UC Davis Time Reporting System (TRS)](https://financeandbusiness.ucdavis.edu/systems/trs)', bold: false }]);
 						}
 
 						drawBoilerplatePdf(isGsr ? GSR_BOILERPLATE : ASE_BOILERPLATE);
