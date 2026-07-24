@@ -853,40 +853,6 @@
 			// systemwide codes, and they're deliberately easy to edit right here.
 			const ASE_JOB_CODES = { ta: '2310', ai: '1506', reader: '2850', tutor: '2860' };
 
-			// The template also wants "pay period effective dates" — the payroll periods
-			// behind the paychecks, which are NOT the same as the dates checks arrive.
-			// Monthly folks map onto whole months (Fall = October through December, paid
-			// Nov 1/Dec 1/Jan 1); hourly folks get the span of biweekly periods that
-			// cover their service dates, using the same anchor math as the paydays.
-			function getPayPeriodText(quarters, isHourly) {
-				const startYear = parseInt(document.getElementById('global-year').value);
-				const fmt = t => new Date(t).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
-				const parts = [];
-				quarters.forEach(q => {
-					if (isHourly) {
-						let calYear = startYear;
-						if (q === 'Winter' || q === 'Spring') calYear += 1;
-						const d = COST_DATA.QUARTER_DATES && COST_DATA.QUARTER_DATES[`${q} ${calYear}`];
-						if (!d) return;
-						const toUTC = s => { const [y, m, dd] = s.split('-').map(Number); return Date.UTC(y, m - 1, dd); };
-						const anchorPeriodEnd = BIWEEKLY_ANCHOR_PAYDAY - 11 * MS_PER_DAY;
-						const periodEndOnOrAfter = t => anchorPeriodEnd + Math.ceil((t - anchorPeriodEnd) / (14 * MS_PER_DAY)) * 14 * MS_PER_DAY;
-						const firstStart = periodEndOnOrAfter(toUTC(d.serviceStart)) - 13 * MS_PER_DAY;
-						const lastEnd = periodEndOnOrAfter(toUTC(d.serviceEnd));
-						parts.push(`${q}: ${fmt(firstStart)} to ${fmt(lastEnd)}`);
-					} else {
-						if (q === 'Fall') parts.push(`${q}: October 1, ${startYear} to December 31, ${startYear}`);
-						if (q === 'Winter') parts.push(`${q}: January 1, ${startYear + 1} to March 31, ${startYear + 1}`);
-						if (q === 'Spring') parts.push(`${q}: April 1, ${startYear + 1} to June 30, ${startYear + 1}`);
-					}
-				});
-				if (!parts.length) return '[PAY PERIOD DATES]';
-				// One quarter reads like a sentence; several read like the service-dates list.
-				return parts.length === 1 ? parts[0].replace(/^[^:]+: /, '') : parts.join('; ');
-			}
-
-			// Shared ASE letter fragments, computed in ONE place so the on-screen
-			// preview and the PDF can never drift apart.
 			function aseFragments(g) {
 				const code = ASE_JOB_CODES[g.type] || 'XXXX';
 				const plainTitle = g.type === 'ta' ? 'Teaching Assistant'
@@ -982,9 +948,6 @@
 						? getBiweeklyPayDatesList(quartersArr)
 						: getCombinedPayDatesList(quartersArr),
 						serviceDates: getServiceDates(quartersArr),
-						// The template's "pay period effective dates" for the opening
-						// paragraph (ASE letters only; GSRs don't use it).
-						payPeriods: sample.type === 'gsr' ? '' : getPayPeriodText(quartersArr, sample.type === 'reader' || sample.type === 'tutor'),
 						assignment: assignments.join('; '),
 						duties: sample.values.workDuties || '',
 						step: sample.values.step,
@@ -1057,9 +1020,6 @@
 						? getBiweeklyPayDatesList(quartersArr)
 						: getCombinedPayDatesList(quartersArr),
 						serviceDates: getServiceDates(quartersArr),
-						// The template's "pay period effective dates" for the opening
-						// paragraph (ASE letters only; GSRs don't use it).
-						payPeriods: sample.type === 'gsr' ? '' : getPayPeriodText(quartersArr, sample.type === 'reader' || sample.type === 'tutor'),
 						assignment: assignments.join('; '),
 						duties: sample.values.workDuties || '',
 						step: sample.values.step,
@@ -1181,7 +1141,7 @@
 						? `<p>I am pleased to offer you an appointment as a <strong>${title}</strong> in the <strong>${d.deptName}</strong> for the <strong>${g.quarter} quarter(s) of ${d.year}-${d.year + 1}</strong>.${supervisorLine}</p>`
 						: g.type === 'tutor'
 							? `<p>Congratulations! This letter constitutes your Written Notice of Appointment as a <strong>${ase.noticeTitle}</strong> in the <strong>${d.deptName}</strong>. The effective dates of your appointment will be <strong>${g.serviceDates}</strong>.${reportingLine}</p>`
-							: `<p>Congratulations! This letter constitutes your Written Notice of Appointment as a <strong>${ase.noticeTitle}</strong> in the <strong>${d.deptName}</strong> for the <strong>${g.quarter} quarter(s) of ${d.year}-${d.year + 1}</strong>. The service period effective dates of your appointment are <strong>${g.serviceDates}</strong>, or through the following week if you are responsible for duties related to submission of final grades. The pay period effective dates are <strong>${g.payPeriods}</strong>.${reportingLine}</p>`;
+							: `<p>Congratulations! This letter constitutes your Written Notice of Appointment as a <strong>${ase.noticeTitle}</strong> in the <strong>${d.deptName}</strong> for the <strong>${g.quarter} quarter(s) of ${d.year}-${d.year + 1}</strong>. The service period effective dates of your appointment are <strong>${g.serviceDates}</strong>, or through the following week if you are responsible for duties related to submission of final grades.${reportingLine}</p>`;
 					const assignmentHtml = (isGsr || !ase.assignmentSentence) ? ''
 						: (g.assignment
 							? `<p>${ase.assignmentSentence}<strong>${g.assignment}</strong>.</p>`
@@ -1525,8 +1485,7 @@
 								{ text: `${g.quarter} quarter(s) of ${d.year}-${d.year + 1}.`, bold: true },
 								{ text: 'The service period effective dates of your appointment are', bold: false },
 								{ text: `${g.serviceDates},`, bold: true },
-								{ text: 'or through the following week if you are responsible for duties related to submission of final grades. The pay period effective dates are', bold: false },
-								{ text: `${g.payPeriods}.`, bold: true }
+								{ text: 'or through the following week if you are responsible for duties related to submission of final grades.', bold: false }
 							];
 						}
 
