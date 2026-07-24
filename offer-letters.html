@@ -1587,10 +1587,15 @@
 						drawParagraph('Sincerely,');
 						if (signatureImage && signatureDims) {
 							// Drop the signature in where the blank signing space would be.
-							ensureSpace(signatureDims.h + LINE_H);
+							// drawParagraph already left a full line under "Sincerely,", so I
+							// nudge back up a little — otherwise the signature drifts low —
+							// and leave real clearance beneath it so the name underneath
+							// can't collide with the bottom of the image.
+							ensureSpace(signatureDims.h + 20 + LINE_H);
+							y += 8;
 							y -= signatureDims.h;
 							page.drawImage(signatureImage, { x: ML, y: y, width: signatureDims.w, height: signatureDims.h });
-							y -= 4;
+							y -= 10;
 						} else {
 							drawBlankLine(2);
 						}
@@ -1605,16 +1610,22 @@
 						page.drawText(ANCHOR_DECLINE, { x: ML + regular.widthOfTextAtSize('I accept _________  (or)  I decline _________  ', NORMAL), y, font: regular, size: TINY, color: white });
 						y -= LINE_H * 3;
 
+						// Both signing rules share one height and both captions share one
+						// baseline, set far enough below the rules that the caption text
+						// never runs through them.
 						ensureSpace(70);
-						page.drawLine({ start: { x: ML, y }, end: { x: ML + 220, y }, thickness: 0.5, color: black });
-						page.drawText(ANCHOR_SIGNATURE, { x: ML + 225, y, font: regular, size: TINY, color: white });
-						y -= 5;
-						page.drawText(`Signature of Prospective ${isGsr ? 'GSR' : 'ASE'}`, { x: ML, y, font: regular, size: SMALL, color: black });
+						const ruleY = y;
+						const captionY = ruleY - 11;
+						const dlx = ML + 270;
 
-						const dlx = ML + 270, dly = y + SMALL * 1.45 + 5;
-						page.drawLine({ start: { x: dlx, y: dly }, end: { x: dlx + 120, y: dly }, thickness: 0.5, color: black });
-						page.drawText(ANCHOR_DATE, { x: dlx + 125, y: dly, font: regular, size: TINY, color: white });
-						page.drawText('Date Signed', { x: dlx, y: dly - SMALL * 1.45 - 3, font: regular, size: SMALL, color: black });
+						page.drawLine({ start: { x: ML, y: ruleY }, end: { x: ML + 220, y: ruleY }, thickness: 0.5, color: black });
+						page.drawText(ANCHOR_SIGNATURE, { x: ML + 225, y: ruleY, font: regular, size: TINY, color: white });
+						page.drawText(`Signature of Prospective ${isGsr ? 'GSR' : 'ASE'}`, { x: ML, y: captionY, font: regular, size: SMALL, color: black });
+
+						page.drawLine({ start: { x: dlx, y: ruleY }, end: { x: dlx + 120, y: ruleY }, thickness: 0.5, color: black });
+						page.drawText(ANCHOR_DATE, { x: dlx + 125, y: ruleY, font: regular, size: TINY, color: white });
+						page.drawText('Date Signed', { x: dlx, y: captionY, font: regular, size: SMALL, color: black });
+						y = captionY - LINE_H;
 					}
 				}
 
