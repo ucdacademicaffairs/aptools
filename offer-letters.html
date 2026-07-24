@@ -625,8 +625,46 @@
 				renderBulkTable();
 			});
 
+			// The step and % Time dropdowns offer completely different options depending
+			// on the row's type — points vs Individual/Group, percentages vs hours. If a
+			// row's stored value isn't one of the options I'm about to draw, the browser
+			// quietly displays the FIRST option instead, so the table shows "25%" while
+			// the row still says 50. Worse, clicking the option it's already showing
+			// fires no change event, so there's no way to correct it by hand. So before
+			// drawing a row I make its data legal for its own type.
+			function normalizeBulkRow(row) {
+				const isHourly = row.type === 'reader' || row.type === 'tutor';
+
+				if (row.type === 'tutor') {
+					row.step = String(row.step).toLowerCase().includes('group') ? 'Group' : 'Individual';
+				} else if (row.type === 'reader') {
+					row.step = '1'; // Readers have no point; the dropdown just says N/A.
+				} else {
+					// Points differ per scale (TAs stop at 3, AIs go to 7), so a leftover
+					// point from another title gets pulled to the nearest one that exists.
+					const scale = row.type === 'gsr' ? COST_DATA.GSR_SCALE
+						: row.type === 'ai' ? COST_DATA.AI_SCALE : COST_DATA.TA_SCALE;
+					const points = Object.keys(scale || {});
+					const wanted = String(row.step).replace(/[^0-9]/g, '') || '1';
+					row.step = points.length && !points.includes(wanted)
+						? points.reduce((best, p) => Math.abs(p - wanted) < Math.abs(best - wanted) ? p : best, points[0])
+						: wanted;
+				}
+
+				// % Time is stored as HOURS for the hourly titles and as a PERCENTAGE for
+				// everyone else. Anything over 100 has to be hours, so that's how I tell
+				// which unit a value arrived in before converting it to the one this row
+				// needs. Only 25/50/75 are on offer, so odd values snap to the nearest.
+				const num = parseFloat(row.percentTime) || 0;
+				const asPercent = num > 100 ? num / 4.4 : num;
+				const pct = num === 0 ? 50
+					: [25, 50, 75].reduce((best, v) => Math.abs(v - asPercent) < Math.abs(best - asPercent) ? v : best, 50);
+				row.percentTime = String(isHourly ? Math.round(pct * 4.4) : pct);
+			}
+
 			function renderBulkTable() {
 				bulkTbody.innerHTML = bulkRows.map(r => {
+					normalizeBulkRow(r);
 					const typeOpts = `<option value="ta" ${r.type === 'ta' ? 'selected' : ''}>TA</option><option value="gsr" ${r.type === 'gsr' ? 'selected' : ''}>GSR</option><option value="reader" ${r.type === 'reader' ? 'selected' : ''}>Reader</option><option value="tutor" ${r.type === 'tutor' ? 'selected' : ''}>Tutor</option><option value="ai" ${r.type === 'ai' ? 'selected' : ''}>AI</option>`;
 					const qOpts = ['Fall', 'Winter', 'Spring'].map(q => `<option ${r.quarter === q ? 'selected' : ''}>${q}</option>`).join('');
 
