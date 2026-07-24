@@ -1160,7 +1160,7 @@
 						: `${g.totalFte}% / ${Math.round(g.totalFte * 4.4)} hours`;
 					const salaryLine = isHourly
 						? `at an hourly rate of ${formatCurrency(g.monthlySal)} per hour`
-						: `at a monthly ${isGsr ? 'rate' : 'salary'} of <strong>${formatCurrency(g.monthlySal)}</strong> (based on a full-time monthly rate of ${formatCurrency(g.monthlySal * (100 / g.totalFte))})`;
+						: `at a gross monthly ${isGsr ? 'rate' : 'salary'} of <strong>${formatCurrency(g.monthlySal)}</strong> (based on a full-time monthly rate of ${formatCurrency(g.monthlySal * (100 / g.totalFte))})`;
 					const supervisorLine = g.hideSupervisor
 						? ' Your supervisor will be noted on the Description of Duties form you receive prior to the quarter.'
 						: ` Your ${isGsr ? 'PI/Supervisor' : 'supervisor'} for this appointment will be <strong>${g.supervisor}</strong>.`;
@@ -1361,15 +1361,30 @@
 					}
 
 					const words = [];
+					// Words are laid out with a space between them, so anything that had
+					// NO space in the source has to say so — otherwise the full stop after
+					// a link drifts off as its own word and prints as "link ." Tracking
+					// where the real spaces were keeps punctuation tight against the link.
+					let prevEndedWithSpace = true;
 					for (const part of parts) {
 						const f = part.bold ? bold : regular;
+						// Callers pass parts as separate words to be spaced apart (a bold
+						// title, then the prose after it), so a part boundary is always a
+						// space. Only the run boundaries inside one part follow the source.
+						prevEndedWithSpace = true;
 						// Each word remembers whether it belongs to a link, so wrapping a
 						// link across lines still works.
 						for (const run of splitLinkRuns(part.text)) {
-							for (const w of run.text.split(' ')) {
-								if (!w) continue;
-								fitWord(w, f).forEach((piece, i) => words.push({ w: piece, f, url: run.url, glue: i > 0 }));
-							}
+							const startsWithSpace = /^\s/.test(run.text);
+							const tokens = run.text.split(/\s+/).filter(Boolean);
+							tokens.forEach((tok, idx) => {
+								const joinToPrev = idx === 0 && words.length > 0 && !startsWithSpace && !prevEndedWithSpace;
+								fitWord(tok, f).forEach((piece, k) => {
+									words.push({ w: piece, f, url: run.url, glue: k > 0 || joinToPrev });
+								});
+							});
+							if (tokens.length) prevEndedWithSpace = /\s$/.test(run.text);
+							else if (run.text.length) prevEndedWithSpace = true; // whitespace-only run
 						}
 					}
 					// "glue" means this piece continues the previous one, so it gets no
@@ -1447,7 +1462,7 @@
 							: `${g.totalFte}% / ${Math.round(g.totalFte * 4.4)} hours`;
 						const salaryText = isHourly
 							? `at an hourly rate of ${formatCurrency(g.monthlySal)} per hour`
-							: `at a monthly ${isGsr ? 'rate' : 'salary'} of ${formatCurrency(g.monthlySal)} (based on a full-time monthly rate of ${formatCurrency(g.monthlySal * (100 / g.totalFte))})`;
+							: `at a gross monthly ${isGsr ? 'rate' : 'salary'} of ${formatCurrency(g.monthlySal)} (based on a full-time monthly rate of ${formatCurrency(g.monthlySal * (100 / g.totalFte))})`;
 						const supervisorText = g.hideSupervisor
 							? ' Your supervisor will be noted on the Description of Duties form you receive prior to the quarter.'
 							: ` Your ${isGsr ? 'PI/Supervisor' : 'supervisor'} for this appointment will be ${g.supervisor}.`;
@@ -1539,7 +1554,7 @@
 						const salaryParts = isHourly
 							? [{ text: `at an hourly rate of ${formatCurrency(g.monthlySal)} per hour.`, bold: false }]
 							: [
-								{ text: `at a monthly ${isGsr ? 'rate' : 'salary'} of`, bold: false },
+								{ text: `at a gross monthly ${isGsr ? 'rate' : 'salary'} of`, bold: false },
 								{ text: formatCurrency(g.monthlySal), bold: true },
 								{ text: `(based on a full-time monthly rate of ${formatCurrency(g.monthlySal * (100 / g.totalFte))}).`, bold: false }
 							];
