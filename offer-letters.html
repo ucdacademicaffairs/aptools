@@ -846,20 +846,54 @@
 				const last = dates.pop();
 				return dates.join(', ') + ', and ' + last;
 			}
-			// --- ASE Written Notice pieces (per the 2026 ASE template from GS) ---
-			// The template wants the letter to say "Written Notice of Appointment as
-			// <name and number of job code>", so here are the title codes. DOUBLE-CHECK
-			// these against UCPath before trusting them too hard — they're the standard
-			// systemwide codes, and they're deliberately easy to edit right here.
-			const ASE_JOB_CODES = { ta: '2310', ai: '1506', reader: '2850', tutor: '2860' };
+			// --- Written Notice pieces (per the 2026 templates from GS) ---
+			// The letter names the job code alongside the title. Reader and Tutor were
+			// corrected to 2850/2860 by Will; the GSR code came from the Dean's Office
+			// ask and is the one to check first if a letter looks wrong.
+			const JOB_CODES = { ta: '2310', ai: '1506', reader: '2850', tutor: '2860', gsr: 'GSR_CODE_TBC' };
 
+			// The template also wants "pay period effective dates" — the payroll periods
+			// behind the paychecks, which are NOT the same as the dates checks arrive.
+			// Monthly folks map onto whole months (Fall = October through December, paid
+			// Nov 1/Dec 1/Jan 1); hourly folks get the span of biweekly periods that
+			// cover their service dates, using the same anchor math as the paydays.
+			function getPayPeriodText(quarters, isHourly) {
+				const startYear = parseInt(document.getElementById('global-year').value);
+				const fmt = t => new Date(t).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+				const parts = [];
+				quarters.forEach(q => {
+					if (isHourly) {
+						let calYear = startYear;
+						if (q === 'Winter' || q === 'Spring') calYear += 1;
+						const d = COST_DATA.QUARTER_DATES && COST_DATA.QUARTER_DATES[`${q} ${calYear}`];
+						if (!d) return;
+						const toUTC = s => { const [y, m, dd] = s.split('-').map(Number); return Date.UTC(y, m - 1, dd); };
+						const anchorPeriodEnd = BIWEEKLY_ANCHOR_PAYDAY - 11 * MS_PER_DAY;
+						const periodEndOnOrAfter = t => anchorPeriodEnd + Math.ceil((t - anchorPeriodEnd) / (14 * MS_PER_DAY)) * 14 * MS_PER_DAY;
+						const firstStart = periodEndOnOrAfter(toUTC(d.serviceStart)) - 13 * MS_PER_DAY;
+						const lastEnd = periodEndOnOrAfter(toUTC(d.serviceEnd));
+						parts.push(`${q}: ${fmt(firstStart)} to ${fmt(lastEnd)}`);
+					} else {
+						if (q === 'Fall') parts.push(`${q}: October 1, ${startYear} to December 31, ${startYear}`);
+						if (q === 'Winter') parts.push(`${q}: January 1, ${startYear + 1} to March 31, ${startYear + 1}`);
+						if (q === 'Spring') parts.push(`${q}: April 1, ${startYear + 1} to June 30, ${startYear + 1}`);
+					}
+				});
+				if (!parts.length) return '[PAY PERIOD DATES]';
+				// One quarter reads like a sentence; several read like the service-dates list.
+				return parts.length === 1 ? parts[0].replace(/^[^:]+: /, '') : parts.join('; ');
+			}
+
+			// Shared ASE letter fragments, computed in ONE place so the on-screen
+			// preview and the PDF can never drift apart.
 			function aseFragments(g) {
-				const code = ASE_JOB_CODES[g.type] || 'XXXX';
+				const code = JOB_CODES[g.type] || 'XXXX';
 				const plainTitle = g.type === 'ta' ? 'Teaching Assistant'
 					: g.type === 'ai' ? 'Associate Instructor'
 						: g.type === 'reader' ? 'Reader' : 'Tutor';
+				// The Dean's Office asked for "salary point", not just "point".
 				const noticeTitle = g.type === 'ta' || g.type === 'ai'
-					? `${plainTitle} (Point ${g.step}, Title Code ${code})`
+					? `${plainTitle} (Salary Point ${g.step}, Title Code ${code})`
 					: g.type === 'tutor'
 						? `Tutor (${g.tutorType || 'Individual'}, Title Code ${code})`
 						: `Reader (Title Code ${code})`;
@@ -948,6 +982,11 @@
 						? getBiweeklyPayDatesList(quartersArr)
 						: getCombinedPayDatesList(quartersArr),
 						serviceDates: getServiceDates(quartersArr),
+						// Pay period effective dates. For ASEs these sit alongside the
+						// service period, which is a different (shorter) span. A GSR is a
+						// fiscal year employee whose service and pay dates are the same
+						// thing, so this doubles as their appointment period.
+						payPeriods: getPayPeriodText(quartersArr, sample.type === 'reader' || sample.type === 'tutor'),
 						assignment: assignments.join('; '),
 						duties: sample.values.workDuties || '',
 						step: sample.values.step,
@@ -1020,6 +1059,11 @@
 						? getBiweeklyPayDatesList(quartersArr)
 						: getCombinedPayDatesList(quartersArr),
 						serviceDates: getServiceDates(quartersArr),
+						// Pay period effective dates. For ASEs these sit alongside the
+						// service period, which is a different (shorter) span. A GSR is a
+						// fiscal year employee whose service and pay dates are the same
+						// thing, so this doubles as their appointment period.
+						payPeriods: getPayPeriodText(quartersArr, sample.type === 'reader' || sample.type === 'tutor'),
 						assignment: assignments.join('; '),
 						duties: sample.values.workDuties || '',
 						step: sample.values.step,
@@ -1112,12 +1156,18 @@
 							: g.type === 'reader' ? 'Reader'
 								: g.type === 'tutor' ? `Tutor (${g.tutorType || 'Individual'})`
 									: 'Graduate Student Researcher';
-					if (g.type !== 'reader' && g.type !== 'tutor') title += ` (Point ${g.step})`;
-					
+					// GSRs get their salary point and job code here; ASE titles get theirs
+					// from aseFragments, which builds the fuller Written Notice wording.
+					if (isGsr) title += ` (Salary Point ${g.step}, Title Code ${JOB_CODES.gsr})`;
+					else if (g.type !== 'reader' && g.type !== 'tutor') title += ` (Salary Point ${g.step})`;
+
 					const ase = isGsr ? null : aseFragments(g);
+					// The "/ N hours" figure comes from the TA workload article, so it
+					// belongs on ASE letters only — a GSR at 50% isn't capped at 220 hours.
 					const fteDisplay = isHourly
 						? `${ase.pctFte}% / approximately ${ase.hoursPerWeek} hours per week`
-						: `${g.totalFte}% / ${Math.round(g.totalFte * 4.4)} hours`;
+						: isGsr ? `${g.totalFte}%`
+							: `${g.totalFte}% / ${Math.round(g.totalFte * 4.4)} hours`;
 					const salaryLine = isHourly
 						? `at an hourly rate of ${formatCurrency(g.monthlySal)} per hour`
 						: `at a gross monthly ${isGsr ? 'rate' : 'salary'} of <strong>${formatCurrency(g.monthlySal)}</strong> (based on a full-time monthly rate of ${formatCurrency(g.monthlySal * (100 / g.totalFte))})`;
@@ -1141,13 +1191,13 @@
 						? `<p>I am pleased to offer you an appointment as a <strong>${title}</strong> in the <strong>${d.deptName}</strong> for the <strong>${g.quarter} quarter(s) of ${d.year}-${d.year + 1}</strong>.${supervisorLine}</p>`
 						: g.type === 'tutor'
 							? `<p>Congratulations! This letter constitutes your Written Notice of Appointment as a <strong>${ase.noticeTitle}</strong> in the <strong>${d.deptName}</strong>. The effective dates of your appointment will be <strong>${g.serviceDates}</strong>.${reportingLine}</p>`
-							: `<p>Congratulations! This letter constitutes your Written Notice of Appointment as a <strong>${ase.noticeTitle}</strong> in the <strong>${d.deptName}</strong> for the <strong>${g.quarter} quarter(s) of ${d.year}-${d.year + 1}</strong>. The service period effective dates of your appointment are <strong>${g.serviceDates}</strong>, or through the following week if you are responsible for duties related to submission of final grades.${reportingLine}</p>`;
+							: `<p>Congratulations! This letter constitutes your Written Notice of Appointment as a <strong>${ase.noticeTitle}</strong> in the <strong>${d.deptName}</strong> for the <strong>${g.quarter} quarter(s) of ${d.year}-${d.year + 1}</strong>. The service period effective dates of your appointment are <strong>${g.serviceDates}</strong>, or through the following week if you are responsible for duties related to submission of final grades. The pay period effective dates are <strong>${g.payPeriods}</strong>.${reportingLine}</p>`;
 					const assignmentHtml = (isGsr || !ase.assignmentSentence) ? ''
 						: (g.assignment
 							? `<p>${ase.assignmentSentence}<strong>${g.assignment}</strong>.</p>`
 							: `<p>${ase.assignmentSentence}</p>`);
 					const p2Html = isGsr
-						? `<p>This appointment is at <strong>${fteDisplay}</strong>. You will be paid ${salaryLine}. Your paychecks will be issued on <strong>${g.payDates}</strong>. The service dates for this appointment are <strong>${g.serviceDates}</strong>.</p>`
+						? `<p>This appointment is at <strong>${fteDisplay}</strong>. You will be paid ${salaryLine}. The appointment period is <strong>${g.payPeriods}</strong>, and you are expected to work those dates. Your paychecks will be issued on <strong>${g.payDates}</strong>.</p>`
 						: `<p>This appointment is at <strong>${fteDisplay}</strong>. You will be paid ${salaryLine}. Your paychecks will be issued ${isHourly ? 'biweekly ' : ''}on <strong>${g.payDates}</strong>.</p>`;
 					const aseParasHtml = isGsr ? '' : `
 					<p>${ase.scalesText}</p>
@@ -1414,12 +1464,18 @@
 								: g.type === 'reader' ? 'Reader'
 									: g.type === 'tutor' ? `Tutor (${g.tutorType || 'Individual'})`
 										: 'Graduate Student Researcher';
-						if (g.type !== 'reader' && g.type !== 'tutor') title += ` (Point ${g.step})`;
+						// GSRs get their salary point and job code here; ASE titles get theirs
+						// from aseFragments, which builds the fuller Written Notice wording.
+						if (isGsr) title += ` (Salary Point ${g.step}, Title Code ${JOB_CODES.gsr})`;
+						else if (g.type !== 'reader' && g.type !== 'tutor') title += ` (Salary Point ${g.step})`;
 
 						const ase = isGsr ? null : aseFragments(g);
+						// The "/ N hours" figure comes from the TA workload article, so it
+						// belongs on ASE letters only — a GSR at 50% isn't capped at 220 hours.
 						const fteDisplay = isHourly
 							? `${ase.pctFte}% / approximately ${ase.hoursPerWeek} hours per week`
-							: `${g.totalFte}% / ${Math.round(g.totalFte * 4.4)} hours`;
+							: isGsr ? `${g.totalFte}%`
+								: `${g.totalFte}% / ${Math.round(g.totalFte * 4.4)} hours`;
 						const salaryText = isHourly
 							? `at an hourly rate of ${formatCurrency(g.monthlySal)} per hour`
 							: `at a gross monthly ${isGsr ? 'rate' : 'salary'} of ${formatCurrency(g.monthlySal)} (based on a full-time monthly rate of ${formatCurrency(g.monthlySal * (100 / g.totalFte))})`;
@@ -1485,7 +1541,8 @@
 								{ text: `${g.quarter} quarter(s) of ${d.year}-${d.year + 1}.`, bold: true },
 								{ text: 'The service period effective dates of your appointment are', bold: false },
 								{ text: `${g.serviceDates},`, bold: true },
-								{ text: 'or through the following week if you are responsible for duties related to submission of final grades.', bold: false }
+								{ text: 'or through the following week if you are responsible for duties related to submission of final grades. The pay period effective dates are', bold: false },
+								{ text: `${g.payPeriods}.`, bold: true }
 							];
 						}
 
@@ -1522,16 +1579,18 @@
 							{ text: 'This appointment is at', bold: false },
 							{ text: `${fteDisplay}.`, bold: true },
 							{ text: 'You will be paid', bold: false },
-							...salaryParts,
-							{ text: `Your paychecks will be issued ${isHourly ? 'biweekly ' : ''}on`, bold: false },
-							{ text: `${g.payDates}.`, bold: true }
+							...salaryParts
 						];
-						// The ASE service dates moved up into the opening paragraph, so only
-						// GSR letters still carry them here.
+						// ASE service and pay periods live in the opening paragraph. A GSR's
+						// appointment period is the one span they work and are paid for, so
+						// it goes here, ahead of the paycheck dates.
 						if (isGsr) {
-							p2Parts.push({ text: 'The service dates for this appointment are', bold: false });
-							p2Parts.push({ text: `${g.serviceDates}.`, bold: true });
+							p2Parts.push({ text: 'The appointment period is', bold: false });
+							p2Parts.push({ text: `${g.payPeriods},`, bold: true });
+							p2Parts.push({ text: 'and you are expected to work those dates.', bold: false });
 						}
+						p2Parts.push({ text: `Your paychecks will be issued ${isHourly ? 'biweekly ' : ''}on`, bold: false });
+						p2Parts.push({ text: `${g.payDates}.`, bold: true });
 
 						drawMixed(p2Parts);
 
