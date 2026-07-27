@@ -1197,7 +1197,7 @@
 							? `<p>${ase.assignmentSentence}<strong>${g.assignment}</strong>.</p>`
 							: `<p>${ase.assignmentSentence}</p>`);
 					const p2Html = isGsr
-						? `<p>This appointment is at <strong>${fteDisplay}</strong>. You will be paid ${salaryLine}. The appointment period is <strong>${g.payPeriods}</strong>, and you are expected to work those dates. Your paychecks will be issued on <strong>${g.payDates}</strong>.</p>`
+						? `<p>This appointment is at <strong>${fteDisplay}</strong>. You will be paid ${salaryLine}. The effective dates of your appointment will be <strong>${g.payPeriods}</strong>. Your paychecks will be issued on <strong>${g.payDates}</strong>.</p>`
 						: `<p>This appointment is at <strong>${fteDisplay}</strong>. You will be paid ${salaryLine}. Your paychecks will be issued ${isHourly ? 'biweekly ' : ''}on <strong>${g.payDates}</strong>.</p>`;
 					const aseParasHtml = isGsr ? '' : `
 					<p>${ase.scalesText}</p>
@@ -1582,12 +1582,12 @@
 							...salaryParts
 						];
 						// ASE service and pay periods live in the opening paragraph. A GSR's
-						// appointment period is the one span they work and are paid for, so
-						// it goes here, ahead of the paycheck dates.
+						// effective dates are the one span they work and are paid for, so
+						// they go here, ahead of the paycheck dates. Wording follows the GS
+						// template rather than anything of my own.
 						if (isGsr) {
-							p2Parts.push({ text: 'The appointment period is', bold: false });
-							p2Parts.push({ text: `${g.payPeriods},`, bold: true });
-							p2Parts.push({ text: 'and you are expected to work those dates.', bold: false });
+							p2Parts.push({ text: 'The effective dates of your appointment will be', bold: false });
+							p2Parts.push({ text: `${g.payPeriods}.`, bold: true });
 						}
 						p2Parts.push({ text: `Your paychecks will be issued ${isHourly ? 'biweekly ' : ''}on`, bold: false });
 						p2Parts.push({ text: `${g.payDates}.`, bold: true });
