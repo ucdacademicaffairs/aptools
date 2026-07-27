@@ -847,10 +847,10 @@
 				return dates.join(', ') + ', and ' + last;
 			}
 			// --- Written Notice pieces (per the 2026 templates from GS) ---
-			// The letter names the job code alongside the title. Reader and Tutor were
-			// corrected to 2850/2860 by Will; the GSR code came from the Dean's Office
-			// ask and is the one to check first if a letter looks wrong.
-			const JOB_CODES = { ta: '2310', ai: '1506', reader: '2850', tutor: '2860', gsr: 'GSR_CODE_TBC' };
+			// The letter names the job code alongside the title. Reader and Tutor are
+			// 2850/2860 and GSR is 3282 — all confirmed rather than assumed, because the
+			// systemwide codes I first reached for turned out to be the wrong ones.
+			const JOB_CODES = { ta: '2310', ai: '1506', reader: '2850', tutor: '2860', gsr: '3282' };
 
 			// The template also wants "pay period effective dates" — the payroll periods
 			// behind the paychecks, which are NOT the same as the dates checks arrive.
