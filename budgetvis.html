@@ -42,6 +42,119 @@
 			border-left-width: 4px;
 		}
 
+		/* ── Ledger tables ──────────────────────────────────────────────────
+		   This is a comparison of two columns of money, which is a table, not
+		   a wall of cards. Money reads best right-aligned with the digits
+		   lining up, so everything numeric gets tabular figures. Blue header
+		   bar with a gold rule under it is the campus bar motif. */
+		.ledger {
+			width: 100%;
+			border-collapse: collapse;
+			background: white;
+			border: 1px solid #d7dde5;
+		}
+
+		.ledger caption {
+			caption-side: top;
+			text-align: left;
+			background: var(--ucd-blue);
+			color: white;
+			font-weight: 700;
+			font-size: 0.8rem;
+			letter-spacing: 0.09em;
+			text-transform: uppercase;
+			padding: 0.6rem 0.85rem;
+			border-bottom: 3px solid var(--ucd-gold);
+		}
+
+		.ledger th,
+		.ledger td {
+			padding: 0.6rem 0.85rem;
+			border-bottom: 1px solid #edf0f4;
+			font-size: 0.95rem;
+		}
+
+		.ledger thead th {
+			font-size: 0.68rem;
+			text-transform: uppercase;
+			letter-spacing: 0.08em;
+			color: #5b6672;
+			font-weight: 700;
+			border-bottom: 1px solid #d7dde5;
+			background: #f7f9fb;
+			white-space: nowrap;
+		}
+
+		.ledger th[scope="row"] {
+			text-align: left;
+			font-weight: 500;
+			color: #1f2933;
+		}
+
+		/* Every number column: right-aligned, tabular, non-breaking. */
+		.ledger .num {
+			text-align: right;
+			font-variant-numeric: tabular-nums;
+			font-feature-settings: "tnum" 1;
+			white-space: nowrap;
+			color: var(--ucd-blue);
+			font-weight: 600;
+		}
+
+		/* The base period is context, not the headline — step it back. */
+		.ledger .num-base {
+			color: #78838f;
+			font-weight: 500;
+		}
+
+		/* A group heading inside the table (Appointments, Instruction, …). */
+		.ledger .group-row th {
+			background: #f7f9fb;
+			font-size: 0.68rem;
+			text-transform: uppercase;
+			letter-spacing: 0.09em;
+			color: var(--ucd-blue);
+			font-weight: 700;
+			padding-top: 0.5rem;
+			padding-bottom: 0.5rem;
+			border-bottom: 1px solid #d7dde5;
+		}
+
+		/* The balance is the arithmetic result of the rows above it, so it
+		   gets ruled off like a total line rather than floated as a card. */
+		.ledger .total-row th,
+		.ledger .total-row td {
+			border-top: 2px solid var(--ucd-blue);
+			border-bottom: none;
+			font-weight: 700;
+			padding-top: 0.7rem;
+			padding-bottom: 0.7rem;
+		}
+
+		.ledger .total-row th[scope="row"] {
+			color: var(--ucd-blue);
+		}
+
+		/* Colour is reserved for changes big enough to act on, so a rounding
+		   error stays black instead of lighting up green. */
+		.chg-up { color: #9a6b00; }
+		.chg-down { color: #1c6b4a; }
+		.chg-flat { color: #78838f; font-weight: 500; }
+		.chg-alarm { color: #b3271e; }
+
+		.ledger-note {
+			font-size: 0.85rem;
+			color: #46505b;
+			line-height: 1.55;
+			border-left: 3px solid var(--ucd-gold);
+			padding: 0.15rem 0 0.15rem 0.75rem;
+			margin-top: 0.85rem;
+		}
+
+		.ledger-wrap {
+			overflow-x: auto;
+		}
+
 		.metric-label {
 			font-size: 0.75rem;
 			text-transform: uppercase;
@@ -204,17 +317,39 @@
 				page-break-inside: avoid !important;
 			}
 
-			.stat-grid {
-				display: grid !important;
-				grid-template-columns: 1fr 35px 1fr 35px 1fr !important;
-				/* Wider arrow columns to prevent overlap */
-				margin-bottom: 0.4rem !important;
-				align-items: center !important;
+			/* Ledgers print as ledgers — keep the rules, drop the fill so it
+			   doesn't eat toner, and never split a table across a page. */
+			.ledger {
+				page-break-inside: avoid !important;
+				border: 1px solid #94a3b8 !important;
+				margin-bottom: 0.5rem !important;
 			}
 
-			/* Operational Metrics stuff */
-			.metric-box {
-				margin-bottom: 0 !important;
+			.ledger caption {
+				background: var(--ucd-blue) !important;
+				color: white !important;
+				-webkit-print-color-adjust: exact;
+				print-color-adjust: exact;
+				font-size: 0.75rem !important;
+				padding: 0.35rem 0.5rem !important;
+			}
+
+			.ledger th,
+			.ledger td {
+				padding: 0.3rem 0.5rem !important;
+				font-size: 8pt !important;
+			}
+
+			.ledger thead th,
+			.ledger .group-row th {
+				background: #eef2f6 !important;
+				-webkit-print-color-adjust: exact;
+				print-color-adjust: exact;
+			}
+
+			.ledger-note {
+				font-size: 8pt !important;
+				page-break-inside: avoid !important;
 			}
 
 			.charts-grid {
@@ -354,139 +489,61 @@
 					</button>
 				</div>
 
-				<!-- Column Headers for Desktop -->
-				<div class="hidden md:grid stat-grid mb-2">
-					<div class="column-label">Base Period (Old)</div>
-					<div></div> <!-- Spacer for Arrow -->
-					<div class="column-label">Comparison Period (New)</div>
-					<div></div> <!-- Spacer for Arrow -->
-					<div class="column-label">Year-over-Year Change</div>
+				<div class="ledger-wrap">
+					<table class="ledger">
+						<caption>Budget vs. Expenditures</caption>
+						<thead>
+							<tr>
+								<th scope="col" class="text-left">&nbsp;</th>
+								<th scope="col" class="num">Base Period</th>
+								<th scope="col" class="num">Comparison Period</th>
+								<th scope="col" class="num">Change</th>
+								<th scope="col" class="num">Change %</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<th scope="row">Budget (Allocated)</th>
+								<td class="num num-base" id="budget-old">$0</td>
+								<td class="num" id="budget-new">$0</td>
+								<td class="num" id="budget-diff">$0</td>
+								<td class="num" id="budget-pct">0.0%</td>
+							</tr>
+							<tr>
+								<th scope="row">Expenditures</th>
+								<td class="num num-base" id="exp-old">$0</td>
+								<td class="num" id="exp-new">$0</td>
+								<td class="num" id="exp-diff">$0</td>
+								<td class="num" id="exp-pct">0.0%</td>
+							</tr>
+							<tr class="total-row">
+								<th scope="row">Balance</th>
+								<td class="num num-base" id="bal-old">$0</td>
+								<td class="num" id="bal-new">$0</td>
+								<td class="num" id="bal-diff">$0</td>
+								<td class="num chg-flat">&mdash;</td>
+							</tr>
+						</tbody>
+					</table>
 				</div>
-
-				<!-- Row 1: Budget -->
-				<div class="grid grid-cols-1 md:hidden gap-6 mb-8">
-					<div class="card card-stat border-[#002855] shadow-sm">
-						<p class="metric-label">Old Budget (Allocated)</p>
-						<h3 class="metric-value text-gray-400" id="budget-old-m">$0</h3>
-					</div>
-					<div class="card card-stat border-[#FFBF00] shadow-sm">
-						<p class="metric-label">New Budget (Allocated)</p>
-						<h3 class="metric-value" id="budget-new-m">$0</h3>
-					</div>
-					<div class="card card-stat shadow-sm" id="card-budget-diff-m">
-						<p class="metric-label">Budget Variance</p>
-						<div class="flex items-baseline gap-2">
-							<h3 class="text-2xl font-bold" id="budget-diff-m">$0</h3>
-							<span class="text-sm font-bold py-1 px-2 rounded-full" id="budget-pct-m">0%</span>
-						</div>
-					</div>
-				</div>
-
-				<div class="hidden md:grid stat-grid">
-					<div class="card card-stat border-[#002855] shadow-sm">
-						<p class="metric-label">Old Budget (Allocated)</p>
-						<h3 class="metric-value text-gray-400" id="budget-old">$0</h3>
-					</div>
-					<div class="stat-arrow-grid">→</div>
-					<div class="card card-stat border-[#FFBF00] shadow-sm">
-						<p class="metric-label">New Budget (Allocated)</p>
-						<h3 class="metric-value" id="budget-new">$0</h3>
-					</div>
-					<div class="stat-arrow-grid">→</div>
-					<div class="card card-stat shadow-sm" id="card-budget-diff">
-						<p class="metric-label">Budget Variance</p>
-						<div class="flex items-baseline gap-2">
-							<h3 class="text-2xl font-bold" id="budget-diff">$0</h3>
-							<span class="text-sm font-bold py-1 px-2 rounded-full" id="budget-pct">0%</span>
-						</div>
-					</div>
-				</div>
-
-				<!-- Row 2: Expenditures -->
-				<div class="grid grid-cols-1 md:hidden gap-6 mb-8">
-					<div class="card card-stat border-[#002855] shadow-sm">
-						<p class="metric-label">Old Expenditures</p>
-						<h3 class="metric-value text-gray-400" id="exp-old-m">$0</h3>
-					</div>
-					<div class="card card-stat border-[#FFBF00] shadow-sm">
-						<p class="metric-label">New Expenditures</p>
-						<h3 class="metric-value" id="exp-new-m">$0</h3>
-					</div>
-					<div class="card card-stat shadow-sm" id="card-exp-diff-m">
-						<p class="metric-label">Expenditure Variance</p>
-						<div class="flex items-baseline gap-2">
-							<h3 class="text-2xl font-bold" id="exp-diff-m">$0</h3>
-							<span class="text-sm font-bold py-1 px-2 rounded-full" id="exp-pct-m">0%</span>
-						</div>
-					</div>
-				</div>
-
-				<div class="hidden md:grid stat-grid">
-					<div class="card card-stat border-[#002855] shadow-sm">
-						<p class="metric-label">Old Expenditures</p>
-						<h3 class="metric-value text-gray-400" id="exp-old">$0</h3>
-					</div>
-					<div class="stat-arrow-grid">→</div>
-					<div class="card card-stat border-[#FFBF00] shadow-sm">
-						<p class="metric-label">New Expenditures</p>
-						<h3 class="metric-value" id="exp-new">$0</h3>
-					</div>
-					<div class="stat-arrow-grid">→</div>
-					<div class="card card-stat shadow-sm" id="card-exp-diff">
-						<p class="metric-label">Expenditure Variance</p>
-						<div class="flex items-baseline gap-2">
-							<h3 class="text-2xl font-bold" id="exp-diff">$0</h3>
-							<span class="text-sm font-bold py-1 px-2 rounded-full" id="exp-pct">0%</span>
-						</div>
-					</div>
-				</div>
-
-				<!-- Row 3: Balance -->
-				<div class="grid grid-cols-1 md:hidden gap-6 mb-8">
-					<div class="card card-stat border-[#002855] shadow-sm">
-						<p class="metric-label">Old Balance</p>
-						<h3 class="metric-value text-gray-400" id="bal-old-m">$0</h3>
-					</div>
-					<div class="card card-stat border-[#FFBF00] shadow-sm">
-						<p class="metric-label">New Balance</p>
-						<h3 class="metric-value" id="bal-new-m">$0</h3>
-					</div>
-				</div>
-
-				<div class="hidden md:grid stat-grid">
-					<div class="card card-stat border-[#002855] shadow-sm">
-						<p class="metric-label">Old Balance</p>
-						<h3 class="metric-value text-gray-400" id="bal-old">$0</h3>
-					</div>
-					<div class="stat-arrow-grid">→</div>
-					<div class="card card-stat border-[#FFBF00] shadow-sm">
-						<p class="metric-label">New Balance</p>
-						<h3 class="metric-value" id="bal-new">$0</h3>
-					</div>
-					<!-- Empty space for the rest of the grid -->
-				</div>
-
+				<p class="ledger-note" id="overview-note"></p>
 
 				<h2 class="section-title">Operational Metrics</h2>
 
-				<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-					<div id="metric-ta-count"></div>
-					<div id="metric-reader-count"></div>
+				<div class="ledger-wrap">
+					<table class="ledger">
+						<caption>Workload &amp; Instruction</caption>
+						<thead>
+							<tr>
+								<th scope="col" class="text-left">&nbsp;</th>
+								<th scope="col" class="num">Base Period</th>
+								<th scope="col" class="num">Comparison Period</th>
+								<th scope="col" class="num">Change</th>
+							</tr>
+						</thead>
+						<tbody id="metrics-body"></tbody>
+					</table>
 				</div>
-
-				<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-					<div id="metric-units"></div>
-					<div id="metric-sch-ug"></div>
-					<div id="metric-sch-gr"></div>
-				</div>
-
-				<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-					<div id="metric-off-low"></div>
-					<div id="metric-off-up"></div>
-					<div id="metric-off-grad"></div>
-					<div id="metric-off-total"></div>
-				</div>
-
 
 				<div id="print-page-2" class="break-before-page">
 					<h2 class="section-title">Spending Breakdown</h2>
@@ -544,17 +601,20 @@
 			const KEYS_TOTAL_BUDGET = ['FUNDS COST'];
 
 			// 3. METRIC KEYS MAP (Maps Excel Names to DOM IDs)
-			const METRIC_MAP = {
-				'TA COUNT': 'metric-ta-count',
-				'READER COUNT': 'metric-reader-count',
-				'UNITS OFFERED': 'metric-units',
-				'STUDENT CREDIT HOURS (UNDERGRAD)': 'metric-sch-ug',
-				'STUDENT CREDIT HOURS (GRADUATE)': 'metric-sch-gr',
-				'LOWER DIV OFFERINGS': 'metric-off-low',
-				'UPPER DIV OFFERINGS': 'metric-off-up',
-				'GRADUATE OFFERINGS': 'metric-off-grad',
-				'TOTAL OFFERINGS': 'metric-off-total'
-			};
+			// The metric rows we pull out of the export. These used to carry a DOM
+			// id each, back when every metric had its own box; the layout is a
+			// table now, so all this needs to be is the list of keys to match.
+			const METRIC_KEYS = [
+				'TA COUNT',
+				'READER COUNT',
+				'UNITS OFFERED',
+				'STUDENT CREDIT HOURS (UNDERGRAD)',
+				'STUDENT CREDIT HOURS (GRADUATE)',
+				'LOWER DIV OFFERINGS',
+				'UPPER DIV OFFERINGS',
+				'GRADUATE OFFERINGS',
+				'TOTAL OFFERINGS'
+			];
 
 			// 4. IGNORE LIST (For Charts/Table)
 			// exclude metrics, totals, and balances from the line items
@@ -686,9 +746,9 @@
 					}
 
 					// B. Check for Specific Metrics (Layout specific)
-					// We check against the keys in METRIC_MAP
+					// We check against the keys in METRIC_KEYS
 					let foundMetric = false;
-					for (const [key, id] of Object.entries(METRIC_MAP)) {
+					for (const key of METRIC_KEYS) {
 						if (catUpper.includes(key)) {
 							// Store it using the standardized Map Key for easier matching later
 							metrics[key] = val;
@@ -708,112 +768,132 @@
 				return { totalExp, totalBudget, lineItems, metrics };
 			}
 
-			function renderTopLevelFinancials(oldD, newD) {
-				const format = (n) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+			// A change only earns colour if it is big enough to act on. A -0.0%
+			// rounding wobble stays plain, so the eye goes to the 1.1% that
+			// actually moved. Anything past the alarm threshold, or a balance
+			// that has gone negative, gets the strong treatment.
+			const NOTABLE_PCT = 0.5;
+			const ALARM_PCT = 5;
 
-				// Helper to set both mobile and desktop
-				const set = (id, val) => {
+			function changeClass(pctVal, opts = {}) {
+				const mag = Math.abs(pctVal);
+				if (opts.alarm) return 'chg-alarm';
+				if (mag < NOTABLE_PCT) return 'chg-flat';
+				if (mag >= ALARM_PCT) return 'chg-alarm';
+				return pctVal > 0 ? (opts.upIsGood ? 'chg-down' : 'chg-up') : (opts.upIsGood ? 'chg-up' : 'chg-down');
+			}
+
+			// Real minus sign throughout, so a negative balance lines up with the
+			// negatives in the change column instead of sitting on a stubby hyphen.
+			const money = (n) => (n < 0 ? '−' : '') +
+				Math.abs(n).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+			// A real minus sign rather than a hyphen — it lines up with the digits.
+			const signed = (n, fmt) => (n > 0 ? '+' : n < 0 ? '−' : '') + fmt(Math.abs(n));
+
+			function renderTopLevelFinancials(oldD, newD) {
+				const set = (id, text, cls) => {
 					const el = document.getElementById(id);
-					if (el) el.textContent = val;
-					const elm = document.getElementById(id + '-m');
-					if (elm) elm.textContent = val;
+					if (!el) return;
+					el.textContent = text;
+					if (cls) el.className = 'num ' + cls;
 				};
 
-				set('budget-old', format(oldD.totalBudget));
-				set('budget-new', format(newD.totalBudget));
-				updateDiffCard('budget', newD.totalBudget - oldD.totalBudget, oldD.totalBudget);
+				const rows = [
+					{ id: 'budget', oldV: oldD.totalBudget, newV: newD.totalBudget },
+					{ id: 'exp', oldV: oldD.totalExp, newV: newD.totalExp, upIsGood: false }
+				];
 
-				set('exp-old', format(oldD.totalExp));
-				set('exp-new', format(newD.totalExp));
-				updateDiffCard('exp', newD.totalExp - oldD.totalExp, oldD.totalExp);
+				rows.forEach(r => {
+					const diff = r.newV - r.oldV;
+					const pct = r.oldV !== 0 ? (diff / r.oldV) * 100 : 0;
+					set(r.id + '-old', money(r.oldV));
+					set(r.id + '-new', money(r.newV));
+					set(r.id + '-diff', signed(diff, money), changeClass(pct));
+					set(r.id + '-pct', signed(pct, v => v.toFixed(1) + '%'), changeClass(pct));
+				});
 
 				const oldBal = oldD.totalBudget - oldD.totalExp;
 				const newBal = newD.totalBudget - newD.totalExp;
-				set('bal-old', format(oldBal));
-				set('bal-new', format(newBal));
+				const balDiff = newBal - oldBal;
+				set('bal-old', money(oldBal));
+				set('bal-new', money(newBal), newBal < 0 ? 'chg-alarm' : '');
+				set('bal-diff', signed(balDiff, money), changeClass(0, { alarm: newBal < 0 && balDiff < 0 }));
+
+				renderOverviewNote(oldD, newD, oldBal, newBal);
 			}
 
-			function updateDiffCard(idPrefix, diff, base) {
-				const elDiff = document.getElementById(`${idPrefix}-diff`);
-				const elPct = document.getElementById(`${idPrefix}-pct`);
-				const card = document.getElementById(`card-${idPrefix}-diff`);
+			// The one sentence a reader actually needs, spelled out rather than
+			// left to be inferred from four coloured boxes.
+			function renderOverviewNote(oldD, newD, oldBal, newBal) {
+				const note = document.getElementById('overview-note');
+				if (!note) return;
+				const budDiff = newD.totalBudget - oldD.totalBudget;
+				const expDiff = newD.totalExp - oldD.totalExp;
+				const budPct = oldD.totalBudget ? (budDiff / oldD.totalBudget) * 100 : 0;
+				const expPct = oldD.totalExp ? (expDiff / oldD.totalExp) * 100 : 0;
 
-				const elDiffM = document.getElementById(`${idPrefix}-diff-m`);
-				const elPctM = document.getElementById(`${idPrefix}-pct-m`);
-				const cardM = document.getElementById(`card-${idPrefix}-diff-m`);
+				const budPhrase = Math.abs(budPct) < NOTABLE_PCT
+					? 'The allocated budget is essentially flat'
+					: `The allocated budget ${budDiff > 0 ? 'rose' : 'fell'} ${money(Math.abs(budDiff))} (${Math.abs(budPct).toFixed(1)}%)`;
+				const expPhrase = Math.abs(expPct) < NOTABLE_PCT
+					? 'expenditures held steady'
+					: `expenditures ${expDiff > 0 ? 'rose' : 'fell'} ${money(Math.abs(expDiff))} (${Math.abs(expPct).toFixed(1)}%)`;
 
-				const format = (n) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+				const balPhrase = newBal < 0
+					? `That leaves the balance ${money(Math.abs(newBal))} in deficit, against ${oldBal < 0 ? 'a deficit of ' : 'a surplus of '}${money(Math.abs(oldBal))} in the base period.`
+					: `That leaves a surplus of ${money(newBal)}.`;
 
-				const diffText = (diff > 0 ? "+" : "") + format(diff);
-				const pctVal = base !== 0 ? (diff / base) * 100 : 0;
-				const pctText = (diff > 0 ? "+" : "") + pctVal.toFixed(1) + "%";
-
-				if (elDiff) elDiff.textContent = diffText;
-				if (elPct) elPct.textContent = pctText;
-				if (elDiffM) elDiffM.textContent = diffText;
-				if (elPctM) elPctM.textContent = pctText;
-
-				// Colors
-				const colorClass = diff > 0 ? "card card-stat border-yellow-500 shadow-sm" : "card card-stat border-green-500 shadow-sm";
-				const pctClass = diff > 0 ? "text-sm font-bold py-1 px-2 rounded-full bg-yellow-100 text-yellow-800" : "text-sm font-bold py-1 px-2 rounded-full bg-green-100 text-green-800";
-
-				if (card) card.className = colorClass;
-				if (elPct) elPct.className = pctClass;
-				if (cardM) cardM.className = colorClass;
-				if (elPctM) elPctM.className = pctClass;
+				note.textContent = `${budPhrase} while ${expPhrase}. ${balPhrase}`;
 			}
+
+			// Operational metrics, grouped the way someone reading them thinks
+			// about them rather than as nine free-floating boxes.
+			const METRIC_GROUPS = [
+				{ title: 'Appointments', keys: ['TA COUNT', 'READER COUNT'] },
+				{ title: 'Instruction', keys: ['UNITS OFFERED', 'STUDENT CREDIT HOURS (UNDERGRAD)', 'STUDENT CREDIT HOURS (GRADUATE)'] },
+				{ title: 'Course Offerings', keys: ['LOWER DIV OFFERINGS', 'UPPER DIV OFFERINGS', 'GRADUATE OFFERINGS', 'TOTAL OFFERINGS'] }
+			];
+
+			const METRIC_LABELS = {
+				'TA COUNT': 'TA count (50% appointments)',
+				'READER COUNT': 'Reader count (hours)',
+				'UNITS OFFERED': 'Units offered',
+				'STUDENT CREDIT HOURS (UNDERGRAD)': 'Student credit hours — undergraduate',
+				'STUDENT CREDIT HOURS (GRADUATE)': 'Student credit hours — graduate',
+				'LOWER DIV OFFERINGS': 'Lower division',
+				'UPPER DIV OFFERINGS': 'Upper division',
+				'GRADUATE OFFERINGS': 'Graduate',
+				'TOTAL OFFERINGS': 'Total offerings'
+			};
 
 			function renderMetrics(oldM, newM) {
-				// METRIC_MAP defines the layout ID. 
-				// Iterated over the map to populate the DOM.
-
-				// Formatters - Enabled up to 1 decimal place
+				const body = document.getElementById('metrics-body');
+				if (!body) return;
 				const fmt = (n) => n.toLocaleString('en-US', { maximumFractionDigits: 1 });
+				let html = '';
 
-				for (const [key, domId] of Object.entries(METRIC_MAP)) {
-					const container = document.getElementById(domId);
-					if (!container) continue;
-
-					// Find value in data (trying to match the key loosely)
-					// The extraction stored them by the METRIC_MAP key.
-					const valOld = oldM[key] || 0;
-					const valNew = newM[key] || 0;
-					const diff = valNew - valOld;
-
-					// Labels - New specialized ones or standard mapping
-					let title;
-					if (key === 'TA COUNT') title = 'TA Count (50% Appointments)';
-					else if (key === 'READER COUNT') title = 'Reader Count (Hours)';
-					else {
-						title = key.toLowerCase().replace(/\b\w/g, s => s.toUpperCase())
-							.replace('Sch', 'SCH').replace('Ta', 'TA');
+				for (const group of METRIC_GROUPS) {
+					html += `<tr class="group-row"><th scope="row" colspan="4">${group.title}</th></tr>`;
+					for (const key of group.keys) {
+						const valOld = oldM[key] || 0;
+						const valNew = newM[key] || 0;
+						const diff = valNew - valOld;
+						const isTotal = key === 'TOTAL OFFERINGS';
+						// No red/green here. Two more upper-division sections isn't
+						// "good" and two fewer isn't "bad" — these are counts, not
+						// money, and colouring them by sign is how a dashboard starts
+						// looking like it has opinions it hasn't earned. The +/− sign
+						// carries the direction; a flat row just greys out.
+						html += `
+						<tr${isTotal ? ' class="total-row"' : ''}>
+							<th scope="row">${METRIC_LABELS[key] || key}</th>
+							<td class="num num-base">${fmt(valOld)}</td>
+							<td class="num">${fmt(valNew)}</td>
+							<td class="num ${diff === 0 ? 'chg-flat' : ''}">${diff === 0 ? '—' : signed(diff, fmt)}</td>
+						</tr>`;
 					}
-
-					// Negatives are now cyan (#00b2e3)
-					const diffColor = diff > 0 ? "text-green-600" : (diff < 0 ? "text-ucd-cyan" : "text-gray-400");
-					const sign = diff > 0 ? "+" : "";
-
-					// Using metric-header class for symmetric whitespace
-					container.innerHTML = `
-					<div class="metric-box">
-						<h4 class="metric-header">${title}</h4>
-						<div class="metric-body grid grid-cols-3 gap-1 text-center text-sm">
-							<div>
-								<div class="text-[10px] text-gray-400 uppercase">Old</div>
-								<div class="font-bold text-gray-600">${fmt(valOld)}</div>
-							</div>
-							<div>
-								<div class="text-[10px] text-gray-400 uppercase">New</div>
-								<div class="font-bold text-[#002855]">${fmt(valNew)}</div>
-							</div>
-							<div>
-								<div class="text-[10px] text-gray-400 uppercase">Diff</div>
-								<div class="font-bold ${diffColor}">${sign}${fmt(diff)}</div>
-							</div>
-						</div>
-					</div>
-				`;
 				}
+				body.innerHTML = html;
 			}
 
 			function renderCharts(data) {
