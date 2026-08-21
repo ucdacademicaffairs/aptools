@@ -824,6 +824,17 @@
 
 			// The one sentence a reader actually needs, spelled out rather than
 			// left to be inferred from four coloured boxes.
+			//
+			// The figure always appears. "Essentially flat" is a comment on the
+			// number, never a substitute for it — a 0.4% move on a $2M base is
+			// still five figures, and describing that as "held steady" would put
+			// the sentence at odds with the deficit in the table right above it.
+			function movePhrase(subject, diff, pct, verbs) {
+				if (diff === 0) return `${subject} ${verbs.none}`;
+				const size = Math.abs(pct) < NOTABLE_PCT ? 'essentially flat' : `${Math.abs(pct).toFixed(1)}%`;
+				return `${subject} ${diff > 0 ? verbs.up : verbs.down} ${money(Math.abs(diff))} (${size})`;
+			}
+
 			function renderOverviewNote(oldD, newD, oldBal, newBal) {
 				const note = document.getElementById('overview-note');
 				if (!note) return;
@@ -832,16 +843,16 @@
 				const budPct = oldD.totalBudget ? (budDiff / oldD.totalBudget) * 100 : 0;
 				const expPct = oldD.totalExp ? (expDiff / oldD.totalExp) * 100 : 0;
 
-				const budPhrase = Math.abs(budPct) < NOTABLE_PCT
-					? 'The allocated budget is essentially flat'
-					: `The allocated budget ${budDiff > 0 ? 'rose' : 'fell'} ${money(Math.abs(budDiff))} (${Math.abs(budPct).toFixed(1)}%)`;
-				const expPhrase = Math.abs(expPct) < NOTABLE_PCT
-					? 'expenditures held steady'
-					: `expenditures ${expDiff > 0 ? 'rose' : 'fell'} ${money(Math.abs(expDiff))} (${Math.abs(expPct).toFixed(1)}%)`;
+				const budPhrase = movePhrase('The allocated budget', budDiff, budPct,
+					{ up: 'rose', down: 'fell', none: 'was unchanged' });
+				const expPhrase = movePhrase('expenditures', expDiff, expPct,
+					{ up: 'rose', down: 'fell', none: 'were unchanged' });
 
-				const balPhrase = newBal < 0
-					? `That leaves the balance ${money(Math.abs(newBal))} in deficit, against ${oldBal < 0 ? 'a deficit of ' : 'a surplus of '}${money(Math.abs(oldBal))} in the base period.`
-					: `That leaves a surplus of ${money(newBal)}.`;
+				const balPhrase = newBal === 0
+					? 'That leaves the balance at zero.'
+					: newBal < 0
+						? `That leaves the balance ${money(Math.abs(newBal))} in deficit, against ${oldBal < 0 ? 'a deficit of ' : 'a surplus of '}${money(Math.abs(oldBal))} in the base period.`
+						: `That leaves a surplus of ${money(newBal)}.`;
 
 				note.textContent = `${budPhrase} while ${expPhrase}. ${balPhrase}`;
 			}
