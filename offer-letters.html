@@ -635,6 +635,17 @@
 			function normalizeBulkRow(row) {
 				const isHourly = row.type === 'reader' || row.type === 'tutor';
 
+				// Quarter comes out of Excel as anything from "Fall" to "FALL 2026" to
+				// "Fall Quarter". Only the season belongs here — the year comes from the
+				// global year picker — so I keep the season and drop the rest. Left as-is,
+				// a value like "Fall 2026" matches no option, so the dropdown displays
+				// "Fall" while the letter looks up a quarter that doesn't exist and prints
+				// [SERVICE DATES] where the dates should be.
+				const season = String(row.quarter || '').match(/fall|winter|spring/i);
+				row.quarter = season
+					? season[0][0].toUpperCase() + season[0].slice(1).toLowerCase()
+					: 'Fall';
+
 				if (row.type === 'tutor') {
 					row.step = String(row.step).toLowerCase().includes('group') ? 'Group' : 'Individual';
 				} else if (row.type === 'reader') {
@@ -851,6 +862,18 @@
 			// 2850/2860 and GSR is 3282 — all confirmed rather than assumed, because the
 			// systemwide codes I first reached for turned out to be the wrong ones.
 			const JOB_CODES = { ta: '2310', ai: '1506', reader: '2850', tutor: '2860', gsr: '3282' };
+
+			// Rosters list students as "Last, First", so just taking the first word of
+			// the name greeted someone as "Dear Lee,," — their surname, plus the comma
+			// twice over. When the name is inverted, the given name is what comes after
+			// the comma.
+			function firstNameOf(fullName) {
+				const name = String(fullName || '').trim();
+				if (!name) return '';
+				const [surname, given] = name.split(',');
+				const pick = (given && given.trim()) ? given : surname;
+				return pick.trim().split(/\s+/)[0].replace(/,$/, '') || name;
+			}
 
 			// The template also wants "pay period effective dates" — the payroll periods
 			// behind the paychecks, which are NOT the same as the dates checks arrive.
@@ -1216,7 +1239,7 @@
 					<p><strong>To:</strong> ${d.studentName}</p>
 					<p><strong>From:</strong> ${d.headOfDept}</p>
 					<p><strong>Subject:</strong> ${subject}</p>
-					<p>Dear ${d.studentName.split(' ')[0]},</p>
+					<p>Dear ${firstNameOf(d.studentName)},</p>
 					${p1Html}
 					${assignmentHtml}
 					${p2Html}
@@ -1507,7 +1530,7 @@
 						drawMixed([{ text: 'From: ', bold: true }, { text: d.headOfDept, bold: false }]);
 						drawMixed([{ text: 'Subject: ', bold: true }, { text: subject, bold: false }]);
 						drawBlankLine();
-						drawParagraph(`Dear ${d.studentName.split(' ')[0]},`);
+						drawParagraph(`Dear ${firstNameOf(d.studentName)},`);
 						drawBlankLine(0.5);
 
 						// ASE letters open with the template's "Written Notice of Appointment"
