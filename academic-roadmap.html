@@ -75,7 +75,8 @@
             background-color: var(--tone);
         }
 
-        .swatch.ring { background-color: transparent; border: 2px solid var(--tone); }
+        /* Not .ring: Tailwind already uses that name for a blue focus glow */
+        .swatch-ring { background-color: transparent; border: 2px solid var(--tone); }
 
         .ledger {
             background-color: white;
@@ -293,8 +294,8 @@
                         <span class="t-merit"><i class="swatch"></i>Merit</span>
                         <span class="t-promotion"><i class="swatch"></i>Promotion</span>
                         <span class="t-mil"><i class="swatch"></i>Merit in Lieu</span>
-                        <span class="m-faster"><i class="swatch ring"></i>Step Plus / Accelerated</span>
-                        <span class="m-slower"><i class="swatch ring"></i>Postponed / Lateral</span>
+                        <span class="m-faster"><i class="swatch swatch-ring"></i>Step Plus / Accelerated</span>
+                        <span class="m-slower"><i class="swatch swatch-ring"></i>Postponed / Lateral</span>
                     </div>
                 </div>
                 <svg id="lanes-chart" class="w-full block" role="img" aria-label="Projected rank and step path"></svg>
