@@ -432,60 +432,106 @@
             f.addEventListener('change', generateRoadmap);
         });
 
+        // Where one review leaves someone. The dropdown sync and the roadmap both go through this,
+        // so they can't disagree about which reviews are promotions.
+        function applyReview(series, rank, step, forecastType) {
+            const rankData = APM_LOGIC[series][rank];
+            const isPromotion = rankData.promotionEligible.includes(step) && forecastType !== 'merit-lieu';
+
+            // Define standard advancement offsets
+            let stepMod = 1.0; // Standard is 1-step
+            if (forecastType === 'accel-1.5') stepMod = 1.5;
+            if (forecastType === 'accel-2.0') stepMod = 2.0;
+            if (forecastType === 'accel-lateral') stepMod = 0.0; // Lateral promotion target
+
+            if (isPromotion) {
+                const nominalPromotionStep = (rank === 'assistant') ? step - 3 : step - 2;
+                // Apply forecast offset relative to standard. Promotion usually at least Step 1
+                return { rank: rankData.nextRank, step: Math.max(1, nominalPromotionStep + (stepMod - 1.0)), isPromotion };
+            }
+
+            if (step === 'Above Scale') return { rank, step, isPromotion };
+
+            const maxStep = rankData.steps[rankData.steps.length - 1];
+            let nextStep = step + stepMod;
+            if (nextStep > maxStep || step >= maxStep) {
+                nextStep = (rank === 'full') ? 'Above Scale' : maxStep;
+            }
+            return { rank, step: nextStep, isPromotion };
+        }
+
+        function reviewDuration(series, rank, step, forecastType) {
+            let dur = APM_LOGIC[series][rank].duration(step);
+            if (forecastType === 'defer-1') dur += 1;
+            else if (forecastType === 'accel-time') dur = Math.max(1, dur - 1);
+            return dur;
+        }
+
+        // A review that has already taken effect is history, so the scenario builder's "upcoming"
+        // slots start from the first normal-cycle review that hasn't.
+        function hasTakenEffect(fromDate, dur, today) {
+            const effective = new Date(fromDate);
+            effective.setFullYear(effective.getFullYear() + dur);
+            return effective < today;
+        }
+
+        function milestoneLabel(forecastType, isPromotion) {
+            if (forecastType === 'accel-lateral') return 'Lateral Promotion Effective';
+            if (forecastType === 'merit-lieu') return 'Merit in Lieu of Promotion Effective';
+            const kind = isPromotion ? 'Promotion' : 'Merit';
+            if (forecastType === 'accel-1.5' || forecastType === 'accel-2.0') return `Step Plus ${kind} Effective`;
+            if (forecastType === 'accel-time') return `Accelerated ${kind} Effective`;
+            if (forecastType === 'defer-1') return `Postponed ${kind} Effective`;
+            return `${kind} Effective`;
+        }
+
+        function reviewTypeName(forecastType, isPromotion) {
+            if (forecastType === 'merit-lieu') return 'Merit in Lieu of Promotion';
+            if (!isPromotion) return 'Merit';
+            return forecastType === 'accel-lateral' ? 'Lateral Promotion' : 'Promotion';
+        }
+
         function syncForecastDropdowns() {
             const series = inputs.series.value;
             let currentRank = inputs.rank.value;
             let currentStep = parseFloat(inputs.step.value) || 1;
 
-            inputs.forecasts.forEach((dropdown, idx) => {
+            // Walk past the reviews that have already happened, the same way generateRoadmap does
+            const today = new Date();
+            const date = new Date(inputs.date.value + 'T00:00:00');
+            if (!isNaN(date)) {
+                let dur = reviewDuration(series, currentRank, currentStep, 'normal');
+                while (hasTakenEffect(date, dur, today)) {
+                    date.setFullYear(date.getFullYear() + dur);
+                    ({ rank: currentRank, step: currentStep } = applyReview(series, currentRank, currentStep, 'normal'));
+                    dur = reviewDuration(series, currentRank, currentStep, 'normal');
+                }
+            }
+
+            inputs.forecasts.forEach(dropdown => {
                 const rankData = APM_LOGIC[series][currentRank];
                 const isPromotionBarrier = rankData.promotionEligible.includes(currentStep);
+                // No lateral promotion from a rank's first eligible step (Assistant 4, Associate 3):
+                // it would land below Step 1, which is just a normal promotion.
+                const canLateral = isPromotionBarrier && currentStep > rankData.promotionEligible[0];
+                // Merit in Lieu only if there's a next step in the current rank
+                const maxStep = rankData.steps[rankData.steps.length - 1];
+                const canMeritInLieu = isPromotionBarrier && currentStep < maxStep;
+
                 const lateralOption = dropdown.querySelector('option[value="accel-lateral"]');
                 const meritLieuOption = dropdown.querySelector('option[value="merit-lieu"]');
-                
-                if (isPromotionBarrier) {
-                    lateralOption.disabled = false;
-                    lateralOption.style.display = 'block';
+                lateralOption.disabled = !canLateral;
+                lateralOption.style.display = canLateral ? 'block' : 'none';
+                meritLieuOption.disabled = !canMeritInLieu;
+                meritLieuOption.style.display = canMeritInLieu ? 'block' : 'none';
 
-                    // Merit in Lieu only if there's a next step in the current rank
-                    const maxStep = rankData.steps[rankData.steps.length - 1];
-                    if (currentStep < maxStep) {
-                        meritLieuOption.disabled = false;
-                        meritLieuOption.style.display = 'block';
-                    } else {
-                        meritLieuOption.disabled = true;
-                        meritLieuOption.style.display = 'none';
-                        if (dropdown.value === 'merit-lieu') dropdown.value = 'normal';
-                    }
-                } else {
-                    lateralOption.disabled = true;
-                    lateralOption.style.display = 'none';
-                    meritLieuOption.disabled = true;
-                    meritLieuOption.style.display = 'none';
-                    // Reset if invalidly selected
-                    if (dropdown.value === 'accel-lateral' || dropdown.value === 'merit-lieu') {
-                        dropdown.value = 'normal';
-                    }
+                // Reset if invalidly selected
+                if ((dropdown.value === 'accel-lateral' && !canLateral) || (dropdown.value === 'merit-lieu' && !canMeritInLieu)) {
+                    dropdown.value = 'normal';
                 }
 
                 // Simulate next state for the NEXT dropdown
-                const forecastType = dropdown.value;
-                let stepMod = 1.0;
-                if (forecastType === 'accel-1.5') stepMod = 1.5;
-                if (forecastType === 'accel-2.0') stepMod = 2.0;
-                if (forecastType === 'accel-lateral') stepMod = 0.0;
-
-                if (isPromotionBarrier && forecastType !== 'merit-lieu') {
-                    let nominalPromotionStep = (currentRank === 'assistant') ? currentStep - 3 : currentStep - 2;
-                    currentRank = rankData.nextRank;
-                    currentStep = Math.max(1, nominalPromotionStep + (stepMod - 1.0));
-                } else {
-                    currentStep = currentStep + stepMod;
-                    const maxStep = rankData.steps[rankData.steps.length - 1];
-                    if (currentStep > maxStep && currentRank !== 'full') {
-                        currentStep = maxStep;
-                    }
-                }
+                ({ rank: currentRank, step: currentStep } = applyReview(series, currentRank, currentStep, dropdown.value));
             });
         }
 
@@ -499,6 +545,7 @@
             const effDateString = inputs.date.value;
             if (!effDateString) return;
             const effDate = new Date(effDateString + 'T00:00:00'); // Ensure local time
+            const today = new Date();
 
             elements.initial.classList.add('hidden');
             elements.output.classList.remove('hidden');
@@ -518,27 +565,29 @@
                 badge: 'Current'
             });
 
-            // Project 15 years
-            const maxYears = 15;
-            let yearsProjected = 0;
-            let reviewCounter = 0;
+            // Project 15 years past today (or past the effective date, if that's later), so an older
+            // effective date still shows what's coming
+            const horizon = new Date(Math.max(effDate, today));
+            const aboveScaleCutoff = new Date(horizon);
+            horizon.setFullYear(horizon.getFullYear() + 15);
+            aboveScaleCutoff.setFullYear(aboveScaleCutoff.getFullYear() + 10);
+            let forecastsStarted = false;
+            let forecastIndex = 0;
 
-            while (yearsProjected < maxYears) {
+            while (currentDate < horizon) {
                 const rankData = APM_LOGIC[series][currentRank];
-                let dur = rankData.duration(currentStep);
 
-                const forecastType = (reviewCounter < inputs.forecasts.length)
-                    ? inputs.forecasts[reviewCounter].value
-                    : 'normal';
-
-                const isPlanned = (reviewCounter < inputs.forecasts.length) && forecastType !== 'normal';
-
-                // Handle Forecaster
-                if (forecastType === 'defer-1') {
-                    dur += 1;
-                } else if (forecastType === 'accel-time') {
-                    dur = Math.max(1, dur - 1);
+                // Handle Forecaster: the three slots belong to the first reviews still to come
+                if (!forecastsStarted && !hasTakenEffect(currentDate, reviewDuration(series, currentRank, currentStep, 'normal'), today)) {
+                    forecastsStarted = true;
                 }
+                const forecastType = (forecastsStarted && forecastIndex < inputs.forecasts.length)
+                    ? inputs.forecasts[forecastIndex].value
+                    : 'normal';
+                if (forecastsStarted) forecastIndex++;
+
+                const isPlanned = forecastType !== 'normal';
+                const dur = reviewDuration(series, currentRank, currentStep, forecastType);
 
                 // 1. Dossier Prep Milestone (Fall of the year before effective date)
                 const dossierYear = currentDate.getFullYear() + dur - 1;
@@ -553,82 +602,29 @@
                 });
 
                 currentDate.setFullYear(currentDate.getFullYear() + dur);
-                yearsProjected += dur;
 
-                const isStandardPromotion = rankData.promotionEligible.includes(currentStep);
-                const isMeritInLieu = (forecastType === 'merit-lieu');
-                const isPromotion = isStandardPromotion && !isMeritInLieu;
-                let nextRank = currentRank;
-                let nextStep = currentStep; // Start with baseline
+                const next = applyReview(series, currentRank, currentStep, forecastType);
 
-                // Define standard advancement offsets
-                let stepMod = 1.0; // Standard is 1-step
-                if (forecastType === 'accel-1.5') stepMod = 1.5;
-                if (forecastType === 'accel-2.0') stepMod = 2.0;
-                if (forecastType === 'accel-lateral') stepMod = 0.0; // Lateral promotion target
-
-                if (isPromotion) {
-                    let nominalPromotionStep = (currentRank === 'assistant') ? currentStep - 3 : currentStep - 2;
-                    nextRank = rankData.nextRank;
-                    
-                    // Apply forecast offset relative to standard
-                    nextStep = nominalPromotionStep + (stepMod - 1.0);
-                    nextStep = Math.max(1, nextStep); // Promotion usually at least Step 1
-                } else {
-                    if (currentStep === 'Above Scale') {
-                        nextStep = 'Above Scale';
-                    } else {
-                        const maxStep = rankData.steps[rankData.steps.length - 1];
-                        nextStep = currentStep + stepMod;
-
-                        if (typeof nextStep === 'number' && nextStep > maxStep) {
-                            if (currentRank === 'full') {
-                                nextStep = 'Above Scale';
-                            } else {
-                                nextStep = maxStep;
-                            }
-                        } else if (currentStep >= maxStep) {
-                            if (currentRank === 'full') {
-                                nextStep = 'Above Scale';
-                            } else {
-                                nextStep = maxStep;
-                            }
-                        }
-                    }
-                }
-
-                let milestoneLabel = isPromotion ? 'Promotion Effective' : 'Merit Effective';
-                if (forecastType === 'accel-lateral') {
-                    milestoneLabel = 'Lateral Promotion Effective';
-                } else if (forecastType.includes('accel-1.5') || forecastType.includes('accel-2.0')) {
-                    milestoneLabel = 'Step Plus Merit Effective';
-                } else if (forecastType === 'accel-time') {
-                    milestoneLabel = 'Accelerated Review Effective';
-                } else if (forecastType === 'defer-1') {
-                    milestoneLabel = 'Postponed Review Effective';
-                }
-
-                const detailStr = nextStep === 'Above Scale' 
-                    ? `${APM_LOGIC[series][nextRank].name}, Above Scale` 
-                    : `${APM_LOGIC[series][nextRank].name}, Step ${nextStep}`;
+                const detailStr = next.step === 'Above Scale'
+                    ? `${APM_LOGIC[series][next.rank].name}, Above Scale`
+                    : `${APM_LOGIC[series][next.rank].name}, Step ${next.step}`;
 
                 roadmap.push({
-                    type: isPromotion ? 'promotion' : 'merit',
-                    label: milestoneLabel,
+                    type: next.isPromotion ? 'promotion' : 'merit',
+                    label: milestoneLabel(forecastType, next.isPromotion),
+                    reviewType: reviewTypeName(forecastType, next.isPromotion),
                     detail: detailStr,
                     date: new Date(currentDate),
-                    badge: isPromotion ? 'Promotion' : (isPlanned ? 'Planned' : 'Merit')
+                    badge: next.isPromotion ? 'Promotion' : (isPlanned ? 'Planned' : 'Merit')
                 });
 
-                currentRank = nextRank;
-                currentStep = nextStep;
-                reviewCounter++;
+                currentRank = next.rank;
+                currentStep = next.step;
 
-                if (currentStep === 'Above Scale' && yearsProjected > 10) break;
+                if (currentStep === 'Above Scale' && currentDate > aboveScaleCutoff) break;
             }
 
             // Post-process statuses based on today's date
-            const today = new Date();
             let foundNext = false;
 
             roadmap.forEach(item => {
@@ -686,14 +682,17 @@
         }
 
         function updateSummary(roadmap) {
-            const firstAction = roadmap.find(r => r.type !== 'current');
-            if (!firstAction) return;
-
-            const target = firstAction.type === 'dossier' ? roadmap[roadmap.indexOf(firstAction) + 1] : firstAction;
+            // The next review that hasn't taken effect yet, not simply the first one after the effective date
+            const today = new Date();
+            const target = roadmap.find(r => (r.type === 'merit' || r.type === 'promotion') && r.date >= today);
+            if (!target) {
+                elements.nextReviewYear.innerText = elements.nextReviewType.innerText = elements.nextEffDate.innerText = '—';
+                return;
+            }
 
             const year = target.date.getFullYear();
             elements.nextReviewYear.innerText = `AY ${year - 1}-${year.toString().slice(-2)}`;
-            elements.nextReviewType.innerText = target.badge;
+            elements.nextReviewType.innerText = target.reviewType;
             elements.nextEffDate.innerText = target.date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
         }
 
