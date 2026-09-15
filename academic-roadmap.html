@@ -25,110 +25,96 @@
             --ucd-cyan: #00b2e3;
         }
 
-        .roadmap-container {
-            position: relative;
-            padding-left: 9rem;
-        }
+        /* Review colors: merit is UCD blue, promotion is gold, and merit in lieu is the orange "bad result".
+           Modifiers are teal when the pace is faster and gray when it's slower. */
+        .t-merit { --tone: #002855; --tone-bg: rgba(0, 40, 85, 0.08); --tone-text: #002855; }
+        .t-promotion { --tone: #FFBF00; --tone-bg: rgba(255, 191, 0, 0.2); --tone-text: #7a5800; }
+        .t-mil { --tone: #ea7a1e; --tone-bg: #fff1e3; --tone-text: #9a4a0b; }
+        .m-faster { --tone: #3fa877; --tone-bg: #e3f5eb; --tone-text: #1f6b47; }
+        .m-slower { --tone: #9ca3af; --tone-bg: #f3f4f6; --tone-text: #4b5563; }
 
-        .roadmap-line {
-            position: absolute;
-            left: 7.25rem;
-            /* Moved line slightly right */
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            background-color: #e5e7eb;
-            border-radius: 2px;
-        }
-
-        .milestone {
-            position: relative;
-            margin-bottom: 2.5rem;
-            /* Increased vertical spacing */
-            padding: 1rem;
-            border-radius: 0.5rem;
-            border: 1px solid #e5e7eb;
-            background: white;
-            transition: box-shadow 0.2s;
-        }
-
-        .milestone:hover {
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-        }
-
-        .milestone::before {
-            content: '';
-            position: absolute;
-            left: -2.25rem;
-            top: 1.3rem;
-            /* Slightly higher to vertically center with the text */
-            width: 1rem;
-            height: 1rem;
-            background: white;
-            border: 3px solid var(--ucd-blue);
-            border-radius: 50%;
-            z-index: 10;
-        }
-
-        .milestone.promotion::before {
-            border-color: var(--ucd-gold);
-            background: var(--ucd-gold);
-        }
-
-        .milestone.current::before {
-            background: var(--ucd-blue);
-            box-shadow: 0 0 0 4px rgba(0, 40, 85, 0.2);
-        }
-
-        .milestone.dossier::before {
-            border-style: dashed;
-            width: 0.75rem;
-            height: 0.75rem;
-            left: -2.12rem;
-            top: 1.42rem;
-            /* Adjusted to keep dossier circles centered */
-        }
-
-        .badge-merit {
-            background-color: rgba(0, 40, 85, 0.1);
-            color: var(--ucd-blue);
-        }
-
-        .badge-promotion {
-            background-color: rgba(255, 191, 0, 0.2);
-            color: #856404;
-        }
-
-        .badge-dossier {
-            background-color: #f3f4f6;
-            color: #4b5563;
-        }
-
-        .badge-past {
-            background-color: #f1f5f9;
-            color: #64748b;
-            opacity: 0.8;
-        }
-
-        .badge-pending {
-            background-color: #fffbeb;
-            color: #92400e;
-            border: 1px solid #fde68a;
-        }
-
-        .timeline-year {
-            position: absolute;
-            left: -9.1rem;
-            /* Added gap between text and dot */
-            top: 1.45rem;
-            /* Adjusted for vertical center with dot */
-            font-size: 0.75rem;
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.68rem;
             font-weight: 700;
-            color: #6b7280;
-            text-align: right;
-            width: 6.5rem;
             line-height: 1;
-            /* Tight line height for easier centering */
+            padding: 0.3rem 0.45rem;
+            border-radius: 0.25rem;
+            background-color: var(--tone-bg);
+            color: var(--tone-text);
+            white-space: nowrap;
+        }
+
+        .status-pill {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+
+        .status-next { background-color: #002855; color: white; }
+        .status-planned { border: 1px solid #d1d5db; color: #4b5563; }
+
+        .lanes-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem 1rem;
+            font-size: 0.7rem;
+            color: #6b7280;
+        }
+
+        .lanes-legend span { display: inline-flex; align-items: center; gap: 0.375rem; }
+
+        .swatch {
+            display: inline-block;
+            width: 0.625rem;
+            height: 0.625rem;
+            border-radius: 50%;
+            background-color: var(--tone);
+        }
+
+        .swatch.ring { background-color: transparent; border: 2px solid var(--tone); }
+
+        .ledger {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        .ledger-row {
+            display: grid;
+            grid-template-columns: 5rem 10rem minmax(0, 1fr) 12.5rem 3.75rem;
+            grid-template-areas: "ay tags rank dates status";
+            column-gap: 0.75rem;
+            row-gap: 0.3rem;
+            align-items: center;
+            padding: 0.6rem 0.875rem 0.6rem 0.75rem;
+            border-left: 4px solid var(--tone);
+            border-top: 1px solid #eef0f3;
+            font-size: 0.8125rem;
+        }
+
+        .ledger-row:first-child { border-top: 0; }
+        .ledger-row:hover { background-color: #f8fafc; }
+        .ledger-now { --tone: #cbd5e1; background-color: #f8fafc; }
+
+        .ledger-ay { grid-area: ay; font-size: 0.7rem; font-weight: 700; color: #6b7280; }
+        .ledger-tags { grid-area: tags; display: flex; flex-wrap: wrap; gap: 0.25rem; }
+        .ledger-rank { grid-area: rank; }
+        .ledger-dates { grid-area: dates; }
+        .ledger-status { grid-area: status; justify-self: end; }
+        .ledger-note { font-size: 0.7rem; color: #6b7280; line-height: 1.45; }
+        .ledger-flag { color: #b45309; font-weight: 700; }
+        .ledger-dates div { white-space: nowrap; }
+
+        @media (max-width: 760px) {
+            .ledger-row {
+                grid-template-columns: minmax(0, 1fr) auto;
+                grid-template-areas: "ay status" "tags tags" "rank rank" "dates dates";
+            }
         }
 
         @media print {
@@ -151,25 +137,22 @@
                 padding: 0 !important;
             }
 
-            .roadmap-container {
-                page-break-inside: avoid;
-            }
-
-            .milestone {
-                break-inside: avoid;
-                border: 1px solid #eee !important;
-                box-shadow: none !important;
-                margin-bottom: 1.5rem !important;
-            }
-
             h1 {
                 font-size: 24pt !important;
                 margin-bottom: 10pt !important;
             }
 
-            .roadmap-line {
-                background-color: #eee !important;
+            .ledger-row {
+                break-inside: avoid;
+            }
+
+            .ledger-row,
+            .tag,
+            .status-pill,
+            .swatch,
+            #lanes-chart {
                 print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
             }
         }
     </style>
@@ -303,12 +286,21 @@
                 </div>
             </div>
 
-            <div class="roadmap-container mt-12">
-                <div class="roadmap-line"></div>
-                <div id="timeline-content">
-                    <!-- Milestones injected here -->
+            <div class="card mb-4" style="padding: 1rem 1.25rem;">
+                <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+                    <p class="text-[10px] font-bold uppercase text-gray-400">Path at a Glance</p>
+                    <div class="lanes-legend">
+                        <span class="t-merit"><i class="swatch"></i>Merit</span>
+                        <span class="t-promotion"><i class="swatch"></i>Promotion</span>
+                        <span class="t-mil"><i class="swatch"></i>Merit in Lieu</span>
+                        <span class="m-faster"><i class="swatch ring"></i>Step Plus / Accelerated</span>
+                        <span class="m-slower"><i class="swatch ring"></i>Postponed / Lateral</span>
+                    </div>
                 </div>
+                <svg id="lanes-chart" class="w-full block" role="img" aria-label="Projected rank and step path"></svg>
             </div>
+
+            <div id="ledger" class="ledger"></div>
 
             <p class="mt-8 text-xs text-gray-500 italic p-4 bg-gray-50 rounded border border-dashed text-center">
                 Disclaimer: Review timelines are subject to ... review. Please confirm all dates with your departmental
@@ -393,7 +385,8 @@
         const elements = {
             output: document.getElementById('roadmap-output'),
             initial: document.getElementById('initial-state'),
-            timeline: document.getElementById('timeline-content'),
+            lanes: document.getElementById('lanes-chart'),
+            ledger: document.getElementById('ledger'),
             summaryTitle: document.getElementById('summary-title'),
             nextReviewYear: document.getElementById('next-review-year'),
             nextReviewType: document.getElementById('next-review-type'),
@@ -466,46 +459,40 @@
             return dur;
         }
 
-        // A review that has already taken effect is history, so the scenario builder's "upcoming"
-        // slots start from the first normal-cycle review that hasn't.
-        function hasTakenEffect(fromDate, dur, today) {
-            const effective = new Date(fromDate);
-            effective.setFullYear(effective.getFullYear() + dur);
-            return effective < today;
+        function nextJulyFirst(today) {
+            const date = new Date(today.getFullYear(), 6, 1);
+            if (date <= today) date.setFullYear(date.getFullYear() + 1);
+            return date;
         }
 
-        function milestoneLabel(forecastType, isPromotion) {
-            if (forecastType === 'accel-lateral') return 'Lateral Promotion Effective';
-            if (forecastType === 'merit-lieu') return 'Merit in Lieu of Promotion Effective';
-            const kind = isPromotion ? 'Promotion' : 'Merit';
-            if (forecastType === 'accel-1.5' || forecastType === 'accel-2.0') return `Step Plus ${kind} Effective`;
-            if (forecastType === 'accel-time') return `Accelerated ${kind} Effective`;
-            if (forecastType === 'defer-1') return `Postponed ${kind} Effective`;
-            return `${kind} Effective`;
+        const KIND_LABELS = { merit: 'Merit', promotion: 'Promotion', mil: 'Merit in Lieu of Promotion' };
+
+        const MODIFIERS = {
+            'accel-1.5': { label: 'Step Plus +0.5', tone: 'm-faster' },
+            'accel-2.0': { label: 'Step Plus +1.0', tone: 'm-faster' },
+            'accel-time': { label: 'Accelerated −1 Yr', tone: 'm-faster' },
+            'defer-1': { label: 'Postponed +1 Yr', tone: 'm-slower' },
+            'accel-lateral': { label: 'Lateral (0-Step)', tone: 'm-slower' }
+        };
+
+        function reviewTypeName(review) {
+            if (review.kind === 'promotion' && review.forecastType === 'accel-lateral') return 'Lateral Promotion';
+            return KIND_LABELS[review.kind];
         }
 
-        function reviewTypeName(forecastType, isPromotion) {
-            if (forecastType === 'merit-lieu') return 'Merit in Lieu of Promotion';
-            if (!isPromotion) return 'Merit';
-            return forecastType === 'accel-lateral' ? 'Lateral Promotion' : 'Promotion';
+        function stepName(series, rank, step) {
+            const name = APM_LOGIC[series][rank].name;
+            return step === 'Above Scale' ? `${name}, Above Scale` : `${name}, Step ${step}`;
+        }
+
+        function formatDate(date) {
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
         }
 
         function syncForecastDropdowns() {
             const series = inputs.series.value;
             let currentRank = inputs.rank.value;
             let currentStep = parseFloat(inputs.step.value) || 1;
-
-            // Walk past the reviews that have already happened, the same way generateRoadmap does
-            const today = new Date();
-            const date = new Date(inputs.date.value + 'T00:00:00');
-            if (!isNaN(date)) {
-                let dur = reviewDuration(series, currentRank, currentStep, 'normal');
-                while (hasTakenEffect(date, dur, today)) {
-                    date.setFullYear(date.getFullYear() + dur);
-                    ({ rank: currentRank, step: currentStep } = applyReview(series, currentRank, currentStep, 'normal'));
-                    dur = reviewDuration(series, currentRank, currentStep, 'normal');
-                }
-            }
 
             inputs.forecasts.forEach(dropdown => {
                 const rankData = APM_LOGIC[series][currentRank];
@@ -534,6 +521,8 @@
             });
         }
 
+        let lastRender = null;
+
         function generateRoadmap() {
             // ALWAYS sync dropdowns before calculating
             syncForecastDropdowns();
@@ -544,156 +533,187 @@
             const effDateString = inputs.date.value;
             if (!effDateString) return;
             const effDate = new Date(effDateString + 'T00:00:00'); // Ensure local time
+            if (isNaN(effDate)) return;
             const today = new Date();
 
             elements.initial.classList.add('hidden');
             elements.output.classList.remove('hidden');
 
-            const roadmap = [];
+            // The step entered is where they are now, and it can't tell us how they got there, so nothing is
+            // projected into the past: every review on the roadmap is still to come.
+            const startDate = new Date(Math.max(effDate, today));
+            const horizon = new Date(startDate);
+            horizon.setFullYear(horizon.getFullYear() + 15);
+            const aboveScaleCutoff = new Date(startDate);
+            aboveScaleCutoff.setFullYear(aboveScaleCutoff.getFullYear() + 10);
+
+            const reviews = [];
             let currentRank = rank;
             let currentStep = step;
             let currentDate = new Date(effDate);
 
-            // Add Current State
-            roadmap.push({
-                type: 'current',
-                label: 'Current Status',
-                rank: currentRank,
-                step: currentStep,
-                date: new Date(currentDate),
-                badge: 'Current'
-            });
-
-            // Project 15 years past today (or past the effective date, if that's later), so an older
-            // effective date still shows what's coming
-            const horizon = new Date(Math.max(effDate, today));
-            const aboveScaleCutoff = new Date(horizon);
-            horizon.setFullYear(horizon.getFullYear() + 15);
-            aboveScaleCutoff.setFullYear(aboveScaleCutoff.getFullYear() + 10);
-            let forecastsStarted = false;
-            let forecastIndex = 0;
-
             while (currentDate < horizon) {
                 const rankData = APM_LOGIC[series][currentRank];
-
-                // Handle Forecaster: the three slots belong to the first reviews still to come
-                if (!forecastsStarted && !hasTakenEffect(currentDate, reviewDuration(series, currentRank, currentStep, 'normal'), today)) {
-                    forecastsStarted = true;
-                }
-                const forecastType = (forecastsStarted && forecastIndex < inputs.forecasts.length)
-                    ? inputs.forecasts[forecastIndex].value
+                const forecastType = (reviews.length < inputs.forecasts.length)
+                    ? inputs.forecasts[reviews.length].value
                     : 'normal';
-                if (forecastsStarted) forecastIndex++;
 
-                const isPlanned = forecastType !== 'normal';
-                const dur = reviewDuration(series, currentRank, currentStep, forecastType);
+                const effective = new Date(currentDate);
+                effective.setFullYear(effective.getFullYear() + reviewDuration(series, currentRank, currentStep, forecastType));
 
-                // 1. Dossier Prep Milestone (Fall of the year before effective date)
-                const dossierYear = currentDate.getFullYear() + dur - 1;
-                const dossierDate = new Date(dossierYear, 8, 1); // September 1st
-
-                roadmap.push({
-                    type: 'dossier',
-                    label: 'Dossier Submission',
-                    detail: `Submit dossier for ${rankData.promotionEligible.includes(currentStep) ? 'Promotion' : 'Merit'} review`,
-                    date: dossierDate,
-                    badge: isPlanned ? 'Planned' : 'Preparation'
-                });
-
-                currentDate.setFullYear(currentDate.getFullYear() + dur);
+                // A cycle that should already have taken effect evidently hasn't (they're still at this step),
+                // so it lands on the next July 1 still ahead
+                let delayedFrom = null;
+                if (effective < today) {
+                    delayedFrom = new Date(effective);
+                    effective.setTime(nextJulyFirst(today).getTime());
+                }
 
                 const next = applyReview(series, currentRank, currentStep, forecastType);
 
-                const detailStr = next.step === 'Above Scale'
-                    ? `${APM_LOGIC[series][next.rank].name}, Above Scale`
-                    : `${APM_LOGIC[series][next.rank].name}, Step ${next.step}`;
-
-                roadmap.push({
-                    type: next.isPromotion ? 'promotion' : 'merit',
-                    label: milestoneLabel(forecastType, next.isPromotion),
-                    reviewType: reviewTypeName(forecastType, next.isPromotion),
-                    detail: detailStr,
-                    date: new Date(currentDate),
-                    badge: next.isPromotion ? 'Promotion' : (isPlanned ? 'Planned' : 'Merit')
+                reviews.push({
+                    forecastType,
+                    kind: forecastType === 'merit-lieu' ? 'mil' : (next.isPromotion ? 'promotion' : 'merit'),
+                    modifier: MODIFIERS[forecastType] || null,
+                    promotionReview: rankData.promotionEligible.includes(currentStep),
+                    from: { rank: currentRank, step: currentStep },
+                    to: { rank: next.rank, step: next.step },
+                    dossier: new Date(effective.getFullYear() - 1, 8, 1), // September 1st of the year before
+                    effective,
+                    delayedFrom,
+                    planned: forecastType !== 'normal'
                 });
 
                 currentRank = next.rank;
                 currentStep = next.step;
+                currentDate = new Date(effective);
 
                 if (currentStep === 'Above Scale' && currentDate > aboveScaleCutoff) break;
             }
 
-            // Post-process statuses based on today's date
-            let foundNext = false;
-
-            roadmap.forEach(item => {
-                if (item.type === 'current') return;
-
-                if (item.date < today) {
-                    item.badge = 'Past';
-                    item.statusClass = 'badge-past';
-                } else if (!foundNext) {
-                    item.badge = 'Pending';
-                    item.statusClass = 'badge-pending';
-                    foundNext = true;
-                }
-            });
-
-            renderTimeline(roadmap);
-            updateSummary(roadmap);
+            lastRender = { series, today, start: { rank, step, date: startDate, effDate }, reviews };
+            renderLanes();
+            renderLedger();
+            updateSummary(reviews);
         }
 
-        function renderTimeline(roadmap) {
-            elements.timeline.innerHTML = '';
-            roadmap.forEach(item => {
-                const div = document.createElement('div');
-                div.className = `milestone ${item.type}`;
+        // A simplified lane chart: one lane per rank, each review a dot colored by type
+        function renderLanes() {
+            const { series, start, reviews } = lastRender;
+            const svg = elements.lanes;
+            const W = Math.max(320, svg.clientWidth || 760);
+            const RANKS = ['assistant', 'associate', 'full'];
+            const SHORT = { assistant: 'Assistant', associate: 'Associate', full: 'Full' };
+            const lanes = RANKS.slice(RANKS.indexOf(start.rank));
+            const LEFT = 74, RIGHT = 16, TOP = 24, GAP = 38;
+            const H = TOP + GAP * (lanes.length - 1) + 30;
+            const laneY = r => TOP + GAP * lanes.indexOf(r);
 
-                const year = item.date.getFullYear();
-                const month = item.date.getMonth();
+            const t0 = start.date.getTime();
+            const t1 = reviews.length ? reviews[reviews.length - 1].effective.getTime() : t0 + 1;
+            const x = d => LEFT + 12 + (d.getTime() - t0) / (t1 - t0) * (W - LEFT - RIGHT - 24);
 
-                // Determine Academic Year string
-                // If it's July or later, it's the start of AY (Year)-(Year+1)
-                // If it's June or earlier, it's the end of AY (Year-1)-(Year)
-                let ay;
-                if (month >= 6) { // July (6) to Dec (11)
-                    ay = `AY ${year}-${(year + 1).toString().slice(-2)}`;
-                } else {
-                    ay = `AY ${year - 1}-${year.toString().slice(-2)}`;
+            // Points bunch up on narrow screens, so a label that would overlap one already drawn is skipped
+            // (the dot's tooltip still has it)
+            const drawn = [];
+            const label = (lx, ly, text, attrs) => {
+                if (drawn.some(d => d.y === ly && Math.abs(d.x - lx) < 22)) return '';
+                drawn.push({ x: lx, y: ly });
+                return `<text x="${lx}" y="${ly}" font-size="10" text-anchor="middle" ${attrs}>${text}</text>`;
+            };
+
+            let out = '';
+            lanes.forEach(r => {
+                out += `<line x1="${LEFT}" x2="${W - RIGHT}" y1="${laneY(r)}" y2="${laneY(r)}" stroke="#e5e7eb" stroke-width="1"/>`;
+                out += `<text x="0" y="${laneY(r) + 4}" font-size="11" font-weight="700" fill="#6b7280">${SHORT[r]}</text>`;
+            });
+
+            const y0 = start.date.getFullYear(), y1 = new Date(t1).getFullYear();
+            const every = Math.max(1, Math.ceil((y1 - y0) / 6));
+            for (let y = y0 + 1; y <= y1; y += every) {
+                out += `<text x="${x(new Date(y, 6, 1))}" y="${H - 2}" font-size="10" fill="#9ca3af" text-anchor="middle">${y}</text>`;
+            }
+
+            const points = [{ x: x(start.date), y: laneY(start.rank) }]
+                .concat(reviews.map(r => ({ x: x(r.effective), y: laneY(r.to.rank) })));
+            out += `<polyline points="${points.map(p => `${p.x},${p.y}`).join(' ')}" fill="none" stroke="#cbd5e1" stroke-width="2"/>`;
+
+            out += `<circle cx="${points[0].x}" cy="${points[0].y}" r="5" fill="white" stroke="#002855" stroke-width="2.5"><title>Now: ${stepName(series, start.rank, start.step)}</title></circle>`;
+            out += label(points[0].x, points[0].y - 13, 'Now', 'font-weight="700" fill="#002855"');
+
+            reviews.forEach((r, i) => {
+                const p = points[i + 1];
+                const tip = `${reviewTypeName(r)}${r.modifier ? ` (${r.modifier.label})` : ''}: ${stepName(series, r.to.rank, r.to.step)}, effective ${formatDate(r.effective)}`;
+                out += `<g class="t-${r.kind}">`;
+                if (r.modifier) {
+                    out += `<circle class="${r.modifier.tone}" cx="${p.x}" cy="${p.y}" r="9.5" fill="none" style="stroke: var(--tone)" stroke-width="2.5"/>`;
                 }
+                out += `<circle cx="${p.x}" cy="${p.y}" r="${r.kind === 'promotion' ? 6.5 : 5}" style="fill: var(--tone)"><title>${tip}</title></circle>`;
+                out += label(p.x, p.y - 13, r.to.step === 'Above Scale' ? 'AS' : r.to.step, 'fill="#4b5563"');
+                out += `</g>`;
+            });
 
-                const badgeClass = item.statusClass || (item.type === 'promotion' ? 'badge-promotion' : (item.type === 'dossier' ? 'badge-dossier' : 'badge-merit'));
-                const dateString = item.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+            svg.setAttribute('height', H);
+            svg.innerHTML = out;
+        }
 
-                div.innerHTML = `
-                    <div class="timeline-year">${ay}</div>
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h4 class="font-bold text-[#002855]">${item.label}</h4>
-                            <p class="text-sm text-gray-600">${item.detail || (APM_LOGIC[inputs.series.value][item.rank].name + ' Step ' + item.step)}</p>
-                            <p class="text-[10px] text-gray-400 mt-1">${dateString}</p>
-                        </div>
-                        <span class="text-[10px] font-bold px-2 py-1 rounded ${badgeClass}">${item.badge}</span>
+        // One row per review cycle, with its dossier and effective dates folded together
+        function renderLedger() {
+            const { series, today, start, reviews } = lastRender;
+            const rows = [`
+                <div class="ledger-row ledger-now">
+                    <div class="ledger-ay">Now</div>
+                    <div class="ledger-tags"><span class="tag m-slower">Current Step</span></div>
+                    <div class="ledger-rank font-bold text-[#002855]">${stepName(series, start.rank, start.step)}</div>
+                    <div class="ledger-dates ledger-note"><div>Effective ${formatDate(start.effDate)}</div></div>
+                    <div class="ledger-status"></div>
+                </div>`];
+
+            reviews.forEach((r, i) => {
+                const year = r.effective.getFullYear();
+                const tags = `<span class="tag t-${r.kind}">${KIND_LABELS[r.kind]}</span>`
+                    + (r.modifier ? `<span class="tag ${r.modifier.tone}">${r.modifier.label}</span>` : '');
+                const dossierPassed = r.dossier < today ? ' <span class="ledger-flag">(passed)</span>' : '';
+                const delayed = r.delayedFrom ? `<div class="ledger-flag">Normal cycle was ${formatDate(r.delayedFrom)}</div>` : '';
+                const status = i === 0
+                    ? '<span class="status-pill status-next">Next</span>'
+                    : (r.planned ? '<span class="status-pill status-planned">Planned</span>' : '');
+
+                rows.push(`
+                <div class="ledger-row t-${r.kind}">
+                    <div class="ledger-ay">AY ${year - 1}-${year.toString().slice(-2)}</div>
+                    <div class="ledger-tags">${tags}</div>
+                    <div class="ledger-rank">
+                        <div class="font-bold text-[#002855]">${stepName(series, r.to.rank, r.to.step)}</div>
+                        <div class="ledger-note">from ${stepName(series, r.from.rank, r.from.step)}</div>
                     </div>
-                `;
-                elements.timeline.appendChild(div);
+                    <div class="ledger-dates ledger-note">
+                        <div>${r.promotionReview ? 'Promotion' : 'Merit'} dossier ${formatDate(r.dossier)}${dossierPassed}</div>
+                        <div>Effective ${formatDate(r.effective)}</div>
+                        ${delayed}
+                    </div>
+                    <div class="ledger-status">${status}</div>
+                </div>`);
             });
+
+            elements.ledger.innerHTML = rows.join('');
         }
 
-        function updateSummary(roadmap) {
-            // The next review that hasn't taken effect yet, not simply the first one after the effective date
-            const today = new Date();
-            const target = roadmap.find(r => (r.type === 'merit' || r.type === 'promotion') && r.date >= today);
-            if (!target) {
+        function updateSummary(reviews) {
+            const next = reviews[0];
+            if (!next) {
                 elements.nextReviewYear.innerText = elements.nextReviewType.innerText = elements.nextEffDate.innerText = '—';
                 return;
             }
 
-            const year = target.date.getFullYear();
+            const year = next.effective.getFullYear();
             elements.nextReviewYear.innerText = `AY ${year - 1}-${year.toString().slice(-2)}`;
-            elements.nextReviewType.innerText = target.reviewType;
-            elements.nextEffDate.innerText = target.date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            elements.nextReviewType.innerText = reviewTypeName(next);
+            elements.nextEffDate.innerText = next.effective.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
         }
+
+        window.addEventListener('resize', () => { if (lastRender) renderLanes(); });
 
         // Init
         updateStepOptions();
