@@ -61,8 +61,8 @@
 		"title": "BudgetVis",
 		"category": "Finance",
 		"description": "Lets you upload two IPA Budget Exports in Excel format to create a quick 'before and after' picture of the year-over-year change.",
-		"lastUpdated": "April 7th, 2026",
-		"lastChange": "Basic look/feel updates, plus a new PDF export function.",
+		"lastUpdated": "August 21st, 2026",
+		"lastChange": "The summary is now a set of ledgers rather than cards, and the overview sentence always shows the dollar figure.",
 		"gridSpan": "",
 		"buttons": [
 			{
@@ -206,9 +206,9 @@
 		"section": "apps",
 		"title": "Offer Letter Generator",
 		"category": "HR",
-		"description": "Generates compliant offer letters for graduate students. I am still working on an automated sending flow.",
-		"lastUpdated": "July 21st, 2026",
-		"lastChange": "ASE letters brought into line with the 2026 GS template: Written Notice of Appointment framing with title codes, pay period effective dates, course/section assignments (with Supplemental Notice deferral), Workload and Leaves articles, salary scales info, and a Tutor-specific opening. Plus biweekly pay dates for hourly folks, and an optional signature image above the department head's name.",
+		"description": "Generates compliant offer letters for graduate students, as PDF or .doc downloads.",
+		"lastUpdated": "August 21st, 2026",
+		"lastChange": "Letters now carry GS-AP approved language, with the Dean's Office feedback applied (including GS template wording for GSR effective dates and the 3282 GSR job code). Plus clickable links in all outputs, a department head signature upload, and fixes for bulk-loaded rows.",
 		"gridSpan": "",
 		"buttons": [
 			{
