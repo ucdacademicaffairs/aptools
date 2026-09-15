@@ -347,7 +347,7 @@
 				}
 				check(g, !ids.has(t.id), `duplicate id "${t.id}"`, where);
 				ids.add(t.id);
-				check(g, ['apps', 'archive', 'resources'].includes(t.section), `unexpected section ${JSON.stringify(t.section)}`, where);
+				check(g, ['apps', 'prototypes', 'archive', 'resources'].includes(t.section), `unexpected section ${JSON.stringify(t.section)}`, where);
 
 				// "N/A" is a legitimate answer for the download-only entries.
 				if (t.lastUpdated && t.lastUpdated !== 'N/A') {

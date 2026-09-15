@@ -44,6 +44,13 @@
 			</div>
 		</div>
 
+		<div class="resources-section animate-on-load" style="animation-delay: 800ms;">
+			<h2 class="section-heading">Prototypes</h2>
+			<p style="color: var(--text-secondary); margin-bottom: 1rem;">Works in progress. Feel free to try them out and
+				send feedback, but please don't rely on them for real appointments yet.</p>
+			<div id="prototypes-grid" class="tools-grid"></div>
+		</div>
+
 		<div class="resources-section animate-on-load" style="animation-delay: 1000ms;">
 			<h2 class="section-heading">Resources</h2>
 			<div id="resources-grid" class="tools-grid"></div>
@@ -89,10 +96,12 @@
 				const tools = await response.json();
 
 				const appsGrid = document.getElementById('apps-grid');
+				const prototypeGrid = document.getElementById('prototypes-grid');
 				const resourceGrid = document.getElementById('resources-grid');
 				const archiveGrid = document.getElementById('archive-grid');
 
 				appsGrid.innerHTML = '';
+				prototypeGrid.innerHTML = '';
 				resourceGrid.innerHTML = '';
 				archiveGrid.innerHTML = '';
 
@@ -135,7 +144,9 @@
 						<div class="card-hover-overlay"></div>
 					`;
 
-					if (tool.section === 'resources') {
+					if (tool.section === 'prototypes') {
+						prototypeGrid.appendChild(card);
+					} else if (tool.section === 'resources') {
 						resourceGrid.appendChild(card);
 					} else if (tool.section === 'archive') {
 						archiveGrid.appendChild(card);

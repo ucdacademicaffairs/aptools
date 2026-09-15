@@ -236,6 +236,40 @@
 		]
 	},
 	{
+		"id": "federation-pay",
+		"section": "prototypes",
+		"title": "Federation Salary Calculator",
+		"category": "Finance",
+		"description": "Pick an Academic Federation title, exemption status, and representation to pull the matching UCOP salary scale, set the workload and appointment duration, then get a salary summary with a CSV export and, for Lecturers, a .doc offer letter.",
+		"lastUpdated": "July 3rd, 2026",
+		"lastChange": "Beta. Uses the 2025-26 UCOP scales, with Lecturer rates loaded from the shared config.",
+		"gridSpan": "",
+		"buttons": [
+			{
+				"label": "Launch Tool →",
+				"url": "federationpay.html",
+				"style": "primary"
+			}
+		]
+	},
+	{
+		"id": "hiring-flow",
+		"section": "prototypes",
+		"title": "Hiring Process Management",
+		"category": "HR",
+		"description": "Walks an appointment through five stages: recruitment and search clearance, appointment specifics, financials and cost splitting, a compliance checklist, and a final review that produces a printable hiring plan summary.",
+		"lastUpdated": "April 6th, 2026",
+		"lastChange": "First version. Salary data is still its own October 2025 copy rather than the shared config.",
+		"gridSpan": "",
+		"buttons": [
+			{
+				"label": "Launch Tool →",
+				"url": "hiring-flow.html",
+				"style": "primary"
+			}
+		]
+	},
+	{
 		"id": "ipa-check",
 		"section": "archive",
 		"title": "IPA-Disclosure Double Checker",
