@@ -41,8 +41,6 @@
 
 <body>
 
-<body>
-
     <div id="header-placeholder"></div>
 
 	<main class="w-full max-w-4xl mx-auto p-4 md:p-8 space-y-6">
@@ -110,83 +108,57 @@
 
 			<section class="space-y-6 pt-10">
 				<h2 class="text-2xl font-semibold text-[#002855] border-b-2 border-gray-200 pb-2 mb-6">
-					Shorter-than-Quarter Leave Calculator
+					Leave by Dates Calculator
 				</h2>
-				<p class="text-sm text-gray-700 -mt-2 mb-4">Use this section for a leave that occurs *within* a single
-					quarter (e.g., from 9/22 to 10/21). This prorates the pay period based on the service days.</p>
-				<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-					<div>
-						<label for="quarter-partial" class="block text-sm font-medium text-gray-700 mb-1">Select
-							Quarter</label>
-						<select id="quarter-partial"
-							class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-[#002855] focus:border-[#002855]">
-						</select>
-					</div>
+				<p class="text-sm text-gray-700 -mt-2 mb-4">Use this section when a leave is given as dates: part of a
+					single quarter (e.g., from 10/22 to 12/11), or a leave that starts partway through one quarter and runs
+					into the next. Any whole quarters inside the leave take their full pay period, and partial quarters are
+					prorated by service days.</p>
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<div>
 						<label for="leave-start-date" class="block text-sm font-medium text-gray-700 mb-1">Leave Start
 							Date (Service)</label>
 						<input type="date" id="leave-start-date"
-							class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-[#002855] focus:border-[#002855]"
-							placeholder="yyyy-mm-dd">
+							class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-[#002855] focus:border-[#002855]">
+						<p id="leave-start-info" class="text-xs text-gray-500 mt-1 min-h-[1rem]"></p>
 					</div>
 					<div>
 						<label for="leave-end-date" class="block text-sm font-medium text-gray-700 mb-1">Leave End Date
 							(Service)</label>
 						<input type="date" id="leave-end-date"
-							class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-[#002855] focus:border-[#002855]"
-							placeholder="yyyy-mm-dd">
+							class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-[#002855] focus:border-[#002855]">
+						<p id="leave-end-info" class="text-xs text-gray-500 mt-1 min-h-[1rem]"></p>
 					</div>
 				</div>
-				<p id="quarter-dates-info" class="text-sm text-gray-500 mt-3 hidden"></p>
+				<p id="coverage-info" class="text-sm text-gray-500 -mt-2"></p>
 
 				<div>
 					<button id="calculate-btn-partial" class="btn">
-						Calculate Prorated Pay Period
+						Calculate Pay Period
 					</button>
 				</div>
 
-				<div id="results-section-partial" class="hidden pt-6">
-					<h3 class="text-xl font-semibold text-[#002855] mb-4">Calculated Prorated Leave</h3>
+				<div id="results-section-partial" class="hidden pt-6 space-y-6">
+					<h3 class="text-xl font-semibold text-[#002855]">Calculated Leave Pay Period</h3>
 
-					<div class="bg-blue-50 border-l-4 border-[#002855] text-[#002855] p-4 rounded-r-lg mb-6"
-						role="alert">
-						<p class="text-sm uppercase font-semibold">Your prorated pay period for this leave is:</p>
+					<div class="bg-blue-50 border-l-4 border-[#002855] text-[#002855] p-4 rounded-r-lg" role="alert">
+						<p class="text-sm uppercase font-semibold">Your pay period for this leave is:</p>
 						<p class="text-2xl md:text-3xl font-bold mt-1">
 							<span id="pay-start-date-partial"></span> &mdash; <span id="pay-end-date-partial"></span>
 						</p>
 					</div>
 
+					<div class="bg-gray-50 border-l-4 border-gray-500 text-gray-800 p-4 rounded-r-lg">
+						<p class="text-sm uppercase font-semibold">Service days on leave:</p>
+						<p class="text-2xl md:text-3xl font-bold mt-1" id="service-days-summary"></p>
+						<p class="text-sm text-gray-600 mt-1" id="service-quarters-summary"></p>
+					</div>
+
+					<div id="break-days-note" class="hidden bg-amber-50 border-l-4 border-amber-500 text-amber-900 p-4 rounded-r-lg text-sm"></div>
+
 					<div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
 						<h4 class="text-lg font-semibold text-gray-700 mb-3">Show Your Work</h4>
-						<div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm">
-							<div>
-								<span class="font-medium text-gray-800">Total Days in Service Period:</span>
-								<span id="total-service-days" class="ml-2 text-gray-700"></span>
-							</div>
-							<div>
-								<span class="font-medium text-gray-800">Total Days in Pay Period:</span>
-								<span id="total-pay-days" class="ml-2 text-gray-700"></span>
-							</div>
-							<div>
-								<span class="font-medium text-gray-800"># Service Days on Leave:</span>
-								<span id="service-days-on-leave" class="ml-2 text-gray-700 font-bold"></span>
-							</div>
-							<div>
-								<span class="font-medium text-gray-800">% of Quarter on Leave:</span>
-								<span id="percent-on-leave" class="ml-2 text-gray-700 font-bold"></span>
-							</div>
-							<div>
-								<span class="font-medium text-gray-800"># Pay Period Days on Leave:</span>
-								<span id="pay-days-on-leave" class="ml-2 text-gray-700 font-bold"></span>
-							</div>
-							<div class="col-span-1 md:col-span-2 border-t pt-4 mt-2">
-								<span class="font-medium text-gray-800"># Service Days *Prior* to Leave:</span>
-								<span id="service-days-prior" class="ml-2 text-gray-700"></span>
-							</div>
-							<div>
-								<span class="font-medium text-gray-800"># Pay Period Days *Prior* to Leave:</span>
-								<span id="pay-days-prior" class="ml-2 text-gray-700"></span>
-							</div>
+						<div id="work-explanation-partial" class="text-gray-700 space-y-5 text-sm">
 						</div>
 					</div>
 				</div>
@@ -319,11 +291,31 @@
 			return date.toISOString().split('T')[0];
 		}
 
+		/**
+		 * Today as a local 'YYYY-MM-DD' string, so it compares directly against the quarter dates.
+		 */
+		function todayString() {
+			const now = new Date();
+			return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+		}
+
+		/**
+		 * How many pay days a number of service days scales to, rounded to the nearest whole day.
+		 * Proration rounds where each *edge* of the leave lands rather than rounding the day counts
+		 * separately: rounded separately, the two errors could stack and push a leave a day past its
+		 * quarter's pay period. Multiplying first keeps exact halves exact.
+		 */
+		function scaleToPayDays(totalPayDays, serviceDays, totalServiceDays) {
+			return Math.round((totalPayDays * serviceDays) / totalServiceDays);
+		}
+
 
 		// Application logic goes brr. Or blehhh
 		document.addEventListener('DOMContentLoaded', async function () {
 			let QUARTER_DATES = {};
-			let quarterKeys = []; // Declare quarterKeys here to be accessible globally within DOMContentLoaded
+			let quarterKeys = []; // Newest quarter first
+			let earliestServiceDate = '';
+			let latestServiceDate = '';
 
 			// Common Elements
 			const baseDatesTableBody = document.getElementById('base-dates-table');
@@ -339,23 +331,31 @@
 			const serviceEndDateElFull = document.getElementById('service-end-date-full');
 			const workExplanationElFull = document.getElementById('work-explanation-full');
 
-			// Partial Quarter Calculator
-			const partialSelect = document.getElementById('quarter-partial');
+			// Leave by Dates Calculator
 			const leaveStartDateInput = document.getElementById('leave-start-date');
 			const leaveEndDateInput = document.getElementById('leave-end-date');
-			const quarterDatesInfo = document.getElementById('quarter-dates-info');
+			const leaveStartInfo = document.getElementById('leave-start-info');
+			const leaveEndInfo = document.getElementById('leave-end-info');
+			const coverageInfo = document.getElementById('coverage-info');
 			const calculateBtnPartial = document.getElementById('calculate-btn-partial');
 			const resultsSectionPartial = document.getElementById('results-section-partial');
+			const breakDaysNote = document.getElementById('break-days-note');
+			const workExplanationElPartial = document.getElementById('work-explanation-partial');
 
 			try {
 				const response = await fetch('annual-config.json');
 				const config = await response.json();
 				QUARTER_DATES = config.QUARTER_DATES;
-				quarterKeys = Object.keys(QUARTER_DATES); // Populate quarterKeys after fetching data
+				// Newest at the top, whatever order the file happens to list them in
+				quarterKeys = Object.keys(QUARTER_DATES)
+					.sort((a, b) => QUARTER_DATES[b].serviceStart.localeCompare(QUARTER_DATES[a].serviceStart));
+				earliestServiceDate = QUARTER_DATES[quarterKeys[quarterKeys.length - 1]].serviceStart;
+				latestServiceDate = QUARTER_DATES[quarterKeys[0]].serviceEnd;
 
-				// Initialize dropdowns and table
+				// Initialize dropdowns, date pickers, and table
 				populateBaseDatesTable();
-				populateQuarterDropdowns(); // Renamed from updateQuarterDropdowns for initial population
+				populateQuarterDropdowns();
+				setDateLimits();
 			} catch (error) {
 				console.error("Failed to load annual config:", error);
 				showModal("Configuration Error", "Failed to load quarter date configuration. Please try again later.");
@@ -385,24 +385,44 @@
 				}
 			}
 
-			// Populate All Dropdown Menus
+			// The quarter in session today, or the next one to start if we're between quarters
+			function currentQuarter() {
+				const today = todayString();
+				const inSession = quarterKeys.find(q => QUARTER_DATES[q].serviceStart <= today && today <= QUARTER_DATES[q].serviceEnd);
+				if (inSession) return inSession;
+				const upcoming = quarterKeys.filter(q => QUARTER_DATES[q].serviceStart > today);
+				return upcoming.length ? upcoming[upcoming.length - 1] : quarterKeys[0];
+			}
+
+			// Populate the quarter dropdowns, newest at the top, starting on the current quarter
 			function populateQuarterDropdowns() {
-				const defaultOption = "<option value='' selected disabled>Please select a quarter</option>";
-				startSelect.innerHTML = defaultOption;
-				endSelect.innerHTML = defaultOption;
-				partialSelect.innerHTML = defaultOption;
+				startSelect.innerHTML = '';
+				endSelect.innerHTML = '';
 
 				quarterKeys.forEach(quarterName => {
 					startSelect.add(new Option(quarterName, quarterName));
 					endSelect.add(new Option(quarterName, quarterName));
-					partialSelect.add(new Option(quarterName, quarterName));
 				});
+
+				const current = currentQuarter();
+				startSelect.value = current;
+				endSelect.value = current;
+				syncEndOptions();
 			}
 
-			// QoL feature to auto-select end date
-			// startSelect.addEventListener('change', () => {
-			//     endSelect.value = startSelect.value;
-			// });
+			// A leave can't end in a quarter before it begins, so those quarters aren't offered
+			function syncEndOptions() {
+				const startIndex = quarterKeys.indexOf(startSelect.value);
+				[...endSelect.options].forEach((option, i) => { option.disabled = i > startIndex; });
+				if (quarterKeys.indexOf(endSelect.value) > startIndex) endSelect.value = startSelect.value;
+			}
+
+			// Old results disappear as soon as an input changes, so nobody reads an answer to a question they're no longer asking
+			startSelect.addEventListener('change', () => {
+				syncEndOptions();
+				resultsSectionFull.classList.add('hidden');
+			});
+			endSelect.addEventListener('change', () => resultsSectionFull.classList.add('hidden'));
 
 			// Full Quarter Calculator Button
 			calculateBtnFull.addEventListener('click', () => {
@@ -420,7 +440,7 @@
 				const endIndex = quarterKeys.indexOf(endQuarterName);
 
 				if (startIndex < endIndex) {
-					showModal("Input Error", "'Quarter Leave Ends' must be the same as or *after* 'Quarter Leave Begins'. (Quarters are listed newest to oldest).");
+					showModal("Input Error", "'Quarter Leave Ends' must be the same as or *after* 'Quarter Leave Begins'.");
 					resultsSectionFull.classList.add('hidden');
 					return;
 				}
@@ -438,8 +458,11 @@
 				const finalServiceStart = actualStartQuarterData.serviceStart;
 				const finalServiceEnd = actualEndQuarterData.serviceEnd;
 
-				// Calculate total service days for the entire period
-				const totalServiceDays = inclusiveDateDiff(finalServiceEnd, finalServiceStart);
+				// Count service days quarter by quarter, so the breaks between quarters aren't counted as service
+				const quartersOnLeave = quarterKeys.slice(endIndex, startIndex + 1).reverse(); // Oldest first
+				const totalServiceDays = quartersOnLeave.reduce((sum, q) =>
+					sum + inclusiveDateDiff(QUARTER_DATES[q].serviceEnd, QUARTER_DATES[q].serviceStart), 0);
+				const totalPayDays = inclusiveDateDiff(finalPayEnd, finalPayStart);
 
 				// Populate Results
 				payStartDateElFull.textContent = formatDate(finalPayStart);
@@ -451,16 +474,22 @@
 				resultsSectionFull.classList.remove('hidden');
 
 				// Populate "Show Your Work"
+				const quarterList = quartersOnLeave.map(q => {
+					const data = QUARTER_DATES[q];
+					return `<li>${q}: service ${formatDate(data.serviceStart)} - ${formatDate(data.serviceEnd)} (${inclusiveDateDiff(data.serviceEnd, data.serviceStart)} days), pay ${formatDate(data.payStart)} - ${formatDate(data.payEnd)} (${inclusiveDateDiff(data.payEnd, data.payStart)} days)</li>`;
+				}).join('');
+
 				workExplanationElFull.innerHTML = `
-					<p>1. The pay period for your selected <strong>start quarter</strong> (${startQuarterName}) is 
+					<p>1. The pay period for your selected <strong>start quarter</strong> (${startQuarterName}) is
 					   <strong>${formatDate(actualStartQuarterData.payStart)} - ${formatDate(actualStartQuarterData.payEnd)}</strong>.
 					</p>
 					<p>2. The pay period for your selected <strong>end quarter</strong> (${endQuarterName}) is
 					   <strong>${formatDate(actualEndQuarterData.payStart)} - ${formatDate(actualEndQuarterData.payEnd)}</strong>.
 					</p>
-					<p>3. The total service period for this leave is 
-					   <strong>${formatDate(finalServiceStart)} - ${formatDate(finalServiceEnd)}</strong>, which is
-					   <strong>${totalServiceDays} days</strong>.
+					<p>3. The leave covers <strong>${quartersOnLeave.length} ${quartersOnLeave.length === 1 ? 'quarter' : 'quarters'}</strong>:</p>
+					<ul class="list-disc pl-6 space-y-1">${quarterList}</ul>
+					<p>That's <strong>${totalServiceDays} service days</strong> (days between quarters aren't service) and
+					   <strong>${totalPayDays} pay period days</strong>.
 					</p>
 					<p class="font-semibold text-gray-800 pt-2">
 					   Therefore, the total pay period combines the <strong>start date</strong> of the first quarter's pay period with the <strong>end date</strong> of the last quarter's pay period.
@@ -468,101 +497,152 @@
 				`;
 			});
 
-			// Partial Quarter Select Dropdown (now selects placeholders, not values)
-			partialSelect.addEventListener('change', () => {
-				const quarterName = partialSelect.value;
-				// Handle the "Please select" option
-				if (!quarterName) {
-					quarterDatesInfo.classList.add('hidden');
-					leaveStartDateInput.value = "";
-					leaveEndDateInput.value = "";
-					leaveStartDateInput.placeholder = "yyyy-mm-dd";
-					leaveEndDateInput.placeholder = "yyyy-mm-dd";
-					return;
+			// Date pickers only offer dates the tool has quarter dates for
+			function setDateLimits() {
+				[leaveStartDateInput, leaveEndDateInput].forEach(input => {
+					input.min = earliestServiceDate;
+					input.max = latestServiceDate;
+				});
+				coverageInfo.textContent = `Quarter dates on file run from ${formatDate(earliestServiceDate)} to ${formatDate(latestServiceDate)}.`;
+			}
+
+			// Says which quarter a date falls in, or that it's in a break, as the date is entered
+			function describeDate(dateStr) {
+				if (!dateStr) return '';
+				const inQuarter = quarterKeys.find(q => QUARTER_DATES[q].serviceStart <= dateStr && dateStr <= QUARTER_DATES[q].serviceEnd);
+				if (inQuarter) {
+					const data = QUARTER_DATES[inQuarter];
+					return `In ${inQuarter} (service ${formatDate(data.serviceStart)} - ${formatDate(data.serviceEnd)})`;
 				}
+				const endedBefore = quarterKeys.find(q => QUARTER_DATES[q].serviceEnd < dateStr);
+				const startsAfter = [...quarterKeys].reverse().find(q => QUARTER_DATES[q].serviceStart > dateStr);
+				if (endedBefore && startsAfter) return `Between ${endedBefore} and ${startsAfter}, so not a service day`;
+				return 'Outside the quarter dates on file';
+			}
 
-				const data = QUARTER_DATES[quarterName];
-				quarterDatesInfo.textContent = `Service period for ${quarterName} is ${formatDate(data.serviceStart)} to ${formatDate(data.serviceEnd)}. Please enter leave dates within this range.`;
-				quarterDatesInfo.classList.remove('hidden');
-
-				leaveStartDateInput.value = "";
-				leaveEndDateInput.value = "";
-				leaveStartDateInput.placeholder = `e.g., ${data.serviceStart}`;
-				leaveEndDateInput.placeholder = `e.g., ${data.serviceEnd}`;
-
+			leaveStartDateInput.addEventListener('input', () => {
+				leaveStartInfo.textContent = describeDate(leaveStartDateInput.value);
+				leaveEndDateInput.min = leaveStartDateInput.value || earliestServiceDate;
+				resultsSectionPartial.classList.add('hidden');
+			});
+			leaveEndDateInput.addEventListener('input', () => {
+				leaveEndInfo.textContent = describeDate(leaveEndDateInput.value);
 				resultsSectionPartial.classList.add('hidden');
 			});
 
-			// Partial Quarter Calculator Button
+			// Leave by Dates Calculator Button
 			calculateBtnPartial.addEventListener('click', () => {
-				const quarterName = partialSelect.value;
 				const leaveStartDate = leaveStartDateInput.value;
 				const leaveEndDate = leaveEndDateInput.value;
-
-				// Validation
-				// Check for blank quarter
-				if (!quarterName) {
-					showModal("Input Error", "Please select a quarter.");
-					return;
-				}
-
-				const data = QUARTER_DATES[quarterName];
 
 				// Lots of checks to make sure the user doesn't break things.
 				if (!leaveStartDate || !leaveEndDate) {
 					showModal("Input Error", "Please enter both a start and end date for the leave.");
 					return;
 				}
-				const leaveStartDateTime = getUTCDate(leaveStartDate).getTime();
-				const leaveEndDateTime = getUTCDate(leaveEndDate).getTime();
-				const serviceStartDateTime = getUTCDate(data.serviceStart).getTime();
-				const serviceEndDateTime = getUTCDate(data.serviceEnd).getTime();
-
-				if (leaveEndDateTime < leaveStartDateTime) {
+				if (leaveEndDate < leaveStartDate) {
 					showModal("Input Error", "Leave End Date cannot be before Leave Start Date.");
 					return;
 				}
-				// Check if the leave is *within* the selected quarter's service period
-				if (leaveStartDateTime < serviceStartDateTime || leaveEndDateTime > serviceEndDateTime) {
-					showModal("Date Range Error", `Leave dates must be within the quarter's service period (${formatDate(data.serviceStart)} - ${formatDate(data.serviceEnd)}).`);
+				if (leaveStartDate < earliestServiceDate || leaveEndDate > latestServiceDate) {
+					showModal("Date Range Error", `Quarter dates are on file from ${formatDate(earliestServiceDate)} to ${formatDate(latestServiceDate)}. Please enter leave dates within that range.`);
 					return;
 				}
 
-				// The Fun Math Part (Proration) (I wanna die)	
-				// 1. Get total days for both periods
-				const totalServiceDays = inclusiveDateDiff(data.serviceEnd, data.serviceStart);
-				const totalPayDays = inclusiveDateDiff(data.payEnd, data.payStart);
+				// The Fun Math Part (Proration) (I wanna die)
+				// Split the leave into the part that falls inside each quarter's service period, oldest quarter first
+				const portions = [...quarterKeys].reverse().map(quarterName => {
+					const data = QUARTER_DATES[quarterName];
+					const portionStart = leaveStartDate > data.serviceStart ? leaveStartDate : data.serviceStart;
+					const portionEnd = leaveEndDate < data.serviceEnd ? leaveEndDate : data.serviceEnd;
+					if (portionStart > portionEnd) return null;
 
-				// 2. Figure out the leave days
-				const serviceDaysOnLeave = inclusiveDateDiff(leaveEndDate, leaveStartDate);
-				// Days *before* the leave starts (e.g., 0 if leave starts on day 1)
-				const serviceDaysPrior = inclusiveDateDiff(leaveStartDate, data.serviceStart) - 1;
+					// 1. Get total days for both periods
+					const totalServiceDays = inclusiveDateDiff(data.serviceEnd, data.serviceStart);
+					const totalPayDays = inclusiveDateDiff(data.payEnd, data.payStart);
 
-				// 3. Get percentages
-				const percentOnLeave = serviceDaysOnLeave / totalServiceDays;
-				const percentPrior = serviceDaysPrior / totalServiceDays;
+					// 2. Figure out the leave days, and the days *before* the leave starts (0 if it starts on day 1)
+					const serviceDaysOnLeave = inclusiveDateDiff(portionEnd, portionStart);
+					const serviceDaysPrior = inclusiveDateDiff(portionStart, data.serviceStart) - 1;
 
-				// 4. Apply percentages to the *pay* period
-				// avoid partial days
-				const payDaysOnLeave = Math.round(totalPayDays * percentOnLeave);
-				const payDaysPrior = Math.round(totalPayDays * percentPrior);
+					// 3. Scale where the leave starts and ends onto the pay period
+					const payDaysPrior = scaleToPayDays(totalPayDays, serviceDaysPrior, totalServiceDays);
+					const payDaysThroughEnd = scaleToPayDays(totalPayDays, serviceDaysPrior + serviceDaysOnLeave, totalServiceDays);
 
-				// 5. Calculate the final pay dates
-				const finalPayStartDate = addDays(data.payStart, payDaysPrior);
-				const finalPayEndDate = addDays(finalPayStartDate, payDaysOnLeave - 1); // -1 because it's inclusive
+					return {
+						quarterName, data, portionStart, portionEnd,
+						totalServiceDays, totalPayDays, serviceDaysOnLeave, serviceDaysPrior,
+						payDaysPrior, payDaysThroughEnd,
+						whole: serviceDaysOnLeave === totalServiceDays,
+						// 4. Calculate the final pay dates
+						payStart: addDays(data.payStart, payDaysPrior),
+						payEnd: addDays(data.payStart, payDaysThroughEnd - 1) // -1 because it's inclusive
+					};
+				}).filter(Boolean);
+
+				if (portions.length === 0) {
+					showModal("No Service Days", "These dates fall entirely between quarters, so there are no service days to convert to pay.");
+					return;
+				}
+
+				const first = portions[0];
+				const last = portions[portions.length - 1];
+				const totalServiceDaysOnLeave = portions.reduce((sum, p) => sum + p.serviceDaysOnLeave, 0);
+				const breakDays = inclusiveDateDiff(leaveEndDate, leaveStartDate) - totalServiceDaysOnLeave;
 
 				// Display Results
-				document.getElementById('pay-start-date-partial').textContent = formatDate(finalPayStartDate);
-				document.getElementById('pay-end-date-partial').textContent = formatDate(finalPayEndDate);
+				document.getElementById('pay-start-date-partial').textContent = formatDate(first.payStart);
+				document.getElementById('pay-end-date-partial').textContent = formatDate(last.payEnd);
+				document.getElementById('service-days-summary').textContent = `${totalServiceDaysOnLeave} ${totalServiceDaysOnLeave === 1 ? 'day' : 'days'}`;
+				document.getElementById('service-quarters-summary').textContent =
+					`${formatDate(first.portionStart)} - ${formatDate(last.portionEnd)}, across ${portions.map(p => p.quarterName).join(', ')}`;
+
+				if (breakDays > 0) {
+					breakDaysNote.innerHTML = `<strong>${breakDays} ${breakDays === 1 ? 'day' : 'days'}</strong> of this leave ${breakDays === 1 ? 'falls' : 'fall'} between quarters. Days between quarters aren't service days, so they don't add to the pay period.`;
+					breakDaysNote.classList.remove('hidden');
+				} else {
+					breakDaysNote.classList.add('hidden');
+				}
 
 				// ...and "Show Your Work"
-				document.getElementById('total-service-days').textContent = `${totalServiceDays} days`;
-				document.getElementById('total-pay-days').textContent = `${totalPayDays} days`;
-				document.getElementById('service-days-on-leave').textContent = `${serviceDaysOnLeave} days`;
-				document.getElementById('percent-on-leave').textContent = `${(percentOnLeave * 100).toFixed(2)}%`;
-				document.getElementById('pay-days-on-leave').textContent = `${payDaysOnLeave} days`;
-				document.getElementById('service-days-prior').textContent = `${serviceDaysPrior} days`;
-				document.getElementById('pay-days-prior').textContent = `${payDaysPrior} days`;
+				const portionHtml = portions.map(p => {
+					const serviceRange = `${formatDate(p.data.serviceStart)} - ${formatDate(p.data.serviceEnd)}`;
+					const payRange = `${formatDate(p.data.payStart)} - ${formatDate(p.data.payEnd)}`;
+
+					if (p.whole) {
+						return `
+							<div class="border-l-4 border-[#002855] pl-4 space-y-1">
+								<p class="font-semibold text-gray-800">${p.quarterName} <span class="ml-2 text-xs uppercase tracking-wide text-[#002855]">Whole quarter</span></p>
+								<p>The leave covers all <strong>${p.totalServiceDays} service days</strong> (${serviceRange}), so it takes the quarter's full pay period:
+								   <strong>${formatDate(p.payStart)} - ${formatDate(p.payEnd)}</strong> (${p.totalPayDays} days).</p>
+							</div>`;
+					}
+
+					const percentOnLeave = (p.serviceDaysOnLeave / p.totalServiceDays * 100).toFixed(2);
+					const rawStart = (p.totalPayDays * p.serviceDaysPrior / p.totalServiceDays).toFixed(2);
+					const rawEnd = (p.totalPayDays * (p.serviceDaysPrior + p.serviceDaysOnLeave) / p.totalServiceDays).toFixed(2);
+					const payDaysOnLeave = p.payDaysThroughEnd - p.payDaysPrior;
+
+					return `
+						<div class="border-l-4 border-[#6bca98] pl-4 space-y-2">
+							<p class="font-semibold text-gray-800">${p.quarterName} <span class="ml-2 text-xs uppercase tracking-wide text-[#266040]">Partial quarter</span></p>
+							<p>Service period ${serviceRange} is <strong>${p.totalServiceDays} days</strong>; pay period ${payRange} is <strong>${p.totalPayDays} days</strong>.</p>
+							<p>Leave in this quarter: ${formatDate(p.portionStart)} - ${formatDate(p.portionEnd)}, which is <strong>${p.serviceDaysOnLeave} service days</strong>
+							   (${percentOnLeave}% of the quarter), with <strong>${p.serviceDaysPrior} service days</strong> before it.</p>
+							<div class="font-mono text-xs bg-white border border-gray-200 rounded p-3 space-y-1 overflow-x-auto whitespace-nowrap">
+								<p>Pay start: ${p.totalPayDays} × ${p.serviceDaysPrior} ÷ ${p.totalServiceDays} = ${rawStart} → ${p.payDaysPrior} days after ${formatDate(p.data.payStart)} → <strong>${formatDate(p.payStart)}</strong></p>
+								<p>Pay end: ${p.totalPayDays} × (${p.serviceDaysPrior} + ${p.serviceDaysOnLeave}) ÷ ${p.totalServiceDays} = ${rawEnd} → day ${p.payDaysThroughEnd} of the pay period → <strong>${formatDate(p.payEnd)}</strong></p>
+								<p>Pay days on leave: ${p.payDaysThroughEnd} − ${p.payDaysPrior} = <strong>${payDaysOnLeave} days</strong></p>
+							</div>
+						</div>`;
+				}).join('');
+
+				workExplanationElPartial.innerHTML = portionHtml + `
+					<p class="font-semibold text-gray-800">
+					   Therefore, the pay period for this leave runs from the pay start of its first quarter to the pay end of its last.
+					   Each edge of the leave is rounded to the nearest whole pay day, so back-to-back leaves line up exactly and no leave runs past its quarter's pay period.
+					</p>
+				`;
 
 				resultsSectionPartial.classList.remove('hidden');
 			});
