@@ -277,8 +277,6 @@
 			<div class="p-4 bg-white border-b flex flex-wrap gap-4 justify-between items-center">
 				<h3 class="text-xl font-bold">Letter Preview</h3>
 				<div class="flex flex-wrap gap-2">
-					<button id="send-zapier-btn" class="btn bg-purple-600 hover:bg-purple-700 text-white hidden">Send via
-						DocuSign</button>
 					<button id="download-pdf-btn" class="btn bg-blue-700 hover:bg-blue-800 text-white">Download
 						PDF</button>
 					<button id="download-word-btn" class="btn bg-blue-700 hover:bg-blue-800 text-white">Download .doc</button>
@@ -293,9 +291,7 @@
 	<script>
 		document.addEventListener('DOMContentLoaded', function () {
 
-			const ZAPIER_WEBHOOK_URL = 'https://hooks.zapier.com/hooks/catch/27268773/uj1leu5/';
-
-			// DocuSign AutoPlace anchor strings. We're definitely writing them and whatever happens after this is Zapier or Docusign's fault :D
+			// DocuSign AutoPlace anchor strings, drawn invisibly into the PDF so a downloaded letter can still go out through DocuSign with its fields auto-placed.
 			const ANCHOR_ACCEPT = '\\ACCSIGN1\\';
 			const ANCHOR_DECLINE = '\\DCLSIGN1\\';
 			const ANCHOR_SIGNATURE = '\\SIGHERE1\\';
@@ -1774,80 +1770,6 @@
 					}
 				} catch (e) { console.error(e); alert('Error: ' + e.message); }
 				finally { btn.innerText = orig; btn.disabled = false; }
-			});
-
-			// ── Send via DocuSign ─────────────────────────────────────────────────────
-			document.getElementById('send-zapier-btn').addEventListener('click', async () => {
-				const globalData = collectLetterData();
-
-				if (isBulkMode) {
-					const studentsMap = {};
-					bulkRows.forEach(r => {
-						if (!r.email) return;
-						if (!studentsMap[r.email]) studentsMap[r.email] = { name: r.name, email: r.email };
-					});
-					const students = Object.values(studentsMap);
-					if (students.length === 0) { alert("No valid emails found in bulk rows."); return; }
-
-					const btn = document.getElementById('send-zapier-btn'), orig = btn.innerText;
-					btn.disabled = true;
-
-					try {
-						let successCount = 0;
-						for (let i = 0; i < students.length; i++) {
-							const student = students[i];
-							btn.innerText = `Sending ${i + 1} of ${students.length}…`;
-
-							const d = { ...globalData, studentName: student.name, studentEmail: student.email };
-							const groups = buildBulkLetterGroups(student.email);
-							const safeFilename = `Offer_Letter_${(d.studentName || 'Student').replace(/\s+/g, '_')}.pdf`;
-
-							const pdfBlob = await buildPdfBlob([{ d, groups }]); // generate just this one
-
-							const form = new FormData();
-							form.append('studentName', d.studentName);
-							form.append('studentEmail', d.studentEmail);
-							form.append('contactEmail', d.contactEmail);
-							form.append('contactName', d.contactName);
-							form.append('document', new File([pdfBlob], safeFilename, { type: 'application/pdf' }));
-
-							const res = await fetch(ZAPIER_WEBHOOK_URL, { method: 'POST', body: form });
-							if (!res.ok) throw new Error(`Zapier error ${res.status} for ${d.studentEmail}`);
-							successCount++;
-
-							// Rate limiting delay
-							if (i < students.length - 1) await new Promise(r => setTimeout(r, 1000));
-						}
-						alert(`Successfully sent ${successCount} letters to Zapier/DocuSign!`);
-					} catch (e) {
-						console.error(e);
-						alert("Error during bulk send: " + e.message);
-					} finally {
-						btn.innerText = orig;
-						btn.disabled = false;
-					}
-
-				} else {
-					if (!globalData.studentEmail) { alert("Please provide the Student Email before sending."); return; }
-					const btn = document.getElementById('send-zapier-btn'), orig = btn.innerText;
-					btn.disabled = true;
-					try {
-						btn.innerText = 'Generating PDF…';
-						const safeFilename = `Offer_Letter_${(globalData.studentName || 'Student').replace(/\s+/g, '_')}.pdf`;
-						const groups = buildLetterGroups();
-						const pdfBlob = await buildPdfBlob([{ d: globalData, groups }]);
-						btn.innerText = 'Sending…';
-						const form = new FormData();
-						form.append('studentName', globalData.studentName);
-						form.append('studentEmail', globalData.studentEmail);
-						form.append('contactEmail', globalData.contactEmail);
-						form.append('contactName', globalData.contactName);
-						form.append('document', new File([pdfBlob], safeFilename, { type: 'application/pdf' }));
-						const res = await fetch(ZAPIER_WEBHOOK_URL, { method: 'POST', body: form });
-						res.ok ? alert("Sent! Check DocuSign.") : alert(`Zapier returned status ${res.status}.`);
-					} catch (e) { console.error(e); alert("Error: " + e.message); }
-					finally { btn.innerText = orig; btn.disabled = false; }
-				}
 			});
 
 			// ── Download Word ─────────────────────────────────────────────────────────
