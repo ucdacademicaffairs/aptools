@@ -1206,13 +1206,23 @@
 						if (!row) return;
 						const type = (row[idx['INSTRUCTOR TYPE']] || '').toString().trim();
 						if (!type) return;
-						const entry = byType[type] || (byType[type] = { sections: 0, cost: 0 });
+						const entry = byType[type] || (byType[type] = { sections: 0, cost: 0, tas: 0, readerHours: 0 });
 						entry.sections += toNumber(row[idx['SECTIONS']]);
 						entry.cost += toNumber(row[idx['INSTRUCTOR COST']]);
+						entry.tas += toNumber(row[idx['TAS']]);
+						entry.readerHours += toNumber(row[idx['READERS']]);
 					});
 					Object.entries(byType).forEach(([type, entry]) => {
 						if (entry.cost > 0 && entry.sections > 0) {
-							instructors.push({ type, sections: entry.sections, cost: entry.cost, perSection: entry.cost / entry.sections });
+							instructors.push({
+								type,
+								sections: entry.sections,
+								cost: entry.cost,
+								perSection: entry.cost / entry.sections,
+								// What a section of this type takes with it when it goes
+								tasPerSection: entry.tas / entry.sections,
+								readerHoursPerSection: entry.readerHours / entry.sections
+							});
 						}
 					});
 				} else {
@@ -1220,7 +1230,7 @@
 					Object.entries(unit).forEach(([type, rate]) => {
 						if (!rate || type === 'TA' || type === 'READER') return;
 						const cost = summary[type] || 0;
-						if (cost > 0) instructors.push({ type, sections: cost / rate, cost, perSection: rate });
+						if (cost > 0) instructors.push({ type, sections: cost / rate, cost, perSection: rate, tasPerSection: 0, readerHoursPerSection: 0 });
 					});
 				}
 				instructors.sort((a, b) => b.cost - a.cost);
@@ -1307,9 +1317,21 @@
 						0, m.reader.hours, 10, m.reader.hours);
 				}
 
+				// A section that goes away usually takes its TAs and readers with it. A
+				// section handed to ladder faculty instead doesn't, which is why this is
+				// a choice rather than always-on arithmetic.
+				const anySupport = m.instructors.some(i => i.tasPerSection || i.readerHoursPerSection);
+				if (anySupport) {
+					html += `
+						<label class="flex items-start gap-2 text-xs text-gray-600 mb-3 mt-1 cursor-pointer">
+							<input type="checkbox" id="lever-link-support" checked class="mt-0.5 accent-[#002855]">
+							<span>Cutting a section also drops the TA appointments and reader hours attached to it</span>
+						</label>`;
+				}
+
 				m.instructors.forEach(i => {
 					html += leverMarkup('lever-sec-' + slug(i.type), i.type + ' sections', fmtCount(i.sections),
-						money(i.cost) + ' at ' + money(i.perSection) + ' per section', 0, i.sections, 1, i.sections);
+						money(i.cost) + ' at ' + money(i.perSection) + ' per section' + supportPhrase(i), 0, i.sections, 1, i.sections);
 				});
 
 				document.getElementById('lever-panel').innerHTML = html;
@@ -1328,8 +1350,35 @@
 				if (readerEl) readerEl.addEventListener('input', () => { scenario.readerHours = parseFloat(readerEl.value); recalcForecast(); });
 				m.instructors.forEach(i => {
 					const el = document.getElementById('lever-sec-' + slug(i.type));
-					el.addEventListener('input', () => { scenario.sections[i.type] = parseFloat(el.value); recalcForecast(); });
+					el.addEventListener('input', () => {
+						const next = parseFloat(el.value);
+						const removed = scenario.sections[i.type] - next; // positive when sections are cut
+						scenario.sections[i.type] = next;
+
+						const link = document.getElementById('lever-link-support');
+						if (link && link.checked && removed) {
+							if (i.tasPerSection) setTaCount(scenario.taCount - removed * i.tasPerSection);
+							if (i.readerHoursPerSection) setReaderHours(scenario.readerHours - removed * i.readerHoursPerSection);
+						}
+						recalcForecast();
+					});
 				});
+			}
+
+			// "each section carries 2 TAs and 141 reader hours", when it does
+			function supportPhrase(instructor) {
+				const bits = [];
+				if (instructor.tasPerSection) bits.push(fmtCount(instructor.tasPerSection) + ' TA' + (instructor.tasPerSection === 1 ? '' : 's'));
+				if (instructor.readerHoursPerSection) bits.push(fmtCount(Math.round(instructor.readerHoursPerSection)) + ' reader hours');
+				return bits.length ? ' · each carries ' + bits.join(' and ') : '';
+			}
+
+			function setReaderHours(hours) {
+				const m = forecastModel;
+				const clamped = Math.min(m.reader.hours, Math.max(0, Math.round(hours / 10) * 10));
+				scenario.readerHours = clamped;
+				const el = document.getElementById('lever-reader');
+				if (el) el.value = clamped;
 			}
 
 			// The two TA levers are two views of one number, so moving either moves both.
@@ -1459,7 +1508,7 @@
 				m.instructors.forEach(i => {
 					const sections = s.sections[i.type] === undefined ? i.sections : s.sections[i.type];
 					setOut('lever-sec-' + slug(i.type), fmtCount(sections),
-						money(sections * i.perSection) + ' at ' + money(i.perSection) + ' per section');
+						money(sections * i.perSection) + ' at ' + money(i.perSection) + ' per section' + supportPhrase(i));
 				});
 
 				// The sentences under each panel
@@ -1470,7 +1519,12 @@
 
 				const cutPhrases = Object.entries(m.fundCategories)
 					.filter(([category]) => s.cuts[category])
-					.map(([category, amount]) => `a ${s.cuts[category].toFixed(1).replace(/\.0$/, '')}% cut to ${category} removes ${money(amount * s.cuts[category] / 100)}`);
+					.map(([category, amount]) => {
+						const pct = s.cuts[category].toFixed(1).replace(/\.0$/, '');
+						// "an 8% cut" reads right; "a 8% cut" doesn't
+						const article = /^(8|11|18)/.test(pct) ? 'an' : 'a';
+						return `${article} ${pct}% cut to ${category} removes ${money(amount * s.cuts[category] / 100)}`;
+					});
 				const gap = balNew < 0
 					? `This scenario is ${money(-balNew)} short. Closing it would take about ${fmtCount(-balNew / m.ta.unit)} TA appointments` +
 					  (m.reader.rate ? `, or ${Math.round(-balNew / m.reader.rate).toLocaleString('en-US')} reader hours.` : '.')
@@ -1489,7 +1543,7 @@
 				if (s.readerHours !== m.reader.hours) changes.push(`Reader hours: ${fmtCount(m.reader.hours)} → ${fmtCount(s.readerHours)}`);
 				m.instructors.forEach(i => {
 					const sections = s.sections[i.type] === undefined ? i.sections : s.sections[i.type];
-					if (sections !== i.sections) changes.push(`${i.type}: ${fmtCount(i.sections)} → ${fmtCount(sections)} sections`);
+					if (sections !== i.sections) changes.push(`${i.type}: ${fmtCount(i.sections)} → ${fmtCount(sections)} sections${supportPhrase(i)}`);
 				});
 				document.getElementById('scenario-settings').innerHTML = changes.length
 					? `<h3 class="font-bold text-[#002855] mb-2">Scenario settings</h3><ul class="list-disc pl-6 text-sm text-gray-700 space-y-1">${changes.map(c => `<li>${c}</li>`).join('')}</ul>`
