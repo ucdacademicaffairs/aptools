@@ -300,10 +300,9 @@
 		}
 
 		/**
-		 * How many pay days a number of service days scales to, rounded to the nearest whole day.
-		 * Proration rounds where each *edge* of the leave lands rather than rounding the day counts
-		 * separately: rounded separately, the two errors could stack and push a leave a day past its
-		 * quarter's pay period. Multiplying first keeps exact halves exact.
+		 * Scales service days onto pay days, rounded to the nearest whole day.
+		 * Round each edge of the leave, not the two counts — rounding counts separately let the
+		 * errors stack and pushed a leave past its quarter's pay period.
 		 */
 		function scaleToPayDays(totalPayDays, serviceDays, totalServiceDays) {
 			return Math.round((totalPayDays * serviceDays) / totalServiceDays);
@@ -417,7 +416,7 @@
 				if (quarterKeys.indexOf(endSelect.value) > startIndex) endSelect.value = startSelect.value;
 			}
 
-			// Old results disappear as soon as an input changes, so nobody reads an answer to a question they're no longer asking
+			// Clear old results as soon as an input changes
 			startSelect.addEventListener('change', () => {
 				syncEndOptions();
 				resultsSectionFull.classList.add('hidden');
@@ -458,7 +457,7 @@
 				const finalServiceStart = actualStartQuarterData.serviceStart;
 				const finalServiceEnd = actualEndQuarterData.serviceEnd;
 
-				// Count service days quarter by quarter, so the breaks between quarters aren't counted as service
+				// Count by quarter, so the breaks between quarters aren't counted as service
 				const quartersOnLeave = quarterKeys.slice(endIndex, startIndex + 1).reverse(); // Oldest first
 				const totalServiceDays = quartersOnLeave.reduce((sum, q) =>
 					sum + inclusiveDateDiff(QUARTER_DATES[q].serviceEnd, QUARTER_DATES[q].serviceStart), 0);
@@ -506,7 +505,7 @@
 				coverageInfo.textContent = `Quarter dates on file run from ${formatDate(earliestServiceDate)} to ${formatDate(latestServiceDate)}.`;
 			}
 
-			// Says which quarter a date falls in, or that it's in a break, as the date is entered
+			// Which quarter a date falls in, or that it's in a break
 			function describeDate(dateStr) {
 				if (!dateStr) return '';
 				const inQuarter = quarterKeys.find(q => QUARTER_DATES[q].serviceStart <= dateStr && dateStr <= QUARTER_DATES[q].serviceEnd);
@@ -550,7 +549,7 @@
 				}
 
 				// The Fun Math Part (Proration) (I wanna die)
-				// Split the leave into the part that falls inside each quarter's service period, oldest quarter first
+				// Split the leave by quarter, oldest first
 				const portions = [...quarterKeys].reverse().map(quarterName => {
 					const data = QUARTER_DATES[quarterName];
 					const portionStart = leaveStartDate > data.serviceStart ? leaveStartDate : data.serviceStart;

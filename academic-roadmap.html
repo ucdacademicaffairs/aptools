@@ -25,8 +25,7 @@
             --ucd-cyan: #00b2e3;
         }
 
-        /* Review colors: merit is UCD blue, promotion is gold, and merit in lieu is the orange "bad result".
-           Modifiers are teal when the pace is faster and gray when it's slower. */
+        /* Merit blue, promotion gold, merit in lieu orange. Teal = faster, gray = slower. */
         .t-merit { --tone: #002855; --tone-bg: rgba(0, 40, 85, 0.08); --tone-text: #002855; }
         .t-promotion { --tone: #FFBF00; --tone-bg: rgba(255, 191, 0, 0.2); --tone-text: #7a5800; }
         .t-mil { --tone: #ea7a1e; --tone-bg: #fff1e3; --tone-text: #9a4a0b; }
@@ -425,8 +424,7 @@
             f.addEventListener('change', generateRoadmap);
         });
 
-        // Where one review leaves someone. The dropdown sync and the roadmap both go through this,
-        // so they can't disagree about which reviews are promotions.
+        // Where one review leaves someone. The dropdown sync and the roadmap both use this.
         function applyReview(series, rank, step, forecastType) {
             const rankData = APM_LOGIC[series][rank];
             const isPromotion = rankData.promotionEligible.includes(step) && forecastType !== 'merit-lieu';
@@ -498,8 +496,7 @@
             inputs.forecasts.forEach(dropdown => {
                 const rankData = APM_LOGIC[series][currentRank];
                 const isPromotionBarrier = rankData.promotionEligible.includes(currentStep);
-                // No lateral promotion from a rank's first eligible step (Assistant 4, Associate 3):
-                // it would land below Step 1, which is just a normal promotion.
+                // No lateral from a rank's first eligible step — it lands below Step 1, same as a normal promotion.
                 const canLateral = isPromotionBarrier && currentStep > rankData.promotionEligible[0];
                 // Merit in Lieu only if there's a next step in the current rank
                 const maxStep = rankData.steps[rankData.steps.length - 1];
@@ -540,8 +537,7 @@
             elements.initial.classList.add('hidden');
             elements.output.classList.remove('hidden');
 
-            // The step entered is where they are now, and it can't tell us how they got there, so nothing is
-            // projected into the past: every review on the roadmap is still to come.
+            // The entered step is where they are now. We don't know how they got there, so nothing is projected into the past.
             const startDate = new Date(Math.max(effDate, today));
             const horizon = new Date(startDate);
             horizon.setFullYear(horizon.getFullYear() + 15);
@@ -562,8 +558,7 @@
                 const effective = new Date(currentDate);
                 effective.setFullYear(effective.getFullYear() + reviewDuration(series, currentRank, currentStep, forecastType));
 
-                // A cycle that should already have taken effect evidently hasn't (they're still at this step),
-                // so it lands on the next July 1 still ahead
+                // A cycle that should have taken effect hasn't, so it lands on the next July 1 ahead
                 let delayedFrom = null;
                 if (effective < today) {
                     delayedFrom = new Date(effective);
@@ -614,8 +609,7 @@
             const t1 = reviews.length ? reviews[reviews.length - 1].effective.getTime() : t0 + 1;
             const x = d => LEFT + 12 + (d.getTime() - t0) / (t1 - t0) * (W - LEFT - RIGHT - 24);
 
-            // Points bunch up on narrow screens, so a label that would overlap one already drawn is skipped
-            // (the dot's tooltip still has it)
+            // Points bunch up on narrow screens — skip a label that would overlap; the tooltip still has it
             const drawn = [];
             const label = (lx, ly, text, attrs) => {
                 if (drawn.some(d => d.y === ly && Math.abs(d.x - lx) < 22)) return '';

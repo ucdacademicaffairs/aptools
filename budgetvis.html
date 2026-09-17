@@ -1086,11 +1086,8 @@
 				});
 			}
 
-			// ── Forecast mode ─────────────────────────────────────────────────
-			// Everything a lever needs comes out of the uploaded workbook: funding
-			// lines from the Funds sheet, unit costs from Instructor Category Cost,
-			// section counts from Schedule Cost. Nothing about a department is baked
-			// in here, so this works for any export in the standard shape.
+			// ── Forecast mode ──
+			// Levers are built from the uploaded file, so this works for any department.
 
 			const FORECAST_SHEETS = {
 				summary: 'BUDGET SUMMARY',
@@ -1104,7 +1101,7 @@
 
 			function friendlyError(message) {
 				const err = new Error(message);
-				err.friendly = true; // Shown to the user as-is rather than the generic parse error
+				err.friendly = true; // show as-is, not the generic parse error
 				return err;
 			}
 
@@ -1133,8 +1130,7 @@
 				return 0;
 			}
 
-			// Columns are found by their header text. A new column in the export shifts
-			// everything to its right, and hard-coded indexes would read the wrong money.
+			// Find columns by header, not position — a new column would shift fixed indexes.
 			function headerIndex(rows) {
 				const map = {};
 				(rows[0] || []).forEach((header, i) => {
@@ -1162,9 +1158,7 @@
 				});
 				const firstRow = summaryRows[1] || [];
 
-				// Funds, grouped by category. Buyouts are pooled rather than given a
-				// slider each: they're small, numerous, and the question a chair asks is
-				// "how many buyouts", not "what percentage of this one".
+				// Funds by category. Buyouts get pooled — the question is how many, not what percent of one.
 				const fundsIdx = headerIndex(fundRows);
 				const catCol = fundsIdx['CATEGORY'], amtCol = fundsIdx['AMOUNT'];
 				const fundCategories = {};
@@ -1184,7 +1178,7 @@
 					average: buyoutLines.length ? buyoutTotal / buyoutLines.length : 0
 				};
 
-				// Unit costs (a TA appointment, an hour of reading).
+				// Unit costs: one TA appointment, one reader hour.
 				const unit = {};
 				const unitRows = sheets[FORECAST_SHEETS.unitCost];
 				if (unitRows) {
@@ -1194,9 +1188,7 @@
 					});
 				}
 
-				// Replacement instructors, costed per section from the schedule. The rate
-				// on the Instructor Category Cost sheet is an annual salary for some
-				// types, so dividing the real cost by real sections is the honest figure.
+				// Per-section cost from the schedule. The category sheet's rate is annual for some types.
 				const instructors = [];
 				const schedRows = sheets[FORECAST_SHEETS.schedule];
 				if (schedRows) {
@@ -1219,7 +1211,7 @@
 								sections: entry.sections,
 								cost: entry.cost,
 								perSection: entry.cost / entry.sections,
-								// What a section of this type takes with it when it goes
+								// what a section takes with it
 								tasPerSection: entry.tas / entry.sections,
 								readerHoursPerSection: entry.readerHours / entry.sections
 							});
@@ -1303,8 +1295,7 @@
 					html += leverMarkup('lever-ta', 'TA appointments', fmtCount(m.ta.count),
 						money(m.ta.count * m.ta.unit) + ' at ' + money(m.ta.unit) + ' each', 0, m.ta.count, 0.5, m.ta.count);
 
-					// The same number from the other end: raise the ratio and appointments
-					// fall to match, which is the trade a chair actually argues about.
+					// Same number from the other end: raise the ratio, appointments fall to match.
 					if (m.enrollment) {
 						const baseRatio = Math.round(m.enrollment / m.ta.count);
 						html += leverMarkup('lever-ratio', 'Students per TA appointment', fmtCount(baseRatio),
@@ -1318,9 +1309,7 @@
 						0, m.reader.hours, 10, m.reader.hours);
 				}
 
-				// A section that goes away usually takes its TAs and readers with it. A
-				// section handed to ladder faculty instead doesn't, which is why this is
-				// a choice rather than always-on arithmetic.
+				// A cut section takes its TAs with it; one handed to ladder faculty doesn't.
 				const anySupport = m.instructors.some(i => i.tasPerSection || i.readerHoursPerSection);
 				if (anySupport) {
 					html += `
@@ -1516,7 +1505,7 @@
 				const who = [m.department, m.year].filter(Boolean).join(' ');
 				document.getElementById('forecast-intro').textContent =
 					`${who || 'This budget'}${m.scenarioName ? ' (' + m.scenarioName + ')' : ''} as filed: ${money(fundsBase)} in funds against ${money(costsBase)} in teaching costs, ` +
-					`leaving ${balBase < 0 ? money(Math.abs(balBase)) + ' in deficit' : money(balBase) + ' on the table'}.`;
+					`leaving ${balBase < 0 ? 'a deficit of ' + money(Math.abs(balBase)) : 'a surplus of ' + money(balBase)}.`;
 
 				const cutPhrases = Object.entries(m.fundCategories)
 					.filter(([category]) => s.cuts[category])
@@ -1529,11 +1518,11 @@
 				const gap = balNew < 0
 					? `This scenario is ${money(-balNew)} short. Closing it would take about ${fmtCount(-balNew / m.ta.unit)} TA appointments` +
 					  (m.reader.rate ? `, or ${Math.round(-balNew / m.reader.rate).toLocaleString('en-US')} reader hours.` : '.')
-					: `This scenario balances, with ${money(balNew)} to spare.`;
+					: `This scenario leaves a surplus of ${money(balNew)}.`;
 				document.getElementById('forecast-note').textContent =
 					(cutPhrases.length ? cutPhrases.join('; ') + '. ' : '') + gap;
 
-				// A plain-text version of the levers, because the sliders don't print.
+				// Sliders don't print, so list the settings as text.
 				const changes = [];
 				Object.entries(m.fundCategories).forEach(([category, amount]) => {
 					if (s.cuts[category]) changes.push(`${category}: cut ${s.cuts[category]}% (${money(amount * (1 - s.cuts[category] / 100))})`);
