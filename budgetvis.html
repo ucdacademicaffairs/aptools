@@ -447,10 +447,17 @@
 		<main class="flex-grow p-6 max-w-7xl mx-auto w-full">
 
 			<div id="upload-section" class="card p-8 rounded-lg shadow-sm mb-8 text-center">
-				<h2 class="text-2xl font-bold text-[#002855] mb-2">Comparison Setup</h2>
-				<p class="text-gray-600 mb-8">Upload your two budget Excel files.</p>
+				<h2 class="text-2xl font-bold text-[#002855] mb-2">Setup</h2>
+				<p class="text-gray-600 mb-6">Compare two budget years, or forecast from a single budget.</p>
 
-				<div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+				<div class="inline-flex rounded-lg border border-gray-300 overflow-hidden mb-8">
+					<button id="mode-compare-btn" class="px-5 py-2 text-sm font-bold bg-[#002855] text-white">Compare Two
+						Years</button>
+					<button id="mode-forecast-btn" class="px-5 py-2 text-sm font-bold bg-white text-[#002855]">Forecast From
+						One Budget</button>
+				</div>
+
+				<div id="compare-inputs" class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
 					<div class="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50">
 						<h3 class="font-bold text-lg mb-2 text-gray-700">1. Base Year (Old)</h3>
 						<input type="file" id="file-old" accept=".xlsx, .xls" class="block w-full text-sm text-slate-500
@@ -472,6 +479,21 @@
 					" />
 					</div>
 				</div>
+				<div id="forecast-inputs" class="hidden max-w-xl mx-auto">
+					<div class="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 text-left">
+						<h3 class="font-bold text-lg mb-1 text-gray-700">Budget File</h3>
+						<p class="text-xs text-gray-500 mb-4">The full IPA export, including its Funds and Instructor
+							Category Cost sheets. Those are where the funding lines and unit costs come from.</p>
+						<input type="file" id="file-forecast" accept=".xlsx, .xls" class="block w-full text-sm text-slate-500
+							file:mr-4 file:py-2 file:px-4
+							file:rounded-full file:border-0
+							file:text-sm file:font-semibold
+							file:bg-[#6bca98] file:text-white
+							hover:file:opacity-90 cursor-pointer
+						" />
+					</div>
+				</div>
+
 				<button id="btn-compare"
 					class="mt-8 btn-action py-3 px-8 rounded-lg shadow-md opacity-50 cursor-not-allowed" disabled>
 					Generate Comparison
@@ -590,6 +612,59 @@
 				</div>
 
 			</div>
+
+			<div id="forecast-dashboard" class="hidden pb-12">
+
+				<div class="flex justify-between items-end border-b-2 border-gray-100 pb-2 mb-4">
+					<h2 class="text-[#002855] font-bold text-xl">Budget Forecast</h2>
+					<div class="flex gap-2 no-print">
+						<button onclick="exportForecastCSV()"
+							class="text-xs bg-[#FFBF00] text-[#002855] font-bold py-2 px-4 rounded hover:bg-yellow-400">
+							Download CSV
+						</button>
+						<button onclick="window.print()"
+							class="text-xs bg-[#002855] text-white font-bold py-2 px-4 rounded hover:bg-slate-700 transition-colors shadow-sm">
+							Download/Print PDF Summary
+						</button>
+					</div>
+				</div>
+
+				<p class="ledger-note" id="forecast-intro"></p>
+
+				<div class="grid grid-cols-1 lg:grid-cols-[minmax(0,19rem)_minmax(0,1fr)] gap-6 mt-5">
+					<div class="card p-5 no-print">
+						<h3 class="font-bold text-[#002855]">Scenario</h3>
+						<p class="text-xs text-gray-500 mb-4">Move a slider to see what it does to the balance. Nothing
+							here changes the uploaded file.</p>
+						<div id="lever-panel"></div>
+						<button id="btn-reset-forecast"
+							class="mt-3 text-xs font-bold text-[#002855] underline">Reset to the budget as filed</button>
+					</div>
+
+					<div>
+						<div class="ledger-wrap">
+							<table class="ledger">
+								<caption>Scenario vs. Budget as Filed</caption>
+								<thead>
+									<tr>
+										<th scope="col" class="text-left">&nbsp;</th>
+										<th scope="col" class="num">As Filed</th>
+										<th scope="col" class="num">Scenario</th>
+										<th scope="col" class="num">Change</th>
+									</tr>
+								</thead>
+								<tbody id="scenario-body"></tbody>
+							</table>
+						</div>
+						<p class="ledger-note" id="forecast-note"></p>
+					</div>
+				</div>
+
+				<div id="scenario-settings" class="mt-6"></div>
+
+				<p class="text-xs text-gray-500 mt-6 italic">Planning estimates only. A scenario here is not an approved
+					allocation. Unit costs, funding lines, and section counts all come from the uploaded budget file.</p>
+			</div>
 		</main>
 
 		<script>
@@ -631,16 +706,41 @@
 			const btnCompare = document.getElementById('btn-compare');
 			const inputOld = document.getElementById('file-old');
 			const inputNew = document.getElementById('file-new');
+			const inputForecast = document.getElementById('file-forecast');
+
+			// Two ways in: compare two years (the original), or forecast from one budget.
+			let mode = 'compare';
+			const BUTTON_LABELS = { compare: 'Generate Comparison', forecast: 'Build Forecast' };
+
+			function setMode(next) {
+				mode = next;
+				const compareOn = next === 'compare';
+				document.getElementById('compare-inputs').classList.toggle('hidden', !compareOn);
+				document.getElementById('forecast-inputs').classList.toggle('hidden', compareOn);
+				document.getElementById('mode-compare-btn').className =
+					'px-5 py-2 text-sm font-bold ' + (compareOn ? 'bg-[#002855] text-white' : 'bg-white text-[#002855]');
+				document.getElementById('mode-forecast-btn').className =
+					'px-5 py-2 text-sm font-bold ' + (compareOn ? 'bg-white text-[#002855]' : 'bg-[#002855] text-white');
+				btnCompare.textContent = BUTTON_LABELS[next];
+				document.getElementById('error-msg').classList.add('hidden');
+				checkInputs();
+			}
 
 			function checkInputs() {
-				if (inputOld.files.length > 0 && inputNew.files.length > 0) {
-					btnCompare.disabled = false;
-					btnCompare.classList.remove('opacity-50', 'cursor-not-allowed');
-				}
+				const ready = mode === 'compare'
+					? (inputOld.files.length > 0 && inputNew.files.length > 0)
+					: inputForecast.files.length > 0;
+				btnCompare.disabled = !ready;
+				btnCompare.classList.toggle('opacity-50', !ready);
+				btnCompare.classList.toggle('cursor-not-allowed', !ready);
 			}
+
+			document.getElementById('mode-compare-btn').addEventListener('click', () => setMode('compare'));
+			document.getElementById('mode-forecast-btn').addEventListener('click', () => setMode('forecast'));
 
 			inputOld.addEventListener('change', checkInputs);
 			inputNew.addEventListener('change', checkInputs);
+			inputForecast.addEventListener('change', checkInputs);
 
 			btnCompare.addEventListener('click', async () => {
 				const errorMsg = document.getElementById('error-msg');
@@ -648,21 +748,30 @@
 				btnCompare.textContent = 'Processing...';
 
 				try {
-					const [resultOld, resultNew] = await Promise.all([
-						parseExcel(inputOld.files[0]),
-						parseExcel(inputNew.files[0])
-					]);
+					if (mode === 'compare') {
+						const [resultOld, resultNew] = await Promise.all([
+							parseExcel(inputOld.files[0]),
+							parseExcel(inputNew.files[0])
+						]);
 
-					processAndRender(resultOld, resultNew);
+						processAndRender(resultOld, resultNew);
 
-					document.getElementById('upload-section').classList.add('hidden');
-					document.getElementById('dashboard').classList.remove('hidden');
+						document.getElementById('upload-section').classList.add('hidden');
+						document.getElementById('dashboard').classList.remove('hidden');
+					} else {
+						startForecast(await parseWorkbook(inputForecast.files[0]));
+
+						document.getElementById('upload-section').classList.add('hidden');
+						document.getElementById('forecast-dashboard').classList.remove('hidden');
+					}
 
 				} catch (err) {
 					console.error(err);
-					errorMsg.textContent = "Error reading files. Ensure they match the standard Budget Summary format.";
+					errorMsg.textContent = err && err.friendly
+						? err.message
+						: "Error reading files. Ensure they match the standard Budget Summary format.";
 					errorMsg.classList.remove('hidden');
-					btnCompare.textContent = 'Generate Comparison';
+					btnCompare.textContent = BUTTON_LABELS[mode];
 				}
 			});
 
@@ -975,6 +1084,450 @@
 				`;
 					tbody.appendChild(tr);
 				});
+			}
+
+			// ── Forecast mode ─────────────────────────────────────────────────
+			// Everything a lever needs comes out of the uploaded workbook: funding
+			// lines from the Funds sheet, unit costs from Instructor Category Cost,
+			// section counts from Schedule Cost. Nothing about a department is baked
+			// in here, so this works for any export in the standard shape.
+
+			const FORECAST_SHEETS = {
+				summary: 'BUDGET SUMMARY',
+				funds: 'FUNDS',
+				unitCost: 'INSTRUCTOR CATEGORY COST',
+				schedule: 'SCHEDULE COST'
+			};
+
+			let forecastModel = null;
+			let scenario = null;
+
+			function friendlyError(message) {
+				const err = new Error(message);
+				err.friendly = true; // Shown to the user as-is rather than the generic parse error
+				return err;
+			}
+
+			function parseWorkbook(file) {
+				return new Promise((resolve, reject) => {
+					const reader = new FileReader();
+					reader.onload = (e) => {
+						const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+						const sheets = {};
+						workbook.SheetNames.forEach(name => {
+							sheets[name.toString().trim().toUpperCase()] = XLSX.utils.sheet_to_json(workbook.Sheets[name], { header: 1 });
+						});
+						resolve(sheets);
+					};
+					reader.onerror = reject;
+					reader.readAsArrayBuffer(file);
+				});
+			}
+
+			function toNumber(value) {
+				if (typeof value === 'number') return value;
+				if (typeof value === 'string') {
+					const n = parseFloat(value.replace(/[$,]/g, ''));
+					return isNaN(n) ? 0 : n;
+				}
+				return 0;
+			}
+
+			// Columns are found by their header text. A new column in the export shifts
+			// everything to its right, and hard-coded indexes would read the wrong money.
+			function headerIndex(rows) {
+				const map = {};
+				(rows[0] || []).forEach((header, i) => {
+					if (header) map[header.toString().trim().toUpperCase()] = i;
+				});
+				return map;
+			}
+
+			const slug = (text) => text.toString().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+			const fmtCount = (n) => Number(n).toLocaleString('en-US', { maximumFractionDigits: 1 });
+
+			function buildForecastModel(sheets) {
+				const summaryRows = sheets[FORECAST_SHEETS.summary];
+				const fundRows = sheets[FORECAST_SHEETS.funds];
+				if (!summaryRows || !fundRows) {
+					throw friendlyError('This file is missing the sheets a forecast needs. Upload the full IPA export — the one that still has its Budget Summary and Funds sheets.');
+				}
+
+				// Budget Summary: line name in column 4, the year figure under "Total".
+				const summaryIdx = headerIndex(summaryRows);
+				const totalCol = summaryIdx['TOTAL'] !== undefined ? summaryIdx['TOTAL'] : 7;
+				const summary = {};
+				summaryRows.slice(1).forEach(row => {
+					if (row && row[3]) summary[row[3].toString().trim().toUpperCase()] = toNumber(row[totalCol]);
+				});
+				const firstRow = summaryRows[1] || [];
+
+				// Funds, grouped by category. Buyouts are pooled rather than given a
+				// slider each: they're small, numerous, and the question a chair asks is
+				// "how many buyouts", not "what percentage of this one".
+				const fundsIdx = headerIndex(fundRows);
+				const catCol = fundsIdx['CATEGORY'], amtCol = fundsIdx['AMOUNT'];
+				const fundCategories = {};
+				const buyoutLines = [];
+				fundRows.slice(1).forEach(row => {
+					if (!row || !row[catCol]) return;
+					const category = row[catCol].toString().trim();
+					const amount = toNumber(row[amtCol]);
+					if (!amount) return;
+					if (/buyout/i.test(category)) { buyoutLines.push(amount); return; }
+					fundCategories[category] = (fundCategories[category] || 0) + amount;
+				});
+				const buyoutTotal = buyoutLines.reduce((a, b) => a + b, 0);
+				const buyouts = {
+					count: buyoutLines.length,
+					total: buyoutTotal,
+					average: buyoutLines.length ? buyoutTotal / buyoutLines.length : 0
+				};
+
+				// Unit costs (a TA appointment, an hour of reading).
+				const unit = {};
+				const unitRows = sheets[FORECAST_SHEETS.unitCost];
+				if (unitRows) {
+					const idx = headerIndex(unitRows);
+					unitRows.slice(1).forEach(row => {
+						if (row && row[idx['TYPE']]) unit[row[idx['TYPE']].toString().trim().toUpperCase()] = toNumber(row[idx['COST']]);
+					});
+				}
+
+				// Replacement instructors, costed per section from the schedule. The rate
+				// on the Instructor Category Cost sheet is an annual salary for some
+				// types, so dividing the real cost by real sections is the honest figure.
+				const instructors = [];
+				const schedRows = sheets[FORECAST_SHEETS.schedule];
+				if (schedRows) {
+					const idx = headerIndex(schedRows);
+					const byType = {};
+					schedRows.slice(1).forEach(row => {
+						if (!row) return;
+						const type = (row[idx['INSTRUCTOR TYPE']] || '').toString().trim();
+						if (!type) return;
+						const entry = byType[type] || (byType[type] = { sections: 0, cost: 0 });
+						entry.sections += toNumber(row[idx['SECTIONS']]);
+						entry.cost += toNumber(row[idx['INSTRUCTOR COST']]);
+					});
+					Object.entries(byType).forEach(([type, entry]) => {
+						if (entry.cost > 0 && entry.sections > 0) {
+							instructors.push({ type, sections: entry.sections, cost: entry.cost, perSection: entry.cost / entry.sections });
+						}
+					});
+				} else {
+					// No schedule sheet: fall back to the summary line and the unit rate.
+					Object.entries(unit).forEach(([type, rate]) => {
+						if (!rate || type === 'TA' || type === 'READER') return;
+						const cost = summary[type] || 0;
+						if (cost > 0) instructors.push({ type, sections: cost / rate, cost, perSection: rate });
+					});
+				}
+				instructors.sort((a, b) => b.cost - a.cost);
+
+				const taCount = summary['TA COUNT'] || 0;
+				const readerHours = summary['READER COUNT'] || 0;
+
+				return {
+					year: firstRow[0] || '',
+					department: firstRow[1] || '',
+					scenarioName: firstRow[2] || '',
+					enrollment: summary['ENROLLMENT'] || 0,
+					fundCategories,
+					buyouts,
+					instructors,
+					ta: { count: taCount, unit: unit['TA'] || (taCount ? (summary['TA COST'] || 0) / taCount : 0) },
+					reader: { hours: readerHours, rate: unit['READER'] || (readerHours ? (summary['READER COST'] || 0) / readerHours : 0) }
+				};
+			}
+
+			function startForecast(sheets) {
+				forecastModel = buildForecastModel(sheets);
+				resetScenario();
+				renderLevers();
+				recalcForecast();
+			}
+
+			function resetScenario() {
+				const m = forecastModel;
+				scenario = {
+					cuts: {},
+					buyoutCount: m.buyouts.count,
+					taCount: m.ta.count,
+					readerHours: m.reader.hours,
+					sections: {}
+				};
+				Object.keys(m.fundCategories).forEach(category => { scenario.cuts[category] = 0; });
+				m.instructors.forEach(i => { scenario.sections[i.type] = i.sections; });
+			}
+
+			function leverMarkup(id, label, readout, sub, min, max, step, value) {
+				return `
+					<div class="mb-4">
+						<div class="flex justify-between items-baseline gap-3">
+							<label for="${id}" class="text-sm text-gray-700">${label}</label>
+							<span id="${id}-out" class="text-sm font-bold text-[#002855] whitespace-nowrap">${readout}</span>
+						</div>
+						<input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${value}"
+							class="w-full mt-1 accent-[#002855] cursor-pointer">
+						<p id="${id}-sub" class="text-xs text-gray-500">${sub}</p>
+					</div>`;
+			}
+
+			function renderLevers() {
+				const m = forecastModel;
+				let html = '';
+
+				Object.entries(m.fundCategories).forEach(([category, amount]) => {
+					html += leverMarkup('lever-cut-' + slug(category), 'Cut to ' + category, '0%', money(amount) + ' as filed', 0, 50, 0.5, 0);
+				});
+
+				if (m.buyouts.count) {
+					html += leverMarkup('lever-buyouts', 'Buyouts', fmtCount(m.buyouts.count),
+						`${m.buyouts.count} on file, averaging ${money(m.buyouts.average)} each`,
+						0, m.buyouts.count + 4, 1, m.buyouts.count);
+				}
+
+				if (m.ta.count) {
+					html += leverMarkup('lever-ta', 'TA appointments', fmtCount(m.ta.count),
+						money(m.ta.count * m.ta.unit) + ' at ' + money(m.ta.unit) + ' each', 0, m.ta.count, 0.5, m.ta.count);
+
+					// The same number from the other end: raise the ratio and appointments
+					// fall to match, which is the trade a chair actually argues about.
+					if (m.enrollment) {
+						const baseRatio = Math.round(m.enrollment / m.ta.count);
+						html += leverMarkup('lever-ratio', 'Students per TA appointment', fmtCount(baseRatio),
+							'Raising this cuts appointments to match', baseRatio, baseRatio * 3, 1, baseRatio);
+					}
+				}
+
+				if (m.reader.hours) {
+					html += leverMarkup('lever-reader', 'Reader hours', fmtCount(m.reader.hours),
+						money(m.reader.hours * m.reader.rate) + ' at ' + money(m.reader.rate) + ' per hour',
+						0, m.reader.hours, 10, m.reader.hours);
+				}
+
+				m.instructors.forEach(i => {
+					html += leverMarkup('lever-sec-' + slug(i.type), i.type + ' sections', fmtCount(i.sections),
+						money(i.cost) + ' at ' + money(i.perSection) + ' per section', 0, i.sections, 1, i.sections);
+				});
+
+				document.getElementById('lever-panel').innerHTML = html;
+
+				Object.keys(m.fundCategories).forEach(category => {
+					const el = document.getElementById('lever-cut-' + slug(category));
+					el.addEventListener('input', () => { scenario.cuts[category] = parseFloat(el.value); recalcForecast(); });
+				});
+				const buyoutEl = document.getElementById('lever-buyouts');
+				if (buyoutEl) buyoutEl.addEventListener('input', () => { scenario.buyoutCount = parseFloat(buyoutEl.value); recalcForecast(); });
+				const taEl = document.getElementById('lever-ta');
+				if (taEl) taEl.addEventListener('input', () => setTaCount(parseFloat(taEl.value)));
+				const ratioEl = document.getElementById('lever-ratio');
+				if (ratioEl) ratioEl.addEventListener('input', () => setTaCount(m.enrollment / parseFloat(ratioEl.value)));
+				const readerEl = document.getElementById('lever-reader');
+				if (readerEl) readerEl.addEventListener('input', () => { scenario.readerHours = parseFloat(readerEl.value); recalcForecast(); });
+				m.instructors.forEach(i => {
+					const el = document.getElementById('lever-sec-' + slug(i.type));
+					el.addEventListener('input', () => { scenario.sections[i.type] = parseFloat(el.value); recalcForecast(); });
+				});
+			}
+
+			// The two TA levers are two views of one number, so moving either moves both.
+			function setTaCount(count) {
+				const m = forecastModel;
+				const clamped = Math.min(m.ta.count, Math.max(0, Math.round(count * 2) / 2));
+				scenario.taCount = clamped;
+				const taEl = document.getElementById('lever-ta');
+				if (taEl) taEl.value = clamped;
+				const ratioEl = document.getElementById('lever-ratio');
+				if (ratioEl && m.enrollment && clamped > 0) {
+					ratioEl.value = Math.min(parseFloat(ratioEl.max), Math.round(m.enrollment / clamped));
+				}
+				recalcForecast();
+			}
+
+			function forecastRows() {
+				const m = forecastModel, s = scenario;
+				const funds = Object.entries(m.fundCategories).map(([category, amount]) => ({
+					label: category,
+					base: amount,
+					value: amount * (1 - (s.cuts[category] || 0) / 100)
+				}));
+				if (m.buyouts.count) {
+					funds.push({
+						label: 'Buyouts', base: m.buyouts.total, value: s.buyoutCount * m.buyouts.average,
+						baseCount: m.buyouts.count, count: s.buyoutCount, unit: 'buyouts'
+					});
+				}
+
+				const costs = [];
+				if (m.ta.count) {
+					costs.push({
+						label: 'TA appointments', base: m.ta.count * m.ta.unit, value: s.taCount * m.ta.unit,
+						baseCount: m.ta.count, count: s.taCount, unit: 'appointments'
+					});
+				}
+				if (m.reader.hours) {
+					costs.push({
+						label: 'Readers', base: m.reader.hours * m.reader.rate, value: s.readerHours * m.reader.rate,
+						baseCount: m.reader.hours, count: s.readerHours, unit: 'hours'
+					});
+				}
+				m.instructors.forEach(i => {
+					const sections = s.sections[i.type] === undefined ? i.sections : s.sections[i.type];
+					costs.push({
+						label: i.type, base: i.cost, value: sections * i.perSection,
+						baseCount: i.sections, count: sections, unit: 'sections'
+					});
+				});
+
+				return { funds, costs };
+			}
+
+			function recalcForecast() {
+				const m = forecastModel, s = scenario;
+				const { funds, costs } = forecastRows();
+				const sum = (rows, key) => rows.reduce((total, r) => total + r[key], 0);
+				const fundsBase = sum(funds, 'base'), fundsNew = sum(funds, 'value');
+				const costsBase = sum(costs, 'base'), costsNew = sum(costs, 'value');
+				const balBase = fundsBase - costsBase, balNew = fundsNew - costsNew;
+
+				const rowHtml = (r) => {
+					const diff = r.value - r.base;
+					const pct = r.base ? (diff / r.base) * 100 : 0;
+					const counts = r.unit === undefined ? ''
+						: `<span class="block text-xs text-gray-500">${fmtCount(r.baseCount)} → ${fmtCount(r.count)} ${r.unit}</span>`;
+					return `
+						<tr>
+							<th scope="row">${r.label}${counts}</th>
+							<td class="num num-base">${money(r.base)}</td>
+							<td class="num">${money(r.value)}</td>
+							<td class="num ${diff === 0 ? 'chg-flat' : changeClass(pct)}">${diff === 0 ? '—' : signed(diff, money)}</td>
+						</tr>`;
+				};
+				const subtotalHtml = (label, base, value) => `
+					<tr class="total-row">
+						<th scope="row">${label}</th>
+						<td class="num num-base">${money(base)}</td>
+						<td class="num">${money(value)}</td>
+						<td class="num ${value - base === 0 ? 'chg-flat' : ''}">${value - base === 0 ? '—' : signed(value - base, money)}</td>
+					</tr>`;
+
+				document.getElementById('scenario-body').innerHTML =
+					'<tr class="group-row"><th scope="row" colspan="4">Funding</th></tr>'
+					+ funds.map(rowHtml).join('')
+					+ subtotalHtml('Total funds', fundsBase, fundsNew)
+					+ '<tr class="group-row"><th scope="row" colspan="4">Teaching costs</th></tr>'
+					+ costs.map(rowHtml).join('')
+					+ subtotalHtml('Total teaching costs', costsBase, costsNew)
+					+ `<tr class="total-row">
+							<th scope="row">Balance</th>
+							<td class="num num-base">${money(balBase)}</td>
+							<td class="num ${balNew < 0 ? 'chg-alarm' : ''}">${money(balNew)}</td>
+							<td class="num ${balNew - balBase === 0 ? 'chg-flat' : ''}">${balNew - balBase === 0 ? '—' : signed(balNew - balBase, money)}</td>
+						</tr>`;
+
+				// Lever readouts
+				const setOut = (id, readout, sub) => {
+					const out = document.getElementById(id + '-out');
+					if (out) out.textContent = readout;
+					const subEl = document.getElementById(id + '-sub');
+					if (subEl && sub !== undefined) subEl.textContent = sub;
+				};
+				Object.entries(m.fundCategories).forEach(([category, amount]) => {
+					const pct = s.cuts[category] || 0;
+					setOut('lever-cut-' + slug(category),
+						pct ? '−' + pct.toFixed(1).replace(/\.0$/, '') + '%' : '0%',
+						pct ? money(amount * pct / 100) + ' less than as filed' : money(amount) + ' as filed');
+				});
+				if (m.buyouts.count) {
+					setOut('lever-buyouts', fmtCount(s.buyoutCount),
+						money(s.buyoutCount * m.buyouts.average) + ' at ' + money(m.buyouts.average) + ' each');
+				}
+				if (m.ta.count) {
+					const fewer = m.ta.count - s.taCount;
+					setOut('lever-ta', fmtCount(s.taCount),
+						money(s.taCount * m.ta.unit) + (fewer > 0 ? ' · ' + fmtCount(fewer) + ' fewer' : ' at ' + money(m.ta.unit) + ' each'));
+					if (m.enrollment) {
+						setOut('lever-ratio', s.taCount ? fmtCount(Math.round(m.enrollment / s.taCount)) : '—',
+							s.taCount ? 'Raising this cuts appointments to match' : 'No TA support in this scenario');
+					}
+				}
+				if (m.reader.hours) {
+					setOut('lever-reader', fmtCount(s.readerHours), money(s.readerHours * m.reader.rate) + ' at ' + money(m.reader.rate) + ' per hour');
+				}
+				m.instructors.forEach(i => {
+					const sections = s.sections[i.type] === undefined ? i.sections : s.sections[i.type];
+					setOut('lever-sec-' + slug(i.type), fmtCount(sections),
+						money(sections * i.perSection) + ' at ' + money(i.perSection) + ' per section');
+				});
+
+				// The sentences under each panel
+				const who = [m.department, m.year].filter(Boolean).join(' ');
+				document.getElementById('forecast-intro').textContent =
+					`${who || 'This budget'}${m.scenarioName ? ' (' + m.scenarioName + ')' : ''} as filed: ${money(fundsBase)} in funds against ${money(costsBase)} in teaching costs, ` +
+					`leaving ${balBase < 0 ? money(Math.abs(balBase)) + ' in deficit' : money(balBase) + ' on the table'}.`;
+
+				const cutPhrases = Object.entries(m.fundCategories)
+					.filter(([category]) => s.cuts[category])
+					.map(([category, amount]) => `a ${s.cuts[category].toFixed(1).replace(/\.0$/, '')}% cut to ${category} removes ${money(amount * s.cuts[category] / 100)}`);
+				const gap = balNew < 0
+					? `This scenario is ${money(-balNew)} short. Closing it would take about ${fmtCount(-balNew / m.ta.unit)} TA appointments` +
+					  (m.reader.rate ? `, or ${Math.round(-balNew / m.reader.rate).toLocaleString('en-US')} reader hours.` : '.')
+					: `This scenario balances, with ${money(balNew)} to spare.`;
+				document.getElementById('forecast-note').textContent =
+					(cutPhrases.length ? cutPhrases.join('; ') + '. ' : '') + gap;
+
+				// A plain-text version of the levers, because the sliders don't print.
+				const changes = [];
+				Object.entries(m.fundCategories).forEach(([category, amount]) => {
+					if (s.cuts[category]) changes.push(`${category}: cut ${s.cuts[category]}% (${money(amount * (1 - s.cuts[category] / 100))})`);
+				});
+				if (m.buyouts.count && s.buyoutCount !== m.buyouts.count) changes.push(`Buyouts: ${fmtCount(m.buyouts.count)} → ${fmtCount(s.buyoutCount)}`);
+				if (s.taCount !== m.ta.count) changes.push(`TA appointments: ${fmtCount(m.ta.count)} → ${fmtCount(s.taCount)}` +
+					(m.enrollment && s.taCount ? ` (${fmtCount(Math.round(m.enrollment / s.taCount))} students per TA, was ${fmtCount(Math.round(m.enrollment / m.ta.count))})` : ''));
+				if (s.readerHours !== m.reader.hours) changes.push(`Reader hours: ${fmtCount(m.reader.hours)} → ${fmtCount(s.readerHours)}`);
+				m.instructors.forEach(i => {
+					const sections = s.sections[i.type] === undefined ? i.sections : s.sections[i.type];
+					if (sections !== i.sections) changes.push(`${i.type}: ${fmtCount(i.sections)} → ${fmtCount(sections)} sections`);
+				});
+				document.getElementById('scenario-settings').innerHTML = changes.length
+					? `<h3 class="font-bold text-[#002855] mb-2">Scenario settings</h3><ul class="list-disc pl-6 text-sm text-gray-700 space-y-1">${changes.map(c => `<li>${c}</li>`).join('')}</ul>`
+					: `<p class="text-sm text-gray-500">No changes yet — this is the budget exactly as filed.</p>`;
+			}
+
+			document.getElementById('btn-reset-forecast').addEventListener('click', () => {
+				if (!forecastModel) return;
+				resetScenario();
+				renderLevers();
+				recalcForecast();
+			});
+
+			function exportForecastCSV() {
+				if (!forecastModel) return;
+				const { funds, costs } = forecastRows();
+				const sum = (rows, key) => rows.reduce((total, r) => total + r[key], 0);
+				const line = (cells) => cells.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',');
+				const rows = [line(['Line', 'As filed', 'Scenario', 'Change', 'As filed (count)', 'Scenario (count)'])];
+				const push = (r) => rows.push(line([r.label, r.base.toFixed(2), r.value.toFixed(2), (r.value - r.base).toFixed(2),
+					r.baseCount === undefined ? '' : r.baseCount, r.count === undefined ? '' : r.count]));
+
+				rows.push(line(['Funding', '', '', '', '', '']));
+				funds.forEach(push);
+				rows.push(line(['Total funds', sum(funds, 'base').toFixed(2), sum(funds, 'value').toFixed(2), (sum(funds, 'value') - sum(funds, 'base')).toFixed(2), '', '']));
+				rows.push(line(['Teaching costs', '', '', '', '', '']));
+				costs.forEach(push);
+				rows.push(line(['Total teaching costs', sum(costs, 'base').toFixed(2), sum(costs, 'value').toFixed(2), (sum(costs, 'value') - sum(costs, 'base')).toFixed(2), '', '']));
+				const balBase = sum(funds, 'base') - sum(costs, 'base');
+				const balNew = sum(funds, 'value') - sum(costs, 'value');
+				rows.push(line(['Balance', balBase.toFixed(2), balNew.toFixed(2), (balNew - balBase).toFixed(2), '', '']));
+
+				const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+				const url = window.URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.setAttribute('href', url);
+				a.setAttribute('download', 'budget_forecast.csv');
+				a.click();
 			}
 
 			function exportTableToCSV() {
