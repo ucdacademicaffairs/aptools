@@ -300,12 +300,13 @@
 		}
 
 		/**
-		 * Scales service days onto pay days, rounded to the nearest whole day.
-		 * Round each edge of the leave, not the two counts — rounding counts separately let the
-		 * errors stack and pushed a leave past its quarter's pay period.
+		 * Scales service days onto pay days, rounded to the nearest whole day, the same way the
+		 * official Excel calculator does it. toPrecision(15) matches Excel's 15 significant digits,
+		 * so a value that should be exactly x.5 doesn't round down on a floating-point crumb.
 		 */
 		function scaleToPayDays(totalPayDays, serviceDays, totalServiceDays) {
-			return Math.round((totalPayDays * serviceDays) / totalServiceDays);
+			const raw = (serviceDays / totalServiceDays) * totalPayDays;
+			return Math.round(Number(raw.toPrecision(15)));
 		}
 
 
@@ -564,18 +565,23 @@
 					const serviceDaysOnLeave = inclusiveDateDiff(portionEnd, portionStart);
 					const serviceDaysPrior = inclusiveDateDiff(portionStart, data.serviceStart) - 1;
 
-					// 3. Scale where the leave starts and ends onto the pay period
+					// 3. Scale the days before the leave and the days on leave onto the pay period,
+					// each rounded on its own (same as the Excel sheet)
 					const payDaysPrior = scaleToPayDays(totalPayDays, serviceDaysPrior, totalServiceDays);
-					const payDaysThroughEnd = scaleToPayDays(totalPayDays, serviceDaysPrior + serviceDaysOnLeave, totalServiceDays);
+					const payDaysOnLeave = scaleToPayDays(totalPayDays, serviceDaysOnLeave, totalServiceDays);
+					const payStart = addDays(data.payStart, payDaysPrior);
+
+					// 4. A leave that runs to the last service day takes the pay period's end, which
+					// stops the rounding from pushing it past the quarter (the sheet does this too)
+					const runsToQuarterEnd = portionEnd === data.serviceEnd;
 
 					return {
 						quarterName, data, portionStart, portionEnd,
 						totalServiceDays, totalPayDays, serviceDaysOnLeave, serviceDaysPrior,
-						payDaysPrior, payDaysThroughEnd,
+						payDaysPrior, payDaysOnLeave, runsToQuarterEnd,
 						whole: serviceDaysOnLeave === totalServiceDays,
-						// 4. Calculate the final pay dates
-						payStart: addDays(data.payStart, payDaysPrior),
-						payEnd: addDays(data.payStart, payDaysThroughEnd - 1) // -1 because it's inclusive
+						payStart,
+						payEnd: runsToQuarterEnd ? data.payEnd : addDays(payStart, payDaysOnLeave - 1) // -1 because it's inclusive
 					};
 				}).filter(Boolean);
 
@@ -618,9 +624,11 @@
 					}
 
 					const percentOnLeave = (p.serviceDaysOnLeave / p.totalServiceDays * 100).toFixed(2);
-					const rawStart = (p.totalPayDays * p.serviceDaysPrior / p.totalServiceDays).toFixed(2);
-					const rawEnd = (p.totalPayDays * (p.serviceDaysPrior + p.serviceDaysOnLeave) / p.totalServiceDays).toFixed(2);
-					const payDaysOnLeave = p.payDaysThroughEnd - p.payDaysPrior;
+					const rawStart = (p.serviceDaysPrior / p.totalServiceDays * p.totalPayDays).toFixed(2);
+					const rawLength = (p.serviceDaysOnLeave / p.totalServiceDays * p.totalPayDays).toFixed(2);
+					const endLine = p.runsToQuarterEnd
+						? `Pay end: the leave runs to the last service day of the quarter, so it takes the pay period's end → <strong>${formatDate(p.payEnd)}</strong>`
+						: `Pay end: ${formatDate(p.payStart)} + ${p.payDaysOnLeave} days − 1 → <strong>${formatDate(p.payEnd)}</strong>`;
 
 					return `
 						<div class="border-l-4 border-[#6bca98] pl-4 space-y-2">
@@ -629,9 +637,9 @@
 							<p>Leave in this quarter: ${formatDate(p.portionStart)} - ${formatDate(p.portionEnd)}, which is <strong>${p.serviceDaysOnLeave} service days</strong>
 							   (${percentOnLeave}% of the quarter), with <strong>${p.serviceDaysPrior} service days</strong> before it.</p>
 							<div class="font-mono text-xs bg-white border border-gray-200 rounded p-3 space-y-1 overflow-x-auto whitespace-nowrap">
-								<p>Pay start: ${p.totalPayDays} × ${p.serviceDaysPrior} ÷ ${p.totalServiceDays} = ${rawStart} → ${p.payDaysPrior} days after ${formatDate(p.data.payStart)} → <strong>${formatDate(p.payStart)}</strong></p>
-								<p>Pay end: ${p.totalPayDays} × (${p.serviceDaysPrior} + ${p.serviceDaysOnLeave}) ÷ ${p.totalServiceDays} = ${rawEnd} → day ${p.payDaysThroughEnd} of the pay period → <strong>${formatDate(p.payEnd)}</strong></p>
-								<p>Pay days on leave: ${p.payDaysThroughEnd} − ${p.payDaysPrior} = <strong>${payDaysOnLeave} days</strong></p>
+								<p>Pay start: ${p.serviceDaysPrior} ÷ ${p.totalServiceDays} × ${p.totalPayDays} = ${rawStart} → ${p.payDaysPrior} days after ${formatDate(p.data.payStart)} → <strong>${formatDate(p.payStart)}</strong></p>
+								<p>Pay days on leave: ${p.serviceDaysOnLeave} ÷ ${p.totalServiceDays} × ${p.totalPayDays} = ${rawLength} → <strong>${p.payDaysOnLeave} days</strong></p>
+								<p>${endLine}</p>
 							</div>
 						</div>`;
 				}).join('');
@@ -639,7 +647,7 @@
 				workExplanationElPartial.innerHTML = portionHtml + `
 					<p class="font-semibold text-gray-800">
 					   Therefore, the pay period for this leave runs from the pay start of its first quarter to the pay end of its last.
-					   Each edge of the leave is rounded to the nearest whole pay day, so back-to-back leaves line up exactly and no leave runs past its quarter's pay period.
+					   This follows the official Excel calculator: the days before the leave and the days on leave are each rounded to the nearest whole pay day, and a leave that runs to the end of a quarter takes that quarter's pay period end.
 					</p>
 				`;
 
