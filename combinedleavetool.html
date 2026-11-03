@@ -79,25 +79,33 @@
 			<button class="calculate-button" data-field="calculate" type="submit">Convert Leave Dates</button>
 		</form>
 		<section class="card results" data-field="results" aria-label="Calculated leave results" aria-live="polite" hidden>
+			<h2>Calculated Leave Pay Period</h2>
 			<div class="pay-period">
 				<h2>Your pay period for this leave is:</h2>
 				<p data-field="pay-period"></p>
 			</div>
-			<dl class="metrics service-metrics">
-				<div><dt>Service Days on Leave</dt><dd data-field="service-days"></dd></div>
-				<div><dt>Work Days in Service Period</dt><dd data-field="service-workdays"></dd></div>
-				<div><dt>Work Days in Service Period on Leave</dt><dd data-field="leave-workdays"></dd></div>
-			</dl>
-			<dl class="metrics pay-metrics" data-field="pay-results" hidden>
-				<div><dt>Total Full Unpaid Amount</dt><dd data-field="full-unpaid"></dd></div>
-				<div><dt>Total Unpaid Amount at Partial Pay</dt><dd data-field="partial-unpaid"></dd></div>
-			</dl>
+			<div class="service-summary">
+				<h3>Service Days on Leave:</h3>
+				<p class="service-day-count" data-field="service-days"></p>
+				<p class="service-date-range" data-field="service-range"></p>
+			</div>
+			<section class="payment-calculations" data-field="pay-results" aria-label="Payment calculations" hidden>
+				<h2>Payment Calculations</h2>
+				<dl class="metrics pay-metrics">
+					<div><dt>Total Full Unpaid Amount</dt><dd data-field="full-unpaid"></dd></div>
+					<div><dt>Total Unpaid Amount at Partial Pay</dt><dd data-field="partial-unpaid"></dd></div>
+				</dl>
+				<dl class="workday-metrics">
+					<div><dt>Work Days in Service Period</dt><dd data-field="service-workdays"></dd></div>
+					<div><dt>Work Days in Service Period on Leave</dt><dd data-field="leave-workdays"></dd></div>
+				</dl>
+			</section>
 			<p class="help">Service and pay date conversion uses calendar days. Work days count Monday–Friday, including weekday holidays. All date counts include both start and end dates.</p>
 			<p class="help" data-field="break-note" hidden></p>
-			<div class="show-work">
-				<h2>Show Your Work</h2>
+			<details class="show-work" data-field="work-details">
+				<summary>Show Your Work <span class="expand-icon" aria-hidden="true"></span></summary>
 				<div data-field="work"></div>
-			</div>
+			</details>
 		</section>
 		<details class="card base-dates">
 			<summary>Base Dates &amp; Definitions</summary>

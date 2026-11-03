@@ -35,16 +35,124 @@
 	font-weight: 700;
 }
 
-.service-metrics {
-	grid-template-columns: repeat(3, minmax(0, 1fr));
+.service-summary {
+	margin-block: 1.5rem;
+	padding: 1rem;
+	border-left: 4px solid #6b7280;
+	border-radius: 0 0.5rem 0.5rem 0;
+	background: #f9fafb;
+	color: #1f2937;
+}
+
+.service-summary h3 {
+	margin: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-transform: uppercase;
+}
+
+.service-day-count {
+	margin: 0.25rem 0 0;
+	font-size: clamp(1.5rem, 3vw, 1.875rem);
+	font-weight: 700;
+}
+
+.service-date-range {
+	margin: 0.25rem 0 0;
+	font-size: 0.875rem;
+	color: #4b5563;
+}
+
+.payment-calculations {
+	border-top: 1px solid #e5e7eb;
+	padding-top: 1.5rem;
+	margin-bottom: 1.5rem;
+}
+
+.payment-calculations h2 {
+	margin-bottom: 1rem;
+}
+
+.pay-metrics {
+	margin-top: 0;
 }
 
 .pay-metrics > div {
 	border-top: 3px solid var(--ucd-gold);
 }
 
+.workday-metrics {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 1rem;
+	margin: 0;
+	font-size: 0.875rem;
+	color: #4b5563;
+}
+
+.workday-metrics dd {
+	margin: 0.25rem 0 0;
+	font-size: 1rem;
+	font-weight: 600;
+	color: #253746;
+}
+
+.show-work > summary {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	list-style: none;
+	font-size: 1.15rem;
+	font-weight: 700;
+	color: var(--ucd-blue);
+	cursor: pointer;
+}
+
+.show-work > summary::-webkit-details-marker {
+	display: none;
+}
+
+.expand-icon::before {
+	content: "+";
+	font-size: 1.5rem;
+}
+
+.show-work[open] > summary .expand-icon::before {
+	content: "−";
+}
+
+.show-work[open] > summary {
+	margin-bottom: 1.5rem;
+}
+
+.work-group {
+	margin-block: 1rem;
+}
+
+.work-group h4 {
+	margin: 0 0 0.25rem;
+	font-size: 0.9rem;
+	color: #253746;
+}
+
+.work-group ul {
+	margin: 0.5rem 0;
+	padding-left: 1.25rem;
+	font-size: 0.875rem;
+}
+
+.work-group li + li {
+	margin-top: 0.35rem;
+}
+
+.work-totals {
+	border-top: 1px solid #d1d5db;
+	padding-top: 1rem;
+}
+
 @media (max-width: 600px) {
-	.service-metrics {
+	.workday-metrics {
 		grid-template-columns: 1fr;
 	}
 }

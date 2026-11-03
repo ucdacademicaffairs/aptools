@@ -56,7 +56,8 @@ function initializePanel(panel, dates, term, periodsPerYear) {
 			if (!Number.isInteger(partialPay) || partialPay < 0 || partialPay > 99) throw new Error('Partial Pay Percentage must be a whole number from 0 to 99.');
 			const result = calculateLeave(dates, start, end, annualSalary, partialPay, periodsPerYear);
 			field('pay-period').textContent = `${formatDate(result.payStart)} – ${formatDate(result.payEnd)}`;
-			field('service-days').textContent = result.serviceDays;
+			field('service-days').textContent = `${result.serviceDays} ${result.serviceDays === 1 ? 'day' : 'days'}`;
+			field('service-range').textContent = `${formatDate(result.portions[0].portionStart)} – ${formatDate(result.portions[result.portions.length - 1].portionEnd)}, across ${result.portions.map(portion => portion.name).join(', ')}`;
 			field('service-workdays').textContent = result.serviceWorkDays;
 			field('leave-workdays').textContent = result.leaveWorkDays;
 			field('pay-results').hidden = !includePay.checked;
@@ -65,6 +66,7 @@ function initializePanel(panel, dates, term, periodsPerYear) {
 			field('break-note').hidden = !result.breakDays;
 			field('break-note').textContent = `${result.breakDays} calendar days fall between service periods. These days are excluded from service-day and work-day totals.`;
 			renderWork(field('work'), result, annualSalary, partialPay, periodsPerYear, term);
+			field('work-details').open = false;
 			field('results').hidden = false;
 		} catch (error) {
 			field('error').textContent = error.message;

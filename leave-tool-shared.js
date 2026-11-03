@@ -85,33 +85,60 @@ function textElement(tag, text, className) {
 function renderWork(container, result, annualSalary, partialPay, periodsPerYear, term) {
 	const includePay = annualSalary !== null;
 	container.replaceChildren();
+	const dayCount = (count, kind) => `${count} ${kind} ${count === 1 ? 'day' : 'days'}`;
+	function group(parent, title, dateRange, items) {
+		const section = document.createElement('section');
+		section.className = 'work-group';
+		section.append(textElement('h4', title));
+		if (dateRange) section.append(textElement('p', dateRange));
+		const list = document.createElement('ul');
+		items.forEach(item => list.append(textElement('li', item)));
+		section.append(list);
+		parent.append(section);
+	}
 	result.portions.forEach(portion => {
 		const section = document.createElement('div');
 		section.className = 'work-portion';
 		section.append(textElement('h3', portion.name));
-		const lines = [
-			`Service period: ${formatDate(portion.period.serviceStart)} – ${formatDate(portion.period.serviceEnd)}: ${portion.serviceDays} calendar days; ${portion.serviceWorkDays} Monday–Friday work days.`,
-			`Service days on leave: ${formatDate(portion.portionStart)} – ${formatDate(portion.portionEnd)}: ${portion.leaveDays} calendar days; ${portion.leaveWorkDays} Monday–Friday work days.`,
-			`Pay period: ${formatDate(portion.period.payStart)} – ${formatDate(portion.period.payEnd)}: ${portion.payDays} calendar days.`,
-			`Pay days before leave = ROUND(${portion.daysBefore} ÷ ${portion.serviceDays} × ${portion.payDays}, 0) = ${portion.payDaysBefore}. Pay start = ${formatDate(portion.period.payStart)} + ${portion.payDaysBefore} days = ${formatDate(portion.payStart)}.`,
-			`Converted leave days = ROUND(${portion.leaveDays} ÷ ${portion.serviceDays} × ${portion.payDays}, 0) = ${portion.convertedDays}.`,
+		group(section, 'Service Period', `${formatDate(portion.period.serviceStart)} – ${formatDate(portion.period.serviceEnd)}`, [
+			dayCount(portion.serviceDays, 'calendar'),
+			`${dayCount(portion.serviceWorkDays, 'work')} (Monday–Friday)`
+		]);
+		group(section, 'Service Days on Leave', `${formatDate(portion.portionStart)} – ${formatDate(portion.portionEnd)}`, [
+			dayCount(portion.leaveDays, 'calendar'),
+			dayCount(portion.leaveWorkDays, 'work')
+		]);
+		group(section, 'Pay Period', `${formatDate(portion.period.payStart)} – ${formatDate(portion.period.payEnd)}`, [
+			dayCount(portion.payDays, 'calendar')
+		]);
+		group(section, 'How We Find Your Pay Dates', null, [
+			`First, convert the days before your leave: ${portion.daysBefore} ÷ ${portion.serviceDays} × ${portion.payDays} = ${portion.payDaysBefore} pay days, rounded to a whole day.`,
+			`Your pay starts ${portion.payDaysBefore} days after ${formatDate(portion.period.payStart)}: ${formatDate(portion.payStart)}.`,
+			`Next, convert your leave days: ${portion.leaveDays} ÷ ${portion.serviceDays} × ${portion.payDays} = ${portion.convertedDays} pay days, rounded to a whole day.`,
 			portion.runsToEnd
-				? `The leave reaches the last service day of this ${term}, so the pay end is the ${term}'s pay period end: ${formatDate(portion.payEnd)}.`
-				: `Pay end = ${formatDate(portion.payStart)} + ${portion.convertedDays} days − 1 (inclusive) = ${formatDate(portion.payEnd)}.`
-		];
-		if (includePay) lines.push(
-			`${term[0].toUpperCase() + term.slice(1)} salary = ${currency.format(annualSalary)} ÷ ${periodsPerYear} = ${currency.format(portion.periodSalary)}.`,
-			`Daily rate = (${currency.format(annualSalary)} ÷ ${periodsPerYear}) ÷ ${portion.serviceWorkDays} = $${portion.dailyRate.toFixed(6)} per work day.`,
-			`Full unpaid amount = daily rate × ${portion.leaveWorkDays} work days on leave = ${currency.format(portion.fullUnpaid)}.`
-		);
-		lines.forEach(line => section.append(textElement('p', line)));
+				? `Your leave reaches the last service day of the ${term}, so your pay ends on the period's last pay date: ${formatDate(portion.payEnd)}.`
+				: `Count ${portion.convertedDays} pay days starting on ${formatDate(portion.payStart)}. The first day counts, so the end is ${formatDate(portion.payEnd)} (${formatDate(portion.payStart)} + ${portion.convertedDays} − 1).`
+		]);
+		if (includePay) group(section, 'How We Find Your Unpaid Amount', null, [
+			`Salary for this ${term}: ${currency.format(annualSalary)} ÷ ${periodsPerYear} = ${currency.format(portion.periodSalary)}.`,
+			`Pay for one work day: ${currency.format(portion.periodSalary)} ÷ ${portion.serviceWorkDays} work days = about ${currency.format(portion.dailyRate)}.`,
+			`Fully unpaid leave: the daily rate × ${portion.leaveWorkDays} work days on leave = ${currency.format(portion.fullUnpaid)}.`,
+			`At ${partialPay}% pay, ${100 - partialPay}% is unpaid: ${currency.format(portion.fullUnpaid)} × ${100 - partialPay}% = ${currency.format(portion.fullUnpaid * (100 - partialPay) / 100)}.`
+		]);
 		container.append(section);
 	});
-	if (includePay) container.append(
-		textElement('p', `Total Full Unpaid Amount = sum of the unpaid amounts for the affected ${term}s = ${currency.format(result.fullUnpaid)}.`),
-		textElement('p', `Total Unpaid Amount at Partial Pay = full unpaid amount × (100 − ${partialPay}) ÷ 100 = ${currency.format(result.partialUnpaid)}.`),
-		textElement('p', `Daily rates and intermediate amounts retain full precision; final totals are rounded to cents. Work days count Monday–Friday, including holidays that fall on weekdays. Calendar dates count both start and end dates. When a leave spans multiple ${term}s, the work days in service period total sums the complete service periods touched by the leave.`, 'help')
-	);
-	if (!includePay) container.append(textElement('p', 'Date conversion uses inclusive calendar days. Work days count Monday–Friday, including holidays that fall on weekdays. Days between service periods are excluded.', 'help'));
+	if (includePay) {
+		const totals = document.createElement('div');
+		totals.className = 'work-totals';
+		totals.append(
+			textElement('h3', result.portions.length > 1 ? 'Add the Periods Together' : 'Your Unpaid Totals'),
+			textElement('p', `Total Full Unpaid Amount: ${currency.format(result.fullUnpaid)}.`),
+			textElement('p', `Total Unpaid Amount at Partial Pay: ${currency.format(result.partialUnpaid)}.`),
+			textElement('p', 'We keep the exact daily rate while calculating, then round the final totals to cents.', 'help')
+		);
+		container.append(totals);
+	}
+	container.append(textElement('p', 'Calendar days include weekends. Work days are Monday–Friday, including weekday holidays. Both the start and end dates count. Days between service periods are left out.', 'help'));
+	if (result.portions.length > 1) container.append(textElement('p', `Work Days in Service Period adds together the work days in each full ${term} touched by your leave. Each ${term} uses its own daily rate when pay amounts are calculated.`, 'help'));
 }
 
