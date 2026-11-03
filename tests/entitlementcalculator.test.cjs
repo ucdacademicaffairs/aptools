@@ -103,3 +103,68 @@ test('missing selections, invalid dates, reversed dates and empty periods are re
 	assert.throws(() => context.entitlementDayCounts('', '2026-03-01'), /valid date/);
 	assert.throws(() => context.entitlementDayCounts('2026-03-02', '2026-03-01'), /on or after/);
 });
+
+test('FMLA warns across calendar years without preventing a calculation', () => {
+	const result = context.summarizeEntitlements([period('2026-12-15', '2027-01-15', ['FMLA'])])[0];
+	assert.equal(result.calendarDays, 32);
+	assert.equal(result.warning, 'Entitlement resets every calendar year. Please keep FMLA leave dates within the same calendar year.');
+	assert.equal(context.summarizeEntitlements([period('2026-01-01', '2026-12-31', ['FMLA'])])[0].warning, null);
+});
+
+test('separate FMLA entries in different years also warn about a combined balance', () => {
+	const warnings = context.getEntitlementWarnings([
+		period('2026-01-05', '2026-01-16', ['FMLA']),
+		period('2027-01-04', '2027-01-15', ['FMLA'])
+	]);
+	assert.equal(warnings.length, 1);
+	assert.equal(warnings[0].type, 'FMLA');
+	assert.equal(warnings[0].reasons[0], 'calendar-year');
+});
+
+test('CFRA event dates are optional and calendar-year boundaries still warn', () => {
+	assert.equal(context.summarizeEntitlements([period('2026-02-01', '2026-02-28', ['CFRA'])])[0].warning, null);
+	const result = context.summarizeEntitlements([period('2026-12-15', '2027-01-15', ['CFRA'])])[0];
+	assert.equal(result.warning, 'Entitlement resets every calendar year or per birth/placement/adoption event. Please keep CFRA leave dates within the same entitlement period.');
+});
+
+test('CFRA warns when leave crosses an actual event date or yearly anniversary', () => {
+	for (const [eventDate, reason] of [['2026-02-15', 'event-date'], ['2024-02-15', 'anniversary']]) {
+		const warnings = context.getEntitlementWarnings([
+			{ ...period('2026-02-01', '2026-02-28', ['CFRA']), eventDate }
+		]);
+		assert.equal(warnings[0].type, 'CFRA');
+		assert.ok(warnings[0].reasons.includes(reason));
+	}
+	// The event date starts the next period; a leave wholly on that side is valid.
+	assert.equal(context.getEntitlementWarnings([
+		{ ...period('2026-02-15', '2026-02-28', ['CFRA']), eventDate: '2024-02-15' }
+	]).length, 0);
+	assert.equal(context.getEntitlementWarnings([
+		{ ...period('2026-02-01', '2026-02-14', ['CFRA']), eventDate: '2024-02-15' }
+	]).length, 0);
+});
+
+test('CFRA anniversary checks include boundary end dates and handle Feb 29 events', () => {
+	assert.ok(context.getEntitlementWarnings([
+		{ ...period('2026-02-01', '2026-02-15', ['CFRA']), eventDate: '2024-02-15' }
+	])[0].reasons.includes('anniversary'));
+	assert.ok(context.getEntitlementWarnings([
+		{ ...period('2026-02-20', '2026-03-01', ['CFRA']), eventDate: '2024-02-29' }
+	])[0].reasons.includes('anniversary'));
+	assert.equal(context.getEntitlementWarnings([
+		{ ...period('2026-02-01', '2026-02-28', ['CFRA']), eventDate: '2027-02-15' }
+	]).length, 0);
+});
+
+test('CFRA warns for separate events, validates optional dates, and leaves other entitlements alone', () => {
+	assert.ok(context.getEntitlementWarnings([
+		{ ...period('2026-09-01', '2026-09-10', ['CFRA']), eventDate: '2026-01-01' },
+		{ ...period('2026-10-01', '2026-10-10', ['CFRA']), eventDate: '2026-06-01' }
+	])[0].reasons.includes('multiple-events'));
+	assert.throws(() => context.summarizeEntitlements([
+		{ ...period('2026-02-01', '2026-02-28', ['CFRA']), eventDate: '2026-02-30' }
+	]), /valid date/);
+	for (const row of context.summarizeEntitlements([period('2026-12-15', '2027-01-15', ['PDLL', 'PFCB'])])) {
+		assert.equal(row.warning, null);
+	}
+});

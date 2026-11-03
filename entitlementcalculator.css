@@ -58,8 +58,7 @@ h1 {
 	border-top: 5px solid var(--ucd-gold);
 }
 
-.section-heading,
-.period-header {
+.section-heading {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -96,15 +95,6 @@ h2 {
 	background: #fcfdfe;
 }
 
-.period-header {
-	margin-bottom: 0.5rem;
-}
-
-.period-header h3 {
-	margin: 0;
-	font-size: 1rem;
-}
-
 button,
 input {
 	font: inherit;
@@ -139,9 +129,23 @@ button {
 
 .period-fields {
 	display: grid;
-	grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+	grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) auto;
 	align-items: end;
 	gap: 1.25rem;
+}
+
+.cfra-event {
+	max-width: 28rem;
+	margin-top: 0.75rem;
+}
+
+.cfra-event .help {
+	margin: 0.35rem 0 0;
+	font-size: 0.75rem;
+}
+
+.optional-label {
+	font-weight: 400;
 }
 
 .date-grid {
@@ -299,6 +303,73 @@ input:focus-visible,
 	font-size: 1.125rem;
 }
 
+.entitlement-card-heading {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+}
+
+.caution-symbol {
+	color: #a85d00;
+	font-size: 1.35rem;
+}
+
+.card-reset-note {
+	margin: 0.5rem 0 0;
+	font-size: 0.75rem;
+	color: #805000;
+}
+
+.entitlement-back .card-warning,
+.reset-warnings {
+	padding: 0.75rem 1rem;
+	margin: 0.75rem 0;
+	border-left: 3px solid var(--ucd-gold);
+	background: #fff8df;
+	color: #6b4600;
+	font-size: 0.875rem;
+}
+
+.reset-warnings p {
+	margin: 0;
+}
+
+.reset-warnings p + p {
+	margin-top: 0.75rem;
+}
+
+.event-date-note {
+	display: block;
+	margin-top: 0.25rem;
+	font-size: 0.75rem;
+	color: #4b5563;
+}
+
+.warning-dialog {
+	width: min(34rem, calc(100% - 2rem));
+	max-height: calc(100% - 2rem);
+	padding: 1.5rem;
+	border: 1px solid #d9e0e6;
+	border-top: 4px solid var(--ucd-gold);
+	border-radius: 0.5rem;
+	color: #253746;
+}
+
+.warning-dialog::backdrop {
+	background: rgb(2 40 81 / 45%);
+}
+
+.warning-dialog h2 {
+	font-size: 1.25rem;
+}
+
+.warning-dialog form {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 1.5rem;
+}
+
 .entitlement-totals {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -417,8 +488,22 @@ input:focus-visible,
 
 @media (max-width: 800px) {
 	.period-fields {
-		grid-template-columns: 1fr;
+		grid-template-columns: minmax(0, 1fr) auto;
 		gap: 0.625rem;
+	}
+
+	.date-grid {
+		grid-column: 1;
+	}
+
+	.entitlement-choices {
+		grid-column: 1 / -1;
+	}
+
+	.remove-period {
+		grid-column: 2;
+		grid-row: 1;
+		align-self: start;
 	}
 }
 

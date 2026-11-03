@@ -34,6 +34,7 @@
 			<div id="leave-periods"></div>
 			<p id="empty-periods" class="empty-state" hidden>No leave periods yet. Add a leave period to get started.</p>
 			<p id="form-error" class="error-message" role="alert" hidden></p>
+			<div id="entitlement-warnings" class="reset-warnings" role="alert" hidden></div>
 			<div class="calculate-row">
 				<button id="add-period" class="add-period" type="button"><span aria-hidden="true">+</span> Add leave period</button>
 				<button class="calculate-button" type="submit">Calculate Entitlements</button>
@@ -53,14 +54,13 @@
 			<p class="copyright">&copy; 2026 Regents of the University of California, Davis campus. All rights reserved.</p>
 		</div>
 	</footer>
+	<dialog id="entitlement-warning-dialog" class="warning-dialog" role="alertdialog" aria-labelledby="warning-dialog-heading" aria-describedby="warning-dialog-messages">
+		<h2 id="warning-dialog-heading"><span aria-hidden="true">⚠</span> Review entitlement dates</h2>
+		<div id="warning-dialog-messages"></div>
+		<form method="dialog"><button class="calculate-button">OK</button></form>
+	</dialog>
 	<template id="period-template">
 		<section class="leave-period">
-			<div class="period-header">
-				<h3 data-field="heading"></h3>
-				<button type="button" class="remove-period" data-field="remove" title="Remove leave period">
-					<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M5 6l1 14a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1l1-14M10 10v7M14 10v7"/></svg>
-				</button>
-			</div>
 			<div class="period-fields">
 				<div class="date-grid">
 					<div class="field"><label data-for="start">Start date</label><input data-field="start" type="date" required></div>
@@ -75,6 +75,14 @@
 						<label><input type="checkbox" name="entitlements" value="PFCB"> <span>PFCB</span></label>
 					</div>
 				</fieldset>
+				<button type="button" class="remove-period" data-field="remove" title="Remove dates">
+					<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M5 6l1 14a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1l1-14M10 10v7M14 10v7"/></svg>
+				</button>
+			</div>
+			<div class="cfra-event field" data-field="event-section" hidden>
+				<label data-for="event-date">Birth/placement/adoption event date <span class="optional-label">(optional, for CFRA)</span></label>
+				<input data-field="event-date" type="date" disabled>
+				<p class="help" data-field="event-help">Add an event date to check whether CFRA dates cross the event or a yearly anniversary.</p>
 			</div>
 		</section>
 	</template>
