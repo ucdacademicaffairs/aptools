@@ -201,9 +201,12 @@ document.addEventListener('DOMContentLoaded', () => {
 		card.querySelectorAll('[data-field]').forEach(element => { element.id = `${prefix}-${element.dataset.field}`; });
 		card.querySelectorAll('[data-for]').forEach(label => { label.htmlFor = `${prefix}-${label.dataset.for}`; });
 		card.setAttribute('aria-labelledby', field(card, 'heading').id);
-		card.addEventListener('input', () => {
+		card.addEventListener('input', event => {
 			invalidate();
-			field(card, 'end').min = field(card, 'start').value;
+			const start = field(card, 'start');
+			const end = field(card, 'end');
+			// Changing a native date input's constraints can clear a partly typed date.
+			if (event.target === start && end.min !== start.value) end.min = start.value;
 		});
 		field(card, 'remove').addEventListener('click', () => {
 			const index = cards().indexOf(card);

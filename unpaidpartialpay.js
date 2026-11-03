@@ -133,10 +133,12 @@ function initializePanel(panel, dates, term, periodsPerYear) {
 			.forEach(value => row.append(textElement('td', value)));
 		field('base-dates').append(row);
 	});
-	form.addEventListener('input', () => {
+	form.addEventListener('input', event => {
 		field('results').hidden = true;
 		field('error').hidden = true;
-		endInput.min = startInput.value || earliest;
+		const minimum = startInput.value || earliest;
+		// Leave the native End Date editor alone while a date is partly typed.
+		if (event.target === startInput && endInput.min !== minimum) endInput.min = minimum;
 	});
 	form.addEventListener('submit', event => {
 		event.preventDefault();

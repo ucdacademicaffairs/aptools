@@ -151,7 +151,8 @@ function initializeCalendar(panel, periodDates, term) {
 
 	leaveStartDateInput.addEventListener('input', () => {
 		leaveStartInfo.textContent = describeDate(leaveStartDateInput.value);
-		leaveEndDateInput.min = leaveStartDateInput.value || earliestServiceDate;
+		const minimum = leaveStartDateInput.value || earliestServiceDate;
+		if (leaveEndDateInput.min !== minimum) leaveEndDateInput.min = minimum;
 		resultsSectionPartial.classList.add('hidden');
 	});
 	leaveEndDateInput.addEventListener('input', () => {
