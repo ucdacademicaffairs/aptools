@@ -84,6 +84,92 @@ function formatEntitlementDate(value) {
 	});
 }
 
+function createEntitlementSummaryCard(result) {
+	const element = (tag, text, className) => {
+		const node = document.createElement(tag);
+		if (text !== null) node.textContent = text;
+		if (className) node.className = className;
+		return node;
+	};
+	const formatNumber = value => value.toLocaleString('en-US', { maximumFractionDigits: 2 });
+	const unit = result.type === 'PFCB' ? 'workdays' : 'calendar days';
+	const used = result.type === 'PFCB' ? result.weekdays : result.calendarDays;
+	const card = element('article', null, 'entitlement-card');
+	card.dataset.entitlement = result.type;
+	card.dataset.flipped = 'false';
+	card.setAttribute('aria-label', `${result.type} entitlement`);
+	const front = element('div', null, 'entitlement-face entitlement-front');
+	const back = element('div', null, 'entitlement-face entitlement-back');
+	front.id = `entitlement-${result.type}-front`;
+	back.id = `entitlement-${result.type}-back`;
+	back.hidden = true;
+	front.append(element('h3', result.type));
+	const metrics = element('dl', null, 'entitlement-totals');
+	function metric(label, value, measure, key) {
+		const group = element('div', null);
+		const amount = element('dd', null);
+		const number = element('span', formatNumber(value), 'metric-number');
+		number.dataset.metric = key;
+		amount.append(number, element('span', measure, 'metric-unit'));
+		group.append(element('dt', label), amount);
+		metrics.append(group);
+	}
+	metric('Used', used, unit, 'used');
+	if (result.remaining !== null) metric('Remaining', result.remaining, unit, 'remaining');
+	else metric('Weeks', result.weeks, 'weeks', 'weeks');
+	front.append(metrics);
+	const viewButton = element('button', 'View periods & calculation', 'flip-card-button');
+	viewButton.type = 'button';
+	viewButton.setAttribute('aria-label', `Show ${result.type} leave periods and calculation`);
+	viewButton.setAttribute('aria-controls', back.id);
+	front.append(viewButton);
+	back.append(element('h3', `${result.type} · Details`));
+	const list = element('ul', null, 'period-list');
+	result.periods.forEach(period => {
+		const counts = entitlementDayCounts(period.start, period.end);
+		const amount = result.type === 'PFCB' ? counts.weekdays : counts.calendarDays;
+		list.append(element('li', `${formatEntitlementDate(period.start)} – ${formatEntitlementDate(period.end)} (${amount} ${unit})`));
+	});
+	back.append(list);
+	if (result.hasOverlap) back.append(element('p', 'These periods overlap. The used total counts each date once, so the individual period amounts may add up to more than the total.', 'overlap-note'));
+	back.append(element('h4', 'How this is calculated'));
+	back.append(element('p', result.type === 'PFCB'
+		? 'Count Monday–Friday workdays in the selected periods, including weekday holidays.'
+		: 'Count calendar days in the selected periods, including both the start and end date.'));
+	back.append(element('p', `Total used: ${used} ${unit}.`));
+	if (result.type === 'PDLL') {
+		back.append(element('p', `Weeks = ${used} ÷ 7 = ${formatNumber(result.weeks)} weeks.`));
+	} else {
+		const allowance = result.type === 'PFCB' ? 56 : 84;
+		back.append(element('p', `Remaining = ${allowance} − ${used} = ${result.remaining} ${unit}.`));
+	}
+	const returnButton = element('button', 'Back to summary', 'flip-card-button');
+	returnButton.type = 'button';
+	returnButton.setAttribute('aria-label', `Back to ${result.type} summary`);
+	returnButton.setAttribute('aria-controls', front.id);
+	back.append(returnButton);
+	function flip(showBack) {
+		front.hidden = showBack;
+		back.hidden = !showBack;
+		card.dataset.flipped = String(showBack);
+		const incoming = showBack ? back : front;
+		if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+			incoming.animate([{ transform: 'rotateY(-90deg)', opacity: 0.4 }, { transform: 'rotateY(0deg)', opacity: 1 }], { duration: 180, easing: 'ease-out' });
+		}
+		(showBack ? returnButton : viewButton).focus({ preventScroll: true });
+	}
+	viewButton.addEventListener('click', () => flip(true));
+	returnButton.addEventListener('click', () => flip(false));
+	card.addEventListener('keydown', event => {
+		if (event.key === 'Escape' && !back.hidden) {
+			event.preventDefault();
+			flip(false);
+		}
+	});
+	card.append(front, back);
+	return card;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
 	const form = document.getElementById('entitlement-form');
 	const periodsContainer = document.getElementById('leave-periods');
@@ -108,22 +194,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		document.getElementById('period-count').textContent = `${periods.length} leave ${periods.length === 1 ? 'period' : 'periods'}`;
 		document.getElementById('empty-periods').hidden = periods.length > 0;
 	}
-	function updateCounts(card) {
-		const start = field(card, 'start').value;
-		const end = field(card, 'end').value;
-		field(card, 'end').min = start;
-		const count = field(card, 'counts');
-		if (!start || !end) {
-			count.textContent = 'Enter dates to see calendar days and weekdays.';
-			return;
-		}
-		try {
-			const { calendarDays, weekdays } = entitlementDayCounts(start, end);
-			count.textContent = `${calendarDays} calendar ${calendarDays === 1 ? 'day' : 'days'} · ${weekdays} ${weekdays === 1 ? 'weekday' : 'weekdays'}`;
-		} catch (error) {
-			count.textContent = error.message;
-		}
-	}
 	function addPeriod(focus = true) {
 		invalidate();
 		const card = document.getElementById('period-template').content.firstElementChild.cloneNode(true);
@@ -131,10 +201,10 @@ document.addEventListener('DOMContentLoaded', () => {
 		card.querySelectorAll('[data-field]').forEach(element => { element.id = `${prefix}-${element.dataset.field}`; });
 		card.querySelectorAll('[data-for]').forEach(label => { label.htmlFor = `${prefix}-${label.dataset.for}`; });
 		card.setAttribute('aria-labelledby', field(card, 'heading').id);
-		for (const name of ['start', 'end']) {
-			field(card, name).setAttribute('aria-describedby', field(card, 'counts').id);
-		}
-		card.addEventListener('input', () => { invalidate(); updateCounts(card); });
+		card.addEventListener('input', () => {
+			invalidate();
+			field(card, 'end').min = field(card, 'start').value;
+		});
 		field(card, 'remove').addEventListener('click', () => {
 			const index = cards().indexOf(card);
 			invalidate();
@@ -154,61 +224,11 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 	}
 	function renderSummary(results) {
-		const body = document.getElementById('summary-rows');
-		body.replaceChildren();
-		results.forEach(result => {
-			const row = document.createElement('tr');
-			row.setAttribute('role', 'row');
-			row.dataset.entitlement = result.type;
-			const heading = document.createElement('th');
-			heading.scope = 'row';
-			heading.setAttribute('role', 'rowheader');
-			heading.textContent = result.type;
-			const periods = document.createElement('td');
-			periods.setAttribute('role', 'cell');
-			periods.className = 'summary-periods';
-			periods.dataset.label = 'Leave periods';
-			const list = document.createElement('ul');
-			list.className = 'period-list';
-			result.periods.forEach(period => {
-				const item = document.createElement('li');
-				item.textContent = `${formatEntitlementDate(period.start)} – ${formatEntitlementDate(period.end)}`;
-				list.append(item);
-			});
-			periods.append(list);
-			if (result.hasOverlap) {
-				const note = document.createElement('p');
-				note.className = 'overlap-note';
-				note.textContent = 'Overlapping dates counted once.';
-				periods.append(note);
-			}
-			row.append(heading, periods);
-			for (const [key, label] of [['calendarDays', 'Calendar days'], ['weekdays', 'Workdays'], ['weeks', 'Weeks'], ['remaining', 'Remaining entitlement']]) {
-				const cell = document.createElement('td');
-				cell.className = 'numeric';
-				cell.setAttribute('role', 'cell');
-				cell.dataset.label = label;
-				cell.dataset.metric = key;
-				if (result[key] === null) {
-					cell.textContent = key === 'remaining' ? 'Not calculated' : '—';
-					cell.classList.add('not-calculated');
-					cell.setAttribute('aria-label', `${label}: not calculated`);
-				} else {
-					cell.textContent = result[key].toLocaleString('en-US', { maximumFractionDigits: key === 'weeks' ? 2 : 0 });
-					if (key === 'remaining') {
-						const unit = document.createElement('span');
-						unit.className = 'remaining-unit';
-						unit.textContent = result.remainingUnit;
-						cell.append(unit);
-					}
-				}
-				row.append(cell);
-			}
-			body.append(row);
-		});
+		const container = document.getElementById('summary-cards');
+		container.replaceChildren(...results.map(createEntitlementSummaryCard));
 		summary.hidden = false;
 		document.getElementById('summary-heading').focus();
-		announcements.textContent = `Entitlement summary calculated for ${cards().length} leave periods and ${results.length} entitlements.`;
+		announcements.textContent = 'Entitlement summary calculated for ' + cards().length + ' leave periods and ' + results.length + ' entitlements.';
 	}
 	addButton.addEventListener('click', () => addPeriod());
 	form.addEventListener('submit', event => {
