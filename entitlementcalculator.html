@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="Add leave periods, select applicable entitlements, and summarize calendar days and weekdays by entitlement.">
+	<title>Entitlement Leave Calculator | Academic Affairs</title>
+	<link rel="stylesheet" href="site.css">
+	<link rel="stylesheet" href="entitlementcalculator.css">
+	<script src="entitlementcalculator.js" defer></script>
+</head>
+<body>
+	<a class="skip-link" href="#main-content">Skip to main content</a>
+	<header class="page-header">
+		<div class="site-container header-content header-with-nav">
+			<div>
+				<p class="university-name">University of California, Davis</p>
+				<p class="site-name"><a class="site-home" href="index.html">Academic Affairs</a></p>
+			</div>
+			<a class="all-tools-link" href="index.html">All Tools <span aria-hidden="true">&rarr;</span></a>
+		</div>
+	</header>
+	<main id="main-content" class="calculator-container">
+		<div class="page-intro">
+			<h1>Entitlement Leave Calculator</h1>
+			<p>For Academic Year Faculty</p>
+		</div>
+		<form id="entitlement-form" class="calculator" novalidate>
+			<div class="section-heading">
+				<h2>Leave Periods</h2>
+				<p id="period-count">1 leave period</p>
+			</div>
+			<p class="help intro-help">Add leave periods and select one or more applicable entitlements for each period.</p>
+			<div id="leave-periods"></div>
+			<p id="empty-periods" class="empty-state" hidden>No leave periods yet. Add a leave period to get started.</p>
+			<button id="add-period" class="add-period" type="button"><span aria-hidden="true">+</span> Add another leave period</button>
+			<p id="form-error" class="error-message" role="alert" hidden></p>
+			<div class="calculate-row">
+				<button class="calculate-button" type="submit">Calculate Entitlements</button>
+				<p class="help">Days include both the start and end date.</p>
+			</div>
+		</form>
+		<section id="entitlement-summary" class="summary" aria-labelledby="summary-heading" hidden>
+			<h2 id="summary-heading" tabindex="-1">Entitlement Summary</h2>
+			<p class="help">Totals follow the calculation rules for each selected entitlement. Workdays count Monday–Friday, including weekday holidays.</p>
+			<div class="table-scroll" role="region" aria-label="Entitlement summary table" tabindex="0">
+				<table role="table">
+					<caption class="sr-only">Leave periods, calendar days, workdays, weeks and remaining entitlement</caption>
+					<thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Entitlement</th><th role="columnheader" scope="col">Leave periods</th><th role="columnheader" scope="col" class="numeric">Calendar days</th><th role="columnheader" scope="col" class="numeric">Workdays</th><th role="columnheader" scope="col" class="numeric">Weeks</th><th role="columnheader" scope="col" class="numeric">Remaining entitlement</th></tr></thead>
+					<tbody id="summary-rows" role="rowgroup"></tbody>
+				</table>
+			</div>
+			<p class="counting-note">Overlapping dates count once within the same entitlement. When several entitlements are selected for a period, its days count toward each selected entitlement.</p>
+			<details class="formula-guide">
+				<summary>How Entitlements Are Calculated</summary>
+				<ul>
+					<li><strong>PDLL:</strong> Calendar days include start and end dates. Weeks = total calendar days ÷ 7. Workdays and remaining entitlement are not calculated.</li>
+					<li><strong>FMLA:</strong> Calendar days and workdays are counted. Remaining entitlement = 84 − total calendar days.</li>
+					<li><strong>CFRA:</strong> Calendar days and workdays are counted. Remaining entitlement = 84 − total calendar days.</li>
+					<li><strong>PFCB:</strong> Workdays are counted. Remaining entitlement = 56 − total workdays. Calendar days and weeks are not calculated.</li>
+				</ul>
+				<p>Weeks are displayed to two decimal places. Remaining entitlement follows the subtraction above and can be negative.</p>
+			</details>
+		</section>
+		<p id="announcements" class="sr-only" role="status"></p>
+		<noscript><p>Enable JavaScript to use this calculator.</p></noscript>
+	</main>
+	<footer class="page-footer">
+		<div class="site-container footer-content">
+			<p>UC Davis <span aria-hidden="true">&middot;</span> Academic Affairs</p>
+			<p class="copyright">&copy; 2026 Regents of the University of California, Davis campus. All rights reserved.</p>
+		</div>
+	</footer>
+	<template id="period-template">
+		<section class="leave-period">
+			<div class="period-header">
+				<h3 data-field="heading"></h3>
+				<button type="button" class="remove-period" data-field="remove" title="Remove leave period">
+					<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M5 6l1 14a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1l1-14M10 10v7M14 10v7"/></svg>
+				</button>
+			</div>
+			<div class="date-grid">
+				<div class="field"><label data-for="start">Start date</label><input data-field="start" type="date" required></div>
+				<div class="field"><label data-for="end">End date</label><input data-field="end" type="date" required></div>
+			</div>
+			<fieldset class="entitlement-choices" data-field="entitlements">
+				<legend>Applicable entitlements</legend>
+				<div class="checkbox-grid">
+					<label><input type="checkbox" name="entitlements" value="PDLL"> <span>PDLL</span></label>
+					<label><input type="checkbox" name="entitlements" value="FMLA"> <span>FMLA</span></label>
+					<label><input type="checkbox" name="entitlements" value="CFRA"> <span>CFRA</span></label>
+					<label><input type="checkbox" name="entitlements" value="PFCB"> <span>PFCB</span></label>
+				</div>
+			</fieldset>
+			<p class="period-counts" data-field="counts" aria-live="polite">Enter dates to see calendar days and weekdays.</p>
+		</section>
+	</template>
+</body>
+</html>
