@@ -192,7 +192,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 	});
 	const status = document.getElementById('loading-status');
 	try {
-		const response = await fetch('annual-config.json');
+		const response = await fetch('calendar-dates.json');
 		if (!response.ok) throw new Error('Unable to load calendar dates.');
 		const config = await response.json();
 		for (const [term, key, divisor] of [['quarter', 'QUARTER_DATES', 3], ['semester', 'SEMESTER_DATES', 2]]) {

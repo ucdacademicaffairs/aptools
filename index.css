@@ -69,8 +69,14 @@ h1 {
 	font-size: 1.15rem;
 }
 
+.tools-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 1.5rem;
+}
+
 .tool-card {
-	max-width: 48rem;
+	display: flex;
 	background: white;
 	border: 1px solid #d9e0e6;
 	border-top: 5px solid var(--ucd-gold);
@@ -78,7 +84,14 @@ h1 {
 }
 
 .tool-content {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
 	padding: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+.tool-content .launch-button {
+	margin-top: auto;
 }
 
 h2 {
@@ -110,6 +123,12 @@ h2 {
 	box-shadow: inset 0 -3px 0 var(--ucd-gold);
 	text-decoration: underline;
 	text-underline-offset: 0.2em;
+}
+
+@media (max-width: 900px) {
+	.tools-grid {
+		grid-template-columns: 1fr;
+	}
 }
 
 @media (max-width: 480px) {

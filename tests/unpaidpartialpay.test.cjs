@@ -7,7 +7,7 @@ const vm = require('node:vm');
 const root = path.join(__dirname, '..');
 const context = vm.createContext({ document: { addEventListener() {} } });
 vm.runInContext(fs.readFileSync(path.join(root, 'unpaidpartialpay.js'), 'utf8'), context);
-const config = JSON.parse(fs.readFileSync(path.join(root, 'annual-config.json'), 'utf8'));
+const config = JSON.parse(fs.readFileSync(path.join(root, 'calendar-dates.json'), 'utf8'));
 const cents = value => Math.round(value * 100);
 
 test('weekdays include weekday holidays, exclude weekends, and count endpoints', () => {

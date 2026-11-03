@@ -1,0 +1,50 @@
+.btn {
+	background-color: var(--ucd-blue);
+	color: white;
+	padding: 0.5rem 1rem;
+	border-radius: 0.25rem;
+	font-weight: 500;
+	transition: background-color 0.2s;
+	border: none;
+	cursor: pointer;
+}
+
+.btn:hover:not(:disabled) {
+	background-color: var(--ucd-blue);
+	box-shadow: inset 0 -3px 0 var(--ucd-gold);
+}
+
+.btn:focus-visible,
+.base-dates-details summary:focus-visible {
+	outline: 3px solid var(--ucd-blue);
+	outline-offset: 4px;
+}
+
+[hidden] { display: none !important; }
+
+.calendar-tabs {
+	display: flex;
+	border-bottom: 2px solid var(--ucd-blue);
+}
+
+.calendar-tabs [role="tab"] {
+	flex: 1;
+	padding: 0.85rem 1rem;
+	background: white;
+	color: var(--ucd-blue);
+	font-weight: 700;
+	border: 0;
+	border-bottom: 4px solid transparent;
+	cursor: pointer;
+}
+
+.calendar-tabs [aria-selected="true"] {
+	background: var(--ucd-blue);
+	color: white;
+	border-bottom-color: var(--ucd-gold);
+}
+
+.calendar-tabs [role="tab"]:focus-visible {
+	outline: 3px solid var(--ucd-gold);
+	outline-offset: -6px;
+}
