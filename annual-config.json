@@ -385,5 +385,61 @@
 				"SAVINGS_RATE": 0.75
 			}
 		}
+	},
+	"SEMESTER_DATES": {
+		"Spring 2028": {
+			"serviceStart": "2028-01-10",
+			"serviceEnd": "2028-05-05",
+			"payStart": "2028-01-01",
+			"payEnd": "2028-06-30"
+		},
+		"Fall 2027": {
+			"serviceStart": "2027-08-23",
+			"serviceEnd": "2027-12-10",
+			"payStart": "2027-07-01",
+			"payEnd": "2027-12-31"
+		},
+		"Spring 2027": {
+			"serviceStart": "2027-01-11",
+			"serviceEnd": "2027-05-07",
+			"payStart": "2027-01-01",
+			"payEnd": "2027-06-30"
+		},
+		"Fall 2026": {
+			"serviceStart": "2026-08-24",
+			"serviceEnd": "2026-12-11",
+			"payStart": "2026-07-01",
+			"payEnd": "2026-12-31"
+		},
+		"Spring 2026": {
+			"serviceStart": "2026-01-12",
+			"serviceEnd": "2026-05-07",
+			"payStart": "2026-01-01",
+			"payEnd": "2026-06-30"
+		},
+		"Fall 2025": {
+			"serviceStart": "2025-08-25",
+			"serviceEnd": "2025-12-12",
+			"payStart": "2025-07-01",
+			"payEnd": "2025-12-31"
+		},
+		"Spring 2025": {
+			"serviceStart": "2025-01-13",
+			"serviceEnd": "2025-05-16",
+			"payStart": "2025-01-01",
+			"payEnd": "2025-06-30"
+		},
+		"Fall 2024": {
+			"serviceStart": "2024-08-26",
+			"serviceEnd": "2024-12-20",
+			"payStart": "2024-07-01",
+			"payEnd": "2024-12-31"
+		},
+		"Spring 2024": {
+			"serviceStart": "2024-01-08",
+			"serviceEnd": "2024-05-09",
+			"payStart": "2024-01-01",
+			"payEnd": "2024-06-30"
+		}
 	}
 }
