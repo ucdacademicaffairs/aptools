@@ -28,46 +28,9 @@ body {
 	margin-inline: auto;
 }
 
-.skip-link {
-	position: absolute;
-	top: -6rem;
-	left: 1rem;
-	padding: 0.75rem 1rem;
-	background: white;
-	color: var(--ucd-blue);
-	z-index: 1;
-}
-
-.skip-link:focus {
-	top: 1rem;
-}
-
 a:focus-visible {
 	outline: 3px solid var(--ucd-blue);
 	outline-offset: 5px;
-}
-
-.page-header {
-	background: var(--ucd-blue);
-	color: white;
-	border-bottom: 5px solid var(--ucd-gold);
-}
-
-.header-content {
-	padding-block: 1.75rem 2rem;
-}
-
-.university-name {
-	margin: 0 0 0.35rem;
-	font-size: 0.875rem;
-	letter-spacing: 0.035em;
-}
-
-.site-name {
-	margin: 0;
-	font-size: clamp(1.75rem, 4vw, 2.25rem);
-	font-weight: 700;
-	line-height: 1.2;
 }
 
 main {
@@ -148,27 +111,6 @@ h2 {
 	background: #034b83;
 	text-decoration: underline;
 	text-underline-offset: 0.2em;
-}
-
-.page-footer {
-	border-top: 1px solid #d9e0e6;
-	background: white;
-}
-
-.footer-content {
-	padding-block: 1.5rem;
-	color: var(--ucd-blue);
-	font-size: 0.9rem;
-}
-
-.footer-content p {
-	margin: 0;
-}
-
-.footer-content .copyright {
-	margin-top: 0.5rem;
-	color: var(--muted);
-	font-size: 0.8rem;
 }
 
 @media (max-width: 480px) {

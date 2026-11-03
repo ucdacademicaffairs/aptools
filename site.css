@@ -1,0 +1,104 @@
+/* Shared Academic Affairs header and footer. */
+body {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+}
+
+body > main {
+	flex: 1;
+}
+
+.site-container {
+	width: min(100% - 3rem, 68rem);
+	margin-inline: auto;
+}
+
+.page-header {
+	background: #022851;
+	color: white;
+	border-bottom: 5px solid #ffbf00;
+}
+
+.page-header .header-content {
+	display: block;
+	max-width: none;
+	padding: 1.75rem 0 2rem;
+}
+
+.university-name {
+	margin: 0 0 0.35rem;
+	font-size: 0.875rem;
+	letter-spacing: 0.035em;
+}
+
+.site-name {
+	margin: 0;
+	font-size: clamp(1.75rem, 4vw, 2.25rem);
+	font-weight: 700;
+	line-height: 1.2;
+}
+
+.site-home {
+	color: inherit;
+	text-decoration: none;
+}
+
+.site-home:hover {
+	text-decoration: underline;
+	text-underline-offset: 0.2em;
+}
+
+.skip-link {
+	position: absolute;
+	top: -6rem;
+	left: 1rem;
+	padding: 0.75rem 1rem;
+	background: white;
+	color: #022851;
+	z-index: 1;
+}
+
+.skip-link:focus {
+	top: 1rem;
+}
+
+.page-header a:focus-visible,
+.skip-link:focus-visible {
+	outline: 3px solid #ffbf00;
+	outline-offset: 5px;
+}
+
+.page-footer {
+	border-top: 1px solid #d9e0e6;
+	background: white;
+}
+
+.footer-content {
+	padding-block: 1.5rem;
+	color: #022851;
+	font-size: 0.9rem;
+}
+
+.footer-content p {
+	margin: 0;
+}
+
+.footer-content .copyright {
+	margin-top: 0.5rem;
+	color: #4f606c;
+	font-size: 0.8rem;
+}
+
+.page-header,
+.page-footer,
+.skip-link {
+	font-family: "Public Sans", "Segoe UI", Arial, sans-serif;
+	line-height: 1.6;
+}
+
+@media (max-width: 480px) {
+	.site-container {
+		width: calc(100% - 2rem);
+	}
+}
