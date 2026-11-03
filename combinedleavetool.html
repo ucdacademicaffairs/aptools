@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="Convert academic faculty leave dates and optionally calculate unpaid or partial pay amounts for Quarter and Semester calendars.">
+	<title>Combined Leave Tool | Academic Affairs</title>
+	<link rel="stylesheet" href="site.css">
+	<link rel="stylesheet" href="combinedleavetool.css">
+	<script src="leave-tool-shared.js" defer></script>
+	<script src="combinedleavetool.js" defer></script>
+</head>
+<body>
+	<a class="skip-link" href="#main-content">Skip to main content</a>
+	<header class="page-header">
+		<div class="site-container header-content header-with-nav">
+			<div>
+				<p class="university-name">University of California, Davis</p>
+				<p class="site-name"><a class="site-home" href="index.html">Academic Affairs</a></p>
+			</div>
+			<a class="all-tools-link" href="index.html">All Tools <span aria-hidden="true">&rarr;</span></a>
+		</div>
+	</header>
+	<main id="main-content" class="calculator-container">
+		<div class="page-intro">
+			<h1>Combined Leave Tool</h1>
+			<p>Convert leave dates and optionally calculate unpaid or partial pay amounts.</p>
+		</div>
+		<div class="calendar-tabs" role="tablist" aria-label="Academic calendar">
+			<button type="button" id="quarter-tab" role="tab" aria-selected="true" aria-controls="quarter-panel" tabindex="0">Quarter</button>
+			<button type="button" id="semester-tab" role="tab" aria-selected="false" aria-controls="semester-panel" tabindex="-1">Semester</button>
+		</div>
+		<p id="loading-status" role="status">Loading calendar dates…</p>
+		<div id="quarter-panel" role="tabpanel" aria-labelledby="quarter-tab"></div>
+		<div id="semester-panel" role="tabpanel" aria-labelledby="semester-tab" hidden></div>
+		<noscript><p>Enable JavaScript to use this calculator.</p></noscript>
+	</main>
+	<footer class="page-footer">
+		<div class="site-container footer-content">
+			<p>UC Davis <span aria-hidden="true">&middot;</span> Academic Affairs</p>
+			<p class="copyright">&copy; 2026 Regents of the University of California, Davis campus. All rights reserved.</p>
+		</div>
+	</footer>
+	<template id="calculator-template">
+		<form class="card" novalidate>
+			<h2><span data-term-title></span> Leave Calculator</h2>
+			<p class="help">Enter service dates for part of a service period, a full service period, or a leave spanning multiple service periods.</p>
+			<div class="input-grid">
+				<div class="field">
+					<label data-for="leave-start">Leave Start Date (Service)</label>
+					<input data-field="leave-start" type="date" required>
+				</div>
+				<div class="field">
+					<label data-for="leave-end">Leave End Date (Service)</label>
+					<input data-field="leave-end" type="date" required>
+				</div>
+			</div>
+			<p class="help" data-field="coverage"></p>
+			<label class="pay-option" data-for="include-pay">
+				<input data-field="include-pay" type="checkbox" aria-expanded="false">
+				<span>Calculate unpaid or partial pay amounts</span>
+			</label>
+			<fieldset class="pay-inputs" data-field="pay-inputs" disabled hidden>
+				<legend>Pay details</legend>
+				<div class="input-grid">
+					<div class="field">
+						<label data-for="annual-salary">Annual Salary ($)</label>
+						<input data-field="annual-salary" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="120000.00" required>
+					</div>
+					<div class="field">
+						<label data-for="partial-pay">Partial Pay Percentage (%)</label>
+						<input data-field="partial-pay" type="number" min="0" max="99" step="1" inputmode="numeric" value="0" required>
+						<p class="help" data-field="percentage-help">Percentage of normal pay received, from 0 to 99 in whole percentages. 0% means fully unpaid.</p>
+					</div>
+				</div>
+				<p class="help" data-field="pay-formula"></p>
+			</fieldset>
+			<p class="error-message" data-field="error" role="alert" hidden></p>
+			<button class="calculate-button" data-field="calculate" type="submit">Convert Leave Dates</button>
+		</form>
+		<section class="card results" data-field="results" aria-label="Calculated leave results" aria-live="polite" hidden>
+			<div class="pay-period">
+				<h2>Your pay period for this leave is:</h2>
+				<p data-field="pay-period"></p>
+			</div>
+			<dl class="metrics service-metrics">
+				<div><dt>Service Days on Leave</dt><dd data-field="service-days"></dd></div>
+				<div><dt>Work Days in Service Period</dt><dd data-field="service-workdays"></dd></div>
+				<div><dt>Work Days in Service Period on Leave</dt><dd data-field="leave-workdays"></dd></div>
+			</dl>
+			<dl class="metrics pay-metrics" data-field="pay-results" hidden>
+				<div><dt>Total Full Unpaid Amount</dt><dd data-field="full-unpaid"></dd></div>
+				<div><dt>Total Unpaid Amount at Partial Pay</dt><dd data-field="partial-unpaid"></dd></div>
+			</dl>
+			<p class="help">Service and pay date conversion uses calendar days. Work days count Monday–Friday, including weekday holidays. All date counts include both start and end dates.</p>
+			<p class="help" data-field="break-note" hidden></p>
+			<div class="show-work">
+				<h2>Show Your Work</h2>
+				<div data-field="work"></div>
+			</div>
+		</section>
+		<details class="card base-dates">
+			<summary>Base Dates &amp; Definitions</summary>
+			<div class="table-scroll">
+				<table>
+					<thead><tr><th scope="col"><span data-term-title></span> Name</th><th scope="col">Service Period</th><th scope="col">Pay Period</th></tr></thead>
+					<tbody data-field="base-dates"></tbody>
+				</table>
+			</div>
+		</details>
+	</template>
+</body>
+</html>

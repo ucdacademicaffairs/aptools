@@ -8,13 +8,19 @@ and its interactive behavior in a matching JavaScript file:
 - `index.html` and `index.css`. The index does not need JavaScript.
 - `leavedates.html`, `leavedates.css`, and `leavedates.js`.
 - `unpaidpartialpay.html`, `unpaidpartialpay.css`, and `unpaidpartialpay.js`.
+- `combinedleavetool.html`, `combinedleavetool.css`, and `combinedleavetool.js`.
+
+The combined tool converts dates by default. Selecting “Calculate unpaid or
+partial pay amounts” adds salary and percentage inputs. Its calculation and work
+explanation helpers are in `leave-tool-shared.js`. It reuses the existing base
+styles through `combinedleavetool.css`; the original calculators remain separate.
 
 `site.css` contains the shared Academic Affairs branding, header, and footer.
 Serve the pages over HTTP so the calculators can load their JSON date data.
 
 ## Updating calendar dates
 
-Update **`calendar-dates.json`** to change dates for both leave tools. This is
+Update **`calendar-dates.json`** to change dates for all leave tools. This is
 the shared source for `QUARTER_DATES` and `SEMESTER_DATES`; do not add calendar
 dates to the HTML, JavaScript, or `annual-config.json`.
 
@@ -29,7 +35,7 @@ Each named period has four dates, written as `YYYY-MM-DD`:
 }
 ```
 
-Add or edit the entry under the appropriate calendar. Both tools derive their
+Add or edit the entry under the appropriate calendar. All tools derive their
 date limits and Base Dates & Definitions tables from this file. Periods display
 in date order, regardless of their order in the JSON. Keep valid JSON syntax and
 avoid overlapping service periods within the same calendar.

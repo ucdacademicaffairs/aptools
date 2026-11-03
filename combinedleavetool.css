@@ -1,0 +1,50 @@
+@import url("unpaidpartialpay.css");
+
+.pay-option {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 1rem;
+	margin-block: 1.5rem;
+	border: 1px solid #d1d5db;
+	border-left: 4px solid var(--ucd-gold);
+	border-radius: 0.375rem;
+	color: var(--ucd-blue);
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.pay-option input {
+	width: 1.2rem;
+	height: 1.2rem;
+	flex-shrink: 0;
+	accent-color: var(--ucd-blue);
+}
+
+.pay-inputs {
+	min-width: 0;
+	padding: 1rem;
+	margin: 0 0 1.5rem;
+	border: 1px solid #d1d5db;
+	border-radius: 0.375rem;
+}
+
+.pay-inputs legend {
+	padding-inline: 0.5rem;
+	color: var(--ucd-blue);
+	font-weight: 700;
+}
+
+.service-metrics {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.pay-metrics > div {
+	border-top: 3px solid var(--ucd-gold);
+}
+
+@media (max-width: 600px) {
+	.service-metrics {
+		grid-template-columns: 1fr;
+	}
+}
