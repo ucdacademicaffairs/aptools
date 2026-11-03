@@ -15,7 +15,7 @@
 
 	<style>
 		.btn {
-			background-color: #6bca98;
+			background-color: var(--ucd-blue);
 			color: white;
 			padding: 0.5rem 1rem;
 			border-radius: 0.25rem;
@@ -26,7 +26,14 @@
 		}
 
 		.btn:hover:not(:disabled) {
-			background-color: #266040;
+			background-color: var(--ucd-blue);
+			box-shadow: inset 0 -3px 0 var(--ucd-gold);
+		}
+
+		.btn:focus-visible,
+		.base-dates-details summary:focus-visible {
+			outline: 3px solid var(--ucd-blue);
+			outline-offset: 4px;
 		}
 
 		.btn-gray {
@@ -53,14 +60,14 @@
 	<main id="main-content" class="w-full max-w-4xl mx-auto p-4 md:p-8 space-y-6">
 
 		<div class="relative text-center mb-8">
-			<h2 class="text-4xl font-bold text-[#002855]">Leave Date Conversion Tool</h2>
+			<h2 class="text-4xl font-bold text-[#022851]">Leave Date Conversion Tool</h2>
 			<p class="text-lg text-gray-600 mt-1">For Academic Year Faculty</p>
 		</div>
 
 		<div class="card space-y-10 divide-y divide-gray-200">
 
 			<section class="space-y-6 pt-0">
-				<h2 class="text-2xl font-semibold text-[#002855] border-b-2 border-gray-200 pb-2 mb-6">
+				<h2 class="text-2xl font-semibold text-[#022851] border-b-2 border-gray-200 pb-2 mb-6">
 					Full Quarter Leave Calculator
 				</h2>
 				<p class="text-sm text-gray-700 -mt-2 mb-4">Use this section when a leave lasts for one or more full
@@ -70,14 +77,14 @@
 						<label for="quarter-start" class="block text-sm font-medium text-gray-700 mb-1">Quarter Leave
 							Begins</label>
 						<select id="quarter-start"
-							class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-[#002855] focus:border-[#002855]">
+							class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-[#022851] focus:border-[#022851]">
 						</select>
 					</div>
 					<div>
 						<label for="quarter-end" class="block text-sm font-medium text-gray-700 mb-1">Quarter Leave
 							Ends</label>
 						<select id="quarter-end"
-							class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-[#002855] focus:border-[#002855]">
+							class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-[#022851] focus:border-[#022851]">
 						</select>
 					</div>
 				</div>
@@ -89,9 +96,9 @@
 				</div>
 
 				<div id="results-section-full" class="hidden pt-6 space-y-6">
-					<h3 class="text-xl font-semibold text-[#002855]">Calculated Full Quarter Period</h3>
+					<h3 class="text-xl font-semibold text-[#022851]">Calculated Full Quarter Period</h3>
 
-					<div class="bg-blue-50 border-l-4 border-[#002855] text-[#002855] p-4 rounded-r-lg" role="alert">
+					<div class="bg-blue-50 border-l-4 border-[#022851] text-[#022851] p-4 rounded-r-lg" role="alert">
 						<p class="text-sm uppercase font-semibold">Your total pay period for this leave is:</p>
 						<p class="text-2xl md:text-3xl font-bold mt-1">
 							<span id="pay-start-date-full"></span> &mdash; <span id="pay-end-date-full"></span>
@@ -114,7 +121,7 @@
 			</section>
 
 			<section class="space-y-6 pt-10">
-				<h2 class="text-2xl font-semibold text-[#002855] border-b-2 border-gray-200 pb-2 mb-6">
+				<h2 class="text-2xl font-semibold text-[#022851] border-b-2 border-gray-200 pb-2 mb-6">
 					Leave by Dates Calculator
 				</h2>
 				<p class="text-sm text-gray-700 -mt-2 mb-4">Use this section when a leave is given as dates: part of a
@@ -126,14 +133,14 @@
 						<label for="leave-start-date" class="block text-sm font-medium text-gray-700 mb-1">Leave Start
 							Date (Service)</label>
 						<input type="date" id="leave-start-date"
-							class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-[#002855] focus:border-[#002855]">
+							class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-[#022851] focus:border-[#022851]">
 						<p id="leave-start-info" class="text-xs text-gray-500 mt-1 min-h-[1rem]"></p>
 					</div>
 					<div>
 						<label for="leave-end-date" class="block text-sm font-medium text-gray-700 mb-1">Leave End Date
 							(Service)</label>
 						<input type="date" id="leave-end-date"
-							class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-[#002855] focus:border-[#002855]">
+							class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-[#022851] focus:border-[#022851]">
 						<p id="leave-end-info" class="text-xs text-gray-500 mt-1 min-h-[1rem]"></p>
 					</div>
 				</div>
@@ -146,9 +153,9 @@
 				</div>
 
 				<div id="results-section-partial" class="hidden pt-6 space-y-6">
-					<h3 class="text-xl font-semibold text-[#002855]">Calculated Leave Pay Period</h3>
+					<h3 class="text-xl font-semibold text-[#022851]">Calculated Leave Pay Period</h3>
 
-					<div class="bg-blue-50 border-l-4 border-[#002855] text-[#002855] p-4 rounded-r-lg" role="alert">
+					<div class="bg-blue-50 border-l-4 border-[#022851] text-[#022851] p-4 rounded-r-lg" role="alert">
 						<p class="text-sm uppercase font-semibold">Your pay period for this leave is:</p>
 						<p class="text-2xl md:text-3xl font-bold mt-1">
 							<span id="pay-start-date-partial"></span> &mdash; <span id="pay-end-date-partial"></span>
@@ -173,11 +180,9 @@
 
 		</div>
 
-		<div class="card">
-			<section>
-				<h2 class="text-2xl font-semibold text-[#002855] mb-6">
-					Base Dates & Definitions
-				</h2>
+		<details class="card base-dates-details">
+			<summary class="text-2xl font-semibold text-[#022851] cursor-pointer">Base Dates &amp; Definitions</summary>
+			<div class="mt-6">
 				<p class="text-sm text-gray-700 mb-4">This tool uses the following mappings of service periods to pay
 					periods. Note that pay periods are staggered and do not align directly with service dates.</p>
 
@@ -186,13 +191,13 @@
 						<thead class="bg-gray-50">
 							<tr>
 								<th scope="col"
-									class="px-4 py-3 text-left text-xs font-semibold text-[#002855] uppercase tracking-wider">
+									class="px-4 py-3 text-left text-xs font-semibold text-[#022851] uppercase tracking-wider">
 									Quarter Name</th>
 								<th scope="col"
-									class="px-4 py-3 text-left text-xs font-semibold text-[#002855] uppercase tracking-wider">
+									class="px-4 py-3 text-left text-xs font-semibold text-[#022851] uppercase tracking-wider">
 									Service Period</th>
 								<th scope="col"
-									class="px-4 py-3 text-left text-xs font-semibold text-[#002855] uppercase tracking-wider">
+									class="px-4 py-3 text-left text-xs font-semibold text-[#022851] uppercase tracking-wider">
 									Pay Period</th>
 							</tr>
 						</thead>
@@ -200,8 +205,8 @@
 						</tbody>
 					</table>
 				</div>
-			</section>
-		</div>
+			</div>
+		</details>
 	</main>
 
 	<footer class="page-footer">
@@ -630,8 +635,8 @@
 
 					if (p.whole) {
 						return `
-							<div class="border-l-4 border-[#002855] pl-4 space-y-1">
-								<p class="font-semibold text-gray-800">${p.quarterName} <span class="ml-2 text-xs uppercase tracking-wide text-[#002855]">Whole quarter</span></p>
+							<div class="border-l-4 border-[#022851] pl-4 space-y-1">
+								<p class="font-semibold text-gray-800">${p.quarterName} <span class="ml-2 text-xs uppercase tracking-wide text-[#022851]">Whole quarter</span></p>
 								<p>The leave covers all <strong>${p.totalServiceDays} service days</strong> (${serviceRange}), so it takes the quarter's full pay period:
 								   <strong>${formatDate(p.payStart)} - ${formatDate(p.payEnd)}</strong> (${p.totalPayDays} days).</p>
 							</div>`;

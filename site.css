@@ -1,4 +1,8 @@
-/* Shared Academic Affairs header and footer. */
+/* Shared Academic Affairs branding, header and footer. */
+:root {
+	--ucd-blue: #022851;
+	--ucd-gold: #FFBF00;
+}
 body {
 	min-height: 100vh;
 	display: flex;
@@ -15,9 +19,9 @@ body > main {
 }
 
 .page-header {
-	background: #022851;
+	background: var(--ucd-blue);
 	color: white;
-	border-bottom: 5px solid #ffbf00;
+	border-bottom: 5px solid var(--ucd-gold);
 }
 
 .page-header .header-content {
@@ -55,7 +59,7 @@ body > main {
 	left: 1rem;
 	padding: 0.75rem 1rem;
 	background: white;
-	color: #022851;
+	color: var(--ucd-blue);
 	z-index: 1;
 }
 
@@ -65,7 +69,7 @@ body > main {
 
 .page-header a:focus-visible,
 .skip-link:focus-visible {
-	outline: 3px solid #ffbf00;
+	outline: 3px solid var(--ucd-gold);
 	outline-offset: 5px;
 }
 
@@ -76,7 +80,7 @@ body > main {
 
 .footer-content {
 	padding-block: 1.5rem;
-	color: #022851;
+	color: var(--ucd-blue);
 	font-size: 0.9rem;
 }
 

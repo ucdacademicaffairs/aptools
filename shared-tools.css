@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@700&display=swap');
 
 :root {
-	--ucd-blue: #002855;
+	--ucd-blue: #022851;
 	--ucd-gold: #FFBF00;
 	--ucd-light-gray: #f2f2f2;
 	--ucd-teal: #6bca98;
@@ -48,7 +48,7 @@ body {
 	font-weight: 900;
 	font-size: 1.1rem; 
 	line-height: 1;
-	color: #002855;
+	color: #022851;
 	box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
 	margin-right: 0.75rem;
 	flex-shrink: 0;

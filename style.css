@@ -1,6 +1,4 @@
 :root {
-	--ucd-blue: #022851;
-	--ucd-gold: #ffbf00;
 	--text: #253746;
 	--muted: #4f606c;
 	--background: #f5f7f9;
@@ -108,7 +106,8 @@ h2 {
 }
 
 .launch-button:hover {
-	background: #034b83;
+	background: var(--ucd-blue);
+	box-shadow: inset 0 -3px 0 var(--ucd-gold);
 	text-decoration: underline;
 	text-underline-offset: 0.2em;
 }
