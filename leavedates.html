@@ -650,7 +650,7 @@
 						: `Pay end: ${formatDate(p.payStart)} + ${p.payDaysOnLeave} days − 1 → <strong>${formatDate(p.payEnd)}</strong>`;
 
 					return `
-						<div class="border-l-4 border-[#6bca98] pl-4 space-y-2">
+						<div class="border-l-4 border-[#FFBF00] pl-4 space-y-2">
 							<p class="font-semibold text-gray-800">${p.quarterName} <span class="ml-2 text-xs uppercase tracking-wide text-[#266040]">Partial quarter</span></p>
 							<p>Service period ${serviceRange} is <strong>${p.totalServiceDays} days</strong>; pay period ${payRange} is <strong>${p.totalPayDays} days</strong>.</p>
 							<p>Leave in this quarter: ${formatDate(p.portionStart)} - ${formatDate(p.portionEnd)}, which is <strong>${p.serviceDaysOnLeave} service days</strong>
