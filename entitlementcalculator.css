@@ -85,24 +85,24 @@ h2 {
 }
 
 .intro-help {
-	margin: 0.75rem 0 1.5rem;
+	margin: 0.5rem 0 1rem;
 }
 
 .leave-period {
-	padding: 1.25rem;
-	margin-bottom: 1rem;
+	padding: 0.75rem;
+	margin-bottom: 0.625rem;
 	border: 1px solid #d9e0e6;
 	border-radius: 0.5rem;
 	background: #fcfdfe;
 }
 
 .period-header {
-	margin-bottom: 1rem;
+	margin-bottom: 0.5rem;
 }
 
 .period-header h3 {
 	margin: 0;
-	font-size: 1.25rem;
+	font-size: 1rem;
 }
 
 button,
@@ -118,9 +118,9 @@ button {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 2.75rem;
-	height: 2.75rem;
-	padding: 0.5rem;
+	width: 1.75rem;
+	height: 1.75rem;
+	padding: 0.25rem;
 	border: 0;
 	border-radius: 0.375rem;
 	background: transparent;
@@ -132,15 +132,28 @@ button {
 	color: #991b1b;
 }
 
+.remove-period svg {
+	width: 18px;
+	height: 18px;
+}
+
+.period-fields {
+	display: grid;
+	grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+	align-items: end;
+	gap: 1.25rem;
+}
+
 .date-grid {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 1.5rem;
+	gap: 0.75rem;
 }
 
 .field label {
 	display: block;
-	margin-bottom: 0.35rem;
+	margin-bottom: 0.25rem;
+	font-size: 0.75rem;
 	font-weight: 600;
 	color: #4b5563;
 }
@@ -148,8 +161,9 @@ button {
 .field input {
 	width: 100%;
 	min-width: 0;
-	min-height: 3rem;
-	padding: 0.65rem 0.85rem;
+	min-height: 2.25rem;
+	padding: 0.4rem 0.5rem;
+	font-size: 0.875rem;
 	border: 1px solid #cbd2d9;
 	border-radius: 0.375rem;
 	background: white;
@@ -159,13 +173,14 @@ button {
 .entitlement-choices {
 	min-width: 0;
 	padding: 0;
-	margin: 1rem 0 0;
+	margin: 0;
 	border: 0;
 }
 
 .entitlement-choices legend {
 	padding: 0;
-	margin-bottom: 0.6rem;
+	margin-bottom: 0.25rem;
+	font-size: 0.75rem;
 	font-weight: 600;
 	color: #4b5563;
 }
@@ -173,47 +188,43 @@ button {
 .checkbox-grid {
 	display: grid;
 	grid-template-columns: repeat(4, minmax(0, 1fr));
-	gap: 0.75rem;
+	gap: 0.375rem;
 }
 
 .checkbox-grid label {
 	display: flex;
 	align-items: center;
-	gap: 0.6rem;
-	min-height: 2.75rem;
+	gap: 0.375rem;
+	min-height: 2.25rem;
+	font-size: 0.8125rem;
 	cursor: pointer;
 }
 
 .checkbox-grid input {
-	width: 1.35rem;
-	height: 1.35rem;
+	width: 0.9rem;
+	height: 0.9rem;
 	margin: 0;
 	accent-color: var(--ucd-blue);
 	flex-shrink: 0;
 }
 
-.period-counts {
-	margin: 0.75rem 0 0;
-	font-size: 0.9rem;
-	color: #4b5563;
-}
 
 .add-period {
-	display: flex;
+	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	gap: 0.6rem;
-	width: 100%;
-	padding: 0.65rem 1rem;
+	padding: 0.5rem 0.75rem;
 	border: 1px solid #bac5cf;
-	border-radius: 2rem;
+	border-radius: 0.375rem;
 	background: white;
 	color: var(--ucd-blue);
 	font-weight: 600;
+	font-size: 0.875rem;
 }
 
 .add-period span {
-	font-size: 1.5rem;
+	font-size: 1.15rem;
 	line-height: 1;
 }
 
@@ -226,8 +237,9 @@ button {
 	display: flex;
 	align-items: center;
 	flex-wrap: wrap;
+	justify-content: space-between;
 	gap: 0.75rem 1.5rem;
-	margin-top: 1.5rem;
+	margin-top: 1rem;
 }
 
 .calculate-row p {
@@ -249,7 +261,6 @@ button {
 
 button:focus-visible,
 input:focus-visible,
-.table-scroll:focus-visible,
 #summary-heading:focus-visible {
 	outline: 3px solid var(--ucd-blue);
 	outline-offset: 4px;
@@ -259,109 +270,116 @@ input:focus-visible,
 	margin-top: 2rem;
 }
 
-.summary > .help {
-	margin: 0.75rem 0 1.5rem;
+.entitlement-cards {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	align-items: start;
+	gap: 1rem;
+	margin-top: 1rem;
 }
 
-.table-scroll {
-	overflow-x: auto;
+.entitlement-card {
+	min-width: 0;
+	border: 1px solid #d9e0e6;
+	border-top: 3px solid var(--ucd-gold);
+	border-radius: 0.5rem;
+	background: #fcfdfe;
+	perspective: 1000px;
 }
 
-table {
-	width: 100%;
-	border-collapse: collapse;
+.entitlement-face {
+	display: flex;
+	flex-direction: column;
+	padding: 1.25rem;
+	min-height: 12.5rem;
+}
+
+.entitlement-face h3 {
+	margin: 0;
+	font-size: 1.125rem;
+}
+
+.entitlement-totals {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 1rem;
+	margin: 1.25rem 0;
+}
+
+.entitlement-totals dt {
+	font-size: 0.875rem;
+	color: #4b5563;
+}
+
+.entitlement-totals dd {
+	margin: 0.25rem 0 0;
+}
+
+.metric-number {
+	display: block;
+	font-size: 2.25rem;
+	line-height: 1.2;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	color: var(--ucd-blue);
+}
+
+.metric-unit {
+	display: block;
+	margin-top: 0.25rem;
+	font-size: 0.75rem;
+	color: #4b5563;
+}
+
+.flip-card-button {
+	align-self: flex-start;
+	margin-top: auto;
+	padding: 0.5rem 0;
+	border: 0;
+	background: transparent;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--ucd-blue);
 	text-align: left;
 }
 
-th,
-td {
-	padding: 1rem 0.75rem;
-	border-bottom: 1px solid #e5e7eb;
-	vertical-align: top;
+.flip-card-button::after {
+	content: " ↻";
 }
 
-thead th {
-	font-size: 0.8rem;
-	font-weight: 600;
-	color: #4b5563;
+.flip-card-button:hover {
+	text-decoration: underline;
+	text-underline-offset: 0.2em;
 }
 
-tbody th {
+.entitlement-back h4 {
+	margin: 1rem 0 0.5rem;
 	color: var(--ucd-blue);
-	font-size: 1.1rem;
+	font-size: 0.875rem;
 }
 
-.numeric {
-	text-align: right;
-	white-space: nowrap;
-}
-
-thead .numeric {
-	white-space: normal;
-}
-
-td.numeric {
-	font-size: 1.25rem;
-	font-weight: 600;
-	color: var(--ucd-blue);
-}
-
-.remaining-unit {
-	display: block;
-	font-size: 0.75rem;
-	font-weight: 400;
-	color: #4b5563;
-}
-
-td.not-calculated {
-	font-size: 0.8rem;
-	font-weight: 400;
-	color: #4b5563;
+.entitlement-back p {
+	margin: 0 0 0.5rem;
+	font-size: 0.875rem;
 }
 
 .period-list {
-	padding: 0;
-	margin: 0;
-	list-style: none;
+	margin: 1rem 0 0;
+	padding-left: 1.25rem;
 	font-size: 0.875rem;
-	min-width: 12rem;
-}
-
-.formula-guide {
-	margin-top: 1.5rem;
-	padding-top: 1rem;
-	border-top: 1px solid #d9e0e6;
-}
-
-.formula-guide summary {
-	color: var(--ucd-blue);
-	font-weight: 600;
-	cursor: pointer;
-}
-
-.formula-guide li,
-.formula-guide p {
-	font-size: 0.875rem;
-	color: #4b5563;
-}
-
-.formula-guide li + li {
-	margin-top: 0.75rem;
-}
-
-.formula-guide summary:focus-visible {
-	outline: 3px solid var(--ucd-blue);
-	outline-offset: 4px;
 }
 
 .period-list li + li {
-	margin-top: 0.35rem;
+	margin-top: 0.5rem;
 }
 
 .overlap-note {
-	margin: 0.5rem 0 0;
+	margin-top: 0.75rem !important;
 	color: #4b5563;
-	font-size: 0.8rem;
+}
+
+.summary > .help {
+	margin: 0.75rem 0 1.5rem;
 }
 
 .counting-note {
@@ -397,6 +415,13 @@ td.not-calculated {
 	border: 0;
 }
 
+@media (max-width: 800px) {
+	.period-fields {
+		grid-template-columns: 1fr;
+		gap: 0.625rem;
+	}
+}
+
 @media (max-width: 650px) {
 	.calculator-container {
 		width: calc(100% - 2rem);
@@ -408,89 +433,34 @@ td.not-calculated {
 		padding: 1rem;
 	}
 
-	.leave-period {
-		padding: 1rem;
-	}
-
 	.date-grid {
 		grid-template-columns: 1fr;
 		gap: 0.75rem;
 	}
 
-	.checkbox-grid {
-		grid-template-columns: repeat(2, minmax(0, 1fr));
+	.field input {
+		font-size: 1rem;
+	}
+
+	.entitlement-cards {
+		grid-template-columns: 1fr;
 	}
 
 	.calculate-button {
 		width: 100%;
 	}
 
-	table {
-		display: block;
+}
+
+@media (pointer: coarse) {
+	.checkbox-grid label,
+	.remove-period,
+	.flip-card-button,
+	.add-period {
+		min-height: 44px;
 	}
 
-	thead {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		overflow: hidden;
-		clip-path: inset(50%);
-		white-space: nowrap;
-	}
-
-	tbody {
-		display: grid;
-		gap: 1rem;
-	}
-
-	tbody tr {
-		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		padding: 1rem;
-		border: 1px solid #d9e0e6;
-		border-top: 3px solid var(--ucd-gold);
-		border-radius: 0.5rem;
-	}
-
-	tbody th,
-	tbody td {
-		padding: 0.5rem 0;
-		border: 0;
-	}
-
-	tbody th,
-	.summary-periods {
-		grid-column: 1 / -1;
-	}
-
-	tbody .numeric {
-		text-align: left;
-		white-space: normal;
-	}
-
-	tbody td::before {
-		display: block;
-		content: attr(data-label);
-		margin-bottom: 0.25rem;
-		font-size: 0.75rem;
-		font-weight: 400;
-		color: #4b5563;
-	}
-
-	.period-list {
-		min-width: 0;
-		font-size: 0.8rem;
-	}
-
-	tbody th {
-		font-size: 0.95rem;
-	}
-
-	td.numeric {
-		font-size: 1.1rem;
-	}
-
-	td.not-calculated {
-		font-size: 0.8rem;
+	.remove-period {
+		min-width: 44px;
 	}
 }
