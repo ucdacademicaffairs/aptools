@@ -71,7 +71,9 @@ function calculateLeave(dates, start, end, annualSalary = null, partialPay = 0, 
 		portions, payStart: portions[0].payStart, payEnd: portions[portions.length - 1].payEnd,
 		serviceDays: sum('leaveDays'), serviceWorkDays: sum('serviceWorkDays'),
 		leaveWorkDays: sum('leaveWorkDays'), breakDays: calendarDays(start, end) - sum('leaveDays'),
-		fullUnpaid, partialUnpaid: includePay ? fullUnpaid * (100 - partialPay) / 100 : null
+		monthlyPay: includePay ? annualSalary / 12 : null,
+		fullUnpaid, partialPaid: includePay ? fullUnpaid * partialPay / 100 : null,
+		partialUnpaid: includePay ? fullUnpaid * (100 - partialPay) / 100 : null
 	};
 }
 
@@ -119,10 +121,11 @@ function renderWork(container, result, annualSalary, partialPay, periodsPerYear,
 				? `Your leave reaches the last service day of the ${term}, so your pay ends on the period's last pay date: ${formatDate(portion.payEnd)}.`
 				: `Count ${portion.convertedDays} pay days starting on ${formatDate(portion.payStart)}. The first day counts, so the end is ${formatDate(portion.payEnd)} (${formatDate(portion.payStart)} + ${portion.convertedDays} − 1).`
 		]);
-		if (includePay) group(section, 'How We Find Your Unpaid Amount', null, [
+		if (includePay) group(section, 'How We Find Your Paid and Unpaid Amounts', null, [
 			`Salary for this ${term}: ${currency.format(annualSalary)} ÷ ${periodsPerYear} = ${currency.format(portion.periodSalary)}.`,
 			`Pay for one work day: ${currency.format(portion.periodSalary)} ÷ ${portion.serviceWorkDays} work days = about ${currency.format(portion.dailyRate)}.`,
 			`Fully unpaid leave: the daily rate × ${portion.leaveWorkDays} work days on leave = ${currency.format(portion.fullUnpaid)}.`,
+			`At ${partialPay}% pay, the amount paid is ${currency.format(portion.fullUnpaid)} × ${partialPay}% = ${currency.format(portion.fullUnpaid * partialPay / 100)}.`,
 			`At ${partialPay}% pay, ${100 - partialPay}% is unpaid: ${currency.format(portion.fullUnpaid)} × ${100 - partialPay}% = ${currency.format(portion.fullUnpaid * (100 - partialPay) / 100)}.`
 		]);
 		container.append(section);
@@ -131,8 +134,10 @@ function renderWork(container, result, annualSalary, partialPay, periodsPerYear,
 		const totals = document.createElement('div');
 		totals.className = 'work-totals';
 		totals.append(
-			textElement('h3', result.portions.length > 1 ? 'Add the Periods Together' : 'Your Unpaid Totals'),
+			textElement('h3', result.portions.length > 1 ? 'Add the Periods Together' : 'Your Pay Totals'),
+			textElement('p', `Normal Monthly Pay: ${currency.format(annualSalary)} ÷ 12 = ${currency.format(result.monthlyPay)}.`),
 			textElement('p', `Total Full Unpaid Amount: ${currency.format(result.fullUnpaid)}.`),
+			textElement('p', `Total Paid Amount at Partial Pay: ${currency.format(result.fullUnpaid)} × ${partialPay}% = ${currency.format(result.partialPaid)}.`),
 			textElement('p', `Total Unpaid Amount at Partial Pay: ${currency.format(result.partialUnpaid)}.`),
 			textElement('p', 'We keep the exact daily rate while calculating, then round the final totals to cents.', 'help')
 		);

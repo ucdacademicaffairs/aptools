@@ -81,6 +81,11 @@
 	border-top: 3px solid var(--ucd-gold);
 }
 
+.pay-metrics > .monthly-pay {
+	grid-column: 1 / -1;
+	width: calc((100% - 1rem) / 2);
+}
+
 .workday-metrics {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -152,6 +157,10 @@
 }
 
 @media (max-width: 600px) {
+	.pay-metrics > .monthly-pay {
+		width: 100%;
+	}
+
 	.workday-metrics {
 		grid-template-columns: 1fr;
 	}

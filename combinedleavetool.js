@@ -63,7 +63,8 @@ function initializePanel(panel, dates, term, periodsPerYear) {
 			field('service-workdays').textContent = result.serviceWorkDays;
 			field('leave-workdays').textContent = result.leaveWorkDays;
 			field('pay-results').hidden = !includePay.checked;
-			field('full-unpaid').textContent = includePay.checked ? currency.format(result.fullUnpaid) : '';
+			field('monthly-pay').textContent = includePay.checked ? currency.format(result.monthlyPay) : '';
+			field('partial-paid').textContent = includePay.checked ? currency.format(result.partialPaid) : '';
 			field('partial-unpaid').textContent = includePay.checked ? currency.format(result.partialUnpaid) : '';
 			field('break-note').hidden = !result.breakDays;
 			field('break-note').textContent = `${result.breakDays} calendar days fall between service periods. These days are excluded from service-day and work-day totals.`;
