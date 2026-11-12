@@ -8,6 +8,19 @@ const context = vm.createContext({ document: { addEventListener() {} } });
 vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'entitlementcalculator.js'), 'utf8'), context);
 const period = (start, end, entitlements) => ({ start, end, entitlements });
 
+test('calculation equations subtract each leave once, excluding previously counted overlap', () => {
+	const leaves = [{ start: '2026-01-05', end: '2026-01-11' }, { start: '2026-01-09', end: '2026-01-13' }];
+	const calendar = context.entitlementLeaveContributions(leaves, 'FMLA');
+	assert.deepEqual(Array.from(calendar.amounts), [7, 2]);
+	assert.equal(calendar.hasOverlap, true);
+	const workdays = context.entitlementLeaveContributions(leaves, 'PFCB');
+	assert.deepEqual(Array.from(workdays.amounts), [5, 2]);
+	assert.equal(workdays.hasOverlap, true);
+	const separate = context.entitlementLeaveContributions([{ start: '2026-01-01', end: '2026-01-07' }, { start: '2026-02-01', end: '2026-02-05' }], 'CFRA');
+	assert.deepEqual(Array.from(separate.amounts), [7, 5]);
+	assert.equal(separate.hasOverlap, false);
+});
+
 // Calculation fixtures include complete events and explicit CFRA associations.
 function summarize(periods) {
 	const events = [{ id: 'birth', date: '2025-01-01', type: 'Birth' }];
@@ -34,7 +47,7 @@ test('CFRA requires a complete entered event and a matching association', () => 
 	for (const incomplete of [{ ...event, date: '' }, { ...event, date: '2026-02-30' }, { ...event, type: '' }]) {
 		assert.throws(() => context.summarizeEntitlements([{ ...leave, eventId: event.id }], [incomplete]), /complete/);
 	}
-	const result = context.summarizeEntitlements([{ ...leave, eventId: event.id }], [event])[0];
+	const result = context.summarizeEntitlements([{ ...leave, eventId: event.id }], [event]).find(row => row.type === 'CFRA');
 	assert.equal(result.periods[0].eventDate, '2026-01-01');
 	assert.equal(result.periods[0].eventType, 'Adoption');
 });
@@ -58,7 +71,7 @@ test('CFRA auto-associates one event and requires an explicit choice among multi
 	assert.equal(context.resolveCfraEvent([birth, adoption], 'removed'), null);
 	const result = summarize([
 		{ ...period('2026-02-02', '2026-02-06', ['CFRA']), eventDate: adoption.date, eventType: adoption.type }
-	])[0];
+	]).find(row => row.type === 'CFRA');
 	assert.equal(result.periods[0].eventDate, adoption.date);
 	assert.equal(result.periods[0].eventType, 'Adoption');
 });
@@ -146,9 +159,10 @@ test('entry order and nested intervals do not change the unique day total', () =
 		period('2026-02-02', '2026-02-06', ['CFRA']),
 		period('2026-02-06', '2026-02-09', ['CFRA'])
 	]);
-	assert.equal(summary[0].calendarDays, 8);
-	assert.equal(summary[0].weekdays, 6);
-	assert.equal(summary[0].periods[0].start, '2026-02-02');
+	const cfra = summary.find(row => row.type === 'CFRA');
+	assert.equal(cfra.calendarDays, 8);
+	assert.equal(cfra.weekdays, 6);
+	assert.equal(cfra.periods[0].start, '2026-02-02');
 });
 
 test('missing selections, invalid dates, reversed dates and empty periods are rejected', () => {
@@ -160,14 +174,14 @@ test('missing selections, invalid dates, reversed dates and empty periods are re
 });
 
 test('FMLA splits cross-year leave into independent annual balances without warnings', () => {
-	const result = summarize([period('2026-12-15', '2027-01-15', ['FMLA'])])[0];
+	const result = summarize([period('2026-12-15', '2027-01-15', ['FMLA'])]).find(row => row.type === 'FMLA');
 	assert.equal(result.calendarDays, 32);	assert.equal(result.remaining, null);
 	assert.deepEqual(JSON.parse(JSON.stringify(result.yearly.map(({ year, used, remaining }) => ({ year, used, remaining })))), [
 		{ year: 2026, used: 17, remaining: 67 }, { year: 2027, used: 15, remaining: 69 }
 	]);});
 
 test('PFCB resets to 40 workdays each year and splits at January 1', () => {
-	const result = summarize([period('2026-12-28', '2027-01-05', ['PFCB'])])[0];
+	const result = summarize([period('2026-12-28', '2027-01-05', ['PFCB'])]).find(row => row.type === 'PFCB');
 	assert.deepEqual(JSON.parse(JSON.stringify(result.yearly)), [
 		{ year: 2026, used: 4, remaining: 36, periods: [{ start: '2026-12-28', end: '2026-12-31' }] },
 		{ year: 2027, used: 3, remaining: 37, periods: [{ start: '2027-01-01', end: '2027-01-05' }] }
@@ -179,7 +193,7 @@ test('annual balances deduplicate overlap, handle leap years, and omit untouched
 			period('2028-02-28', '2028-03-01', [type]),
 			period('2028-02-29', '2028-03-01', [type]),
 			period('2030-01-05', '2030-01-06', [type])
-		])[0];
+		]).find(row => row.type === type);
 		assert.equal(result.yearly.length, 2);
 		assert.equal(result.yearly[0].year, 2028);
 		assert.equal(result.yearly[0].used, 3);
@@ -196,7 +210,7 @@ test('CFRA balances are independent per event and include unused entered events'
 	];
 	const result = context.summarizeEntitlements([
 		{ ...period('2025-04-10', '2025-07-02', ['CFRA']), eventId: 'birth' }
-	], events)[0];
+	], events).find(row => row.type === 'CFRA');
 	assert.deepEqual(JSON.parse(JSON.stringify(result.eventBalances.map(({ event, used, remaining }) => ({ id: event.id, used, remaining })))), [
 		{ id: 'placement', used: 0, remaining: 84 },
 		{ id: 'birth', used: 84, remaining: 0 }
@@ -215,7 +229,7 @@ test('CFRA counts unique days within each event across years, anniversaries and 
 		{ ...period('2024-12-31', '2025-01-02', ['CFRA']), eventId: 'a' },
 		{ ...period('2025-02-28', '2025-03-01', ['CFRA']), eventId: 'a' },
 		{ ...period('2024-02-28', '2024-03-01', ['CFRA']), eventId: 'b' }
-	], events)[0];
+	], events).find(row => row.type === 'CFRA');
 	assert.equal(result.eventBalances[0].used, 8);
 	assert.equal(result.eventBalances[0].remaining, 76);
 	assert.equal(result.eventBalances[0].hasOverlap, true);
@@ -228,7 +242,7 @@ test('CFRA association changes move usage to the new event', () => {
 	const events = [{ id: 'a', date: '2026-01-01', type: 'Birth' }, { id: 'b', date: '2026-02-01', type: 'Placement' }];
 	const leave = period('2026-03-01', '2026-03-10', ['CFRA']);
 	for (const id of ['a', 'b']) {
-		const balances = context.summarizeEntitlements([{ ...leave, eventId: id }], events)[0].eventBalances;
+		const balances = context.summarizeEntitlements([{ ...leave, eventId: id }], events).find(row => row.type === 'CFRA').eventBalances;
 		assert.equal(balances.find(balance => balance.event.id === id).used, 10);
 		assert.equal(balances.find(balance => balance.event.id !== id).used, 0);
 	}
@@ -239,10 +253,35 @@ test('PDLL conflicts with CFRA and PFCB only within the same leave period', () =
 		assert.throws(() => summarize([period('2026-01-05', '2026-01-09', selections)]), /PDLL cannot be combined/);
 	}
 	for (const selections of [['PDLL', 'FMLA'], ['CFRA', 'PFCB', 'FMLA']]) {
-		assert.equal(summarize([period('2026-01-05', '2026-01-09', selections)]).length, selections.length);
+		const results = summarize([period('2026-01-05', '2026-01-09', selections)]);
+		assert.equal(results.length, 4);
+		for (const type of selections) assert.ok(results.find(row => row.type === type));
 	}
 	assert.equal(summarize([
 		period('2026-01-05', '2026-01-09', ['PDLL']),
 		period('2026-02-02', '2026-02-06', ['CFRA', 'PFCB'])
-	]).length, 3);
+	]).length, 4);
+});
+
+test('all available entitlements appear with unused balances', () => {
+	const events = [{ id: 'birth', date: '2026-01-01', type: 'Birth' }];
+	const results = context.summarizeEntitlements([period('2026-02-02', '2026-02-06', ['FMLA'])], events);
+	assert.deepEqual(Array.from(results, row => row.type), ['PDLL', 'FMLA', 'CFRA', 'PFCB']);
+	assert.equal(results.find(row => row.type === 'PDLL').calendarDays, 0);
+	assert.equal(results.find(row => row.type === 'PDLL').weeks, 0);
+	assert.equal(results.find(row => row.type === 'CFRA').eventBalances[0].used, 0);
+	assert.equal(results.find(row => row.type === 'CFRA').eventBalances[0].remaining, 84);
+	assert.equal(results.find(row => row.type === 'PFCB').yearly[0].used, 0);
+	assert.equal(results.find(row => row.type === 'PFCB').yearly[0].remaining, 40);
+	assert.equal(results.find(row => row.type === 'FMLA').yearly[0].remaining, 79);
+});
+
+test('event requirements control unused cards and annual cards include unused years', () => {
+	const leaves = [period('2025-12-31', '2026-01-02', ['PFCB']), period('2027-02-01', '2027-02-05', ['FMLA'])];
+	const noEvents = context.summarizeEntitlements(leaves);
+	assert.deepEqual(Array.from(noEvents, row => row.type), ['FMLA', 'PFCB']);
+	assert.deepEqual(Array.from(noEvents.find(row => row.type === 'FMLA').yearly, row => row.used), [0, 0, 5]);
+	assert.deepEqual(Array.from(noEvents.find(row => row.type === 'PFCB').yearly, row => row.remaining), [39, 38, 40]);
+	const placement = context.summarizeEntitlements(leaves, [{ id: 'e', date: '2026-01-01', type: 'Placement' }]);
+	assert.deepEqual(Array.from(placement, row => row.type), ['FMLA', 'CFRA', 'PFCB']);
 });

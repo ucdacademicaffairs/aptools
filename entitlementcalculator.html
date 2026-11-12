@@ -26,29 +26,31 @@
 			<p>For Academic Year Faculty</p>
 		</div>
 		<form id="entitlement-form" class="calculator" novalidate>
-			<section class="events-section" aria-labelledby="events-heading">
-				<h2 id="events-heading">Birth/Placement/Adoption Events</h2>
-				<p class="help intro-help">CFRA requires a complete event and an association for each leave period. Enter a Birth event to enable PDLL.</p>
-				<div id="event-entries"></div>
-				<button id="add-event" class="add-period" type="button"><span aria-hidden="true">+</span> Add event</button>
-			</section>
 			<div class="section-heading">
 				<h2>Leave Periods</h2>
 				<p id="period-count">1 leave period</p>
 			</div>
-			<p class="help intro-help">PDLL requires a Birth event and cannot be combined with CFRA or PFCB in the same leave period.</p>
+			<p id="leave-rule" class="help intro-help">Enter the Start and End date of each individual leave and select all applicable entitlements associated with the leave. Click "Add Leave" to add as many leaves as needed.</p>
+			<div id="validation-warning" class="validation-warning" role="alert" hidden>
+				<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 21h20Z M12 9v5 M12 17h.01"/></svg>
+				<span>Please complete all fields highlighted in red.</span>
+			</div>
 			<div id="leave-periods"></div>
 			<p id="empty-periods" class="empty-state" hidden>No leave periods yet. Add a leave period to get started.</p>
 			<p id="form-error" class="error-message" role="alert" hidden></p>
 			<div class="calculate-row">
-				<button id="add-period" class="add-period" type="button"><span aria-hidden="true">+</span> Add leave period</button>
-				<button class="calculate-button" type="submit">Calculate Entitlements</button>
+				<button id="add-period" class="add-period" type="button"><span aria-hidden="true">+</span> Add Leave</button>
+				<button class="calculate-button" type="submit">Calculate</button>
 			</div>
 		</form>
-		<section id="entitlement-summary" class="summary" aria-labelledby="summary-heading" hidden>
-			<h2 id="summary-heading" tabindex="-1">Entitlement Summary</h2>
+		<section id="entitlement-summary" class="summary" aria-labelledby="summary-heading">
+			<h2 id="summary-heading" tabindex="-1">Entitlement balances</h2>
+			<p class="help">Click on any of the cards below to view details about how the balances were calculated.</p>
+			<p id="summary-empty" class="help">Your balances will appear here after calculation.</p>
+			<div id="recalculate-notice" class="recalculate-notice" hidden>
+				<p role="status">Inputs changed. Recalculate to update these balances.</p>
+			</div>
 			<div id="summary-cards" class="entitlement-cards"></div>
-			<p class="counting-note">Overlapping dates count once within each entitlement. CFRA counts overlapping dates once per associated event.</p>
 		</section>
 		<p id="announcements" class="sr-only" role="status"></p>
 		<noscript><p>Enable JavaScript to use this calculator.</p></noscript>
@@ -61,6 +63,7 @@
 	</footer>
 	<template id="period-template">
 		<section class="leave-period">
+			<p class="sr-only" data-field="validation-message" role="status"></p>
 			<div class="period-fields">
 				<div class="date-grid">
 					<div class="field"><label data-for="start">Start date</label><input data-field="start" type="date" required></div>
@@ -74,32 +77,39 @@
 						<label><input type="checkbox" name="entitlements" value="CFRA"> <span>CFRA</span></label>
 						<label><input type="checkbox" name="entitlements" value="PFCB"> <span>PFCB</span></label>
 					</div>
+					<p class="selector-help sr-only" data-field="entitlement-help"></p>
 				</fieldset>
+				<div class="leave-event field" data-field="event-section" hidden>
+					<label data-for="event-choice" data-field="event-choice-label">Associate Event Type</label>
+					<div class="event-selector" data-field="event-selector">
+						<button type="button" class="event-trigger" data-field="event-choice" aria-haspopup="dialog" aria-expanded="false" disabled>
+							<span data-field="event-text">Select an event</span>
+							<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+						</button>
+						<div class="event-menu" data-field="event-menu" role="dialog" aria-label="Choose an associated event" hidden></div>
+					</div>
+					<p class="help" data-field="event-help">Associate this CFRA leave with an event.</p>
+					<div data-field="event-editor"></div>
+				</div>
 				<button type="button" class="remove-period" data-field="remove" title="Remove dates">
 					<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M5 6l1 14a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1l1-14M10 10v7M14 10v7"/></svg>
 				</button>
 			</div>
-			<div class="cfra-event field" data-field="event-section" hidden>
-				<label data-for="event-choice" data-field="event-choice-label">Birth/Placement/Adoption Event</label>
-				<select data-field="event-choice" disabled hidden></select>
-				<p class="assigned-event" data-field="assigned-event" hidden></p>
-				<p class="help" data-field="event-help">Associate this CFRA leave with an event.</p>
-			</div>
 		</section>
 	</template>
 	<template id="event-template">
-		<div class="event-entry">
-			<div class="field"><label data-event-for="date">Birth/Placement/Adoption Event Date</label><input data-event-field="date" type="date"></div>
-			<fieldset class="event-types entitlement-choices">
-				<legend>Which Event?</legend>
-				<div class="event-type-options">
-					<label><input type="radio" value="Birth"> Birth</label>
-					<label><input type="radio" value="Placement"> Placement</label>
-					<label><input type="radio" value="Adoption"> Adoption</label>
+		<fieldset class="event-editor">
+			<legend class="sr-only" data-editor-field="heading">New event</legend>
+			<div class="event-entry">
+				<div class="field"><label class="sr-only" data-editor-for="type">Event type</label><select data-editor-field="type" required><option value="">Select type</option><option>Birth</option><option>Placement</option><option>Adoption</option></select></div>
+				<div class="field"><label class="sr-only" data-editor-for="date">Event date</label><input data-editor-field="date" type="date" required></div>
+				<div class="event-actions">
+					<button type="button" class="save-event" data-editor-field="save">Add Event</button>
+					<button type="button" class="text-button" data-editor-field="cancel">Cancel</button>
 				</div>
-			</fieldset>
-			<button class="remove-period" data-event-field="remove" type="button" aria-label="Remove event" title="Remove event">&times;</button>
-		</div>
+			</div>
+			<p class="help" data-editor-field="error" role="alert" hidden></p>
+		</fieldset>
 	</template>
 </body>
 </html>
