@@ -96,7 +96,8 @@ h2 {
 }
 
 button,
-input {
+input,
+select {
 	font: inherit;
 }
 
@@ -144,6 +145,53 @@ button {
 	font-size: 0.75rem;
 }
 
+.events-section {
+	padding-bottom: 1.25rem;
+	margin-bottom: 1.5rem;
+	border-bottom: 1px solid #d9e0e6;
+}
+
+.events-section h2,
+.field label {
+	overflow-wrap: anywhere;
+}
+
+.event-entry {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) auto;
+	align-items: end;
+	gap: 0.75rem;
+	margin-bottom: 0.75rem;
+}
+
+.event-type-options {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem 0.75rem;
+	min-height: 2.25rem;
+	align-items: center;
+	font-size: 0.8125rem;
+}
+
+.event-type-options label {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+}
+
+.event-type-options input {
+	margin: 0;
+	accent-color: var(--ucd-blue);
+}
+
+
+.assigned-event {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--ucd-blue);
+	font-weight: 600;
+}
+
 .optional-label {
 	font-weight: 400;
 }
@@ -162,7 +210,8 @@ button {
 	color: #4b5563;
 }
 
-.field input {
+.field input,
+.field select {
 	width: 100%;
 	min-width: 0;
 	min-height: 2.25rem;
@@ -210,6 +259,14 @@ button {
 	margin: 0;
 	accent-color: var(--ucd-blue);
 	flex-shrink: 0;
+}
+
+.checkbox-grid input:disabled + span {
+	color: #6b7280;
+}
+
+.checkbox-grid label:has(input:disabled) {
+	cursor: not-allowed;
 }
 
 
@@ -265,6 +322,7 @@ button {
 
 button:focus-visible,
 input:focus-visible,
+select:focus-visible,
 #summary-heading:focus-visible {
 	outline: 3px solid var(--ucd-blue);
 	outline-offset: 4px;
@@ -310,35 +368,6 @@ input:focus-visible,
 	gap: 0.75rem;
 }
 
-.caution-symbol {
-	color: #a85d00;
-	font-size: 1.35rem;
-}
-
-.card-reset-note {
-	margin: 0.5rem 0 0;
-	font-size: 0.75rem;
-	color: #805000;
-}
-
-.entitlement-back .card-warning,
-.reset-warnings {
-	padding: 0.75rem 1rem;
-	margin: 0.75rem 0;
-	border-left: 3px solid var(--ucd-gold);
-	background: #fff8df;
-	color: #6b4600;
-	font-size: 0.875rem;
-}
-
-.reset-warnings p {
-	margin: 0;
-}
-
-.reset-warnings p + p {
-	margin-top: 0.75rem;
-}
-
 .event-date-note {
 	display: block;
 	margin-top: 0.25rem;
@@ -346,35 +375,29 @@ input:focus-visible,
 	color: #4b5563;
 }
 
-.warning-dialog {
-	width: min(34rem, calc(100% - 2rem));
-	max-height: calc(100% - 2rem);
-	padding: 1.5rem;
-	border: 1px solid #d9e0e6;
-	border-top: 4px solid var(--ucd-gold);
-	border-radius: 0.5rem;
-	color: #253746;
-}
-
-.warning-dialog::backdrop {
-	background: rgb(2 40 81 / 45%);
-}
-
-.warning-dialog h2 {
-	font-size: 1.25rem;
-}
-
-.warning-dialog form {
-	display: flex;
-	justify-content: flex-end;
-	margin-top: 1.5rem;
-}
-
 .entitlement-totals {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
 	gap: 1rem;
 	margin: 1.25rem 0;
+}
+
+.annual-balance {
+	margin-top: 1rem;
+}
+
+.annual-balance + .annual-balance {
+	border-top: 1px solid #d9e0e6;
+	padding-top: 1rem;
+}
+
+.annual-balance h4 {
+	margin: 0;
+	color: var(--ucd-blue);
+}
+
+.annual-balance .entitlement-totals {
+	margin: 0.5rem 0 1rem;
 }
 
 .entitlement-totals dt {
@@ -508,6 +531,22 @@ input:focus-visible,
 }
 
 @media (max-width: 650px) {
+	.event-entry {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+
+	.event-entry .event-types {
+		grid-column: 1 / -1;
+	}
+
+	.event-entry .remove-period {
+		grid-row: 1;
+		grid-column: 2;
+	}
+
+	.field select {
+		font-size: 1rem;
+	}
 	.calculator-container {
 		width: calc(100% - 2rem);
 		padding-block: 2rem;

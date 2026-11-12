@@ -26,15 +26,20 @@
 			<p>For Academic Year Faculty</p>
 		</div>
 		<form id="entitlement-form" class="calculator" novalidate>
+			<section class="events-section" aria-labelledby="events-heading">
+				<h2 id="events-heading">Birth/Placement/Adoption Events</h2>
+				<p class="help intro-help">CFRA requires a complete event and an association for each leave period. Enter a Birth event to enable PDLL.</p>
+				<div id="event-entries"></div>
+				<button id="add-event" class="add-period" type="button"><span aria-hidden="true">+</span> Add event</button>
+			</section>
 			<div class="section-heading">
 				<h2>Leave Periods</h2>
 				<p id="period-count">1 leave period</p>
 			</div>
-			<p class="help intro-help">Select the applicable entitlements for each period.</p>
+			<p class="help intro-help">PDLL requires a Birth event and cannot be combined with CFRA or PFCB in the same leave period.</p>
 			<div id="leave-periods"></div>
 			<p id="empty-periods" class="empty-state" hidden>No leave periods yet. Add a leave period to get started.</p>
 			<p id="form-error" class="error-message" role="alert" hidden></p>
-			<div id="entitlement-warnings" class="reset-warnings" role="alert" hidden></div>
 			<div class="calculate-row">
 				<button id="add-period" class="add-period" type="button"><span aria-hidden="true">+</span> Add leave period</button>
 				<button class="calculate-button" type="submit">Calculate Entitlements</button>
@@ -43,7 +48,7 @@
 		<section id="entitlement-summary" class="summary" aria-labelledby="summary-heading" hidden>
 			<h2 id="summary-heading" tabindex="-1">Entitlement Summary</h2>
 			<div id="summary-cards" class="entitlement-cards"></div>
-			<p class="counting-note">Overlapping dates count once within each entitlement.</p>
+			<p class="counting-note">Overlapping dates count once within each entitlement. CFRA counts overlapping dates once per associated event.</p>
 		</section>
 		<p id="announcements" class="sr-only" role="status"></p>
 		<noscript><p>Enable JavaScript to use this calculator.</p></noscript>
@@ -54,11 +59,6 @@
 			<p class="copyright">&copy; 2026 Regents of the University of California, Davis campus. All rights reserved.</p>
 		</div>
 	</footer>
-	<dialog id="entitlement-warning-dialog" class="warning-dialog" role="alertdialog" aria-labelledby="warning-dialog-heading" aria-describedby="warning-dialog-messages">
-		<h2 id="warning-dialog-heading"><span aria-hidden="true">⚠</span> Review entitlement dates</h2>
-		<div id="warning-dialog-messages"></div>
-		<form method="dialog"><button class="calculate-button">OK</button></form>
-	</dialog>
 	<template id="period-template">
 		<section class="leave-period">
 			<div class="period-fields">
@@ -80,11 +80,26 @@
 				</button>
 			</div>
 			<div class="cfra-event field" data-field="event-section" hidden>
-				<label data-for="event-date">Birth/placement/adoption event date <span class="optional-label">(optional, for CFRA)</span></label>
-				<input data-field="event-date" type="date" disabled>
-				<p class="help" data-field="event-help">Add an event date to check whether CFRA dates cross the event or a yearly anniversary.</p>
+				<label data-for="event-choice" data-field="event-choice-label">Birth/Placement/Adoption Event</label>
+				<select data-field="event-choice" disabled hidden></select>
+				<p class="assigned-event" data-field="assigned-event" hidden></p>
+				<p class="help" data-field="event-help">Associate this CFRA leave with an event.</p>
 			</div>
 		</section>
+	</template>
+	<template id="event-template">
+		<div class="event-entry">
+			<div class="field"><label data-event-for="date">Birth/Placement/Adoption Event Date</label><input data-event-field="date" type="date"></div>
+			<fieldset class="event-types entitlement-choices">
+				<legend>Which Event?</legend>
+				<div class="event-type-options">
+					<label><input type="radio" value="Birth"> Birth</label>
+					<label><input type="radio" value="Placement"> Placement</label>
+					<label><input type="radio" value="Adoption"> Adoption</label>
+				</div>
+			</fieldset>
+			<button class="remove-period" data-event-field="remove" type="button" aria-label="Remove event" title="Remove event">&times;</button>
+		</div>
 	</template>
 </body>
 </html>

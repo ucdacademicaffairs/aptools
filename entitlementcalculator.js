@@ -2,44 +2,6 @@
 
 const ENTITLEMENT_TYPES = ['PDLL', 'FMLA', 'CFRA', 'PFCB'];
 const ENTITLEMENT_DAY_MS = 86400000;
-const ENTITLEMENT_RESET_MESSAGES = {
-	FMLA: 'Entitlement resets every calendar year. Please keep FMLA leave dates within the same calendar year.',
-	CFRA: 'Entitlement resets every calendar year or per birth/placement/adoption event. Please keep CFRA leave dates within the same entitlement period.'
-};
-
-function getEntitlementWarnings(periods) {
-	const complete = periods.filter(period => {
-		try { return entitlementDay(period.end) >= entitlementDay(period.start); }
-		catch { return false; }
-	});
-	return ['FMLA', 'CFRA'].flatMap(type => {
-		const selected = complete.filter(period => period.entitlements.includes(type));
-		if (!selected.length) return [];
-		const first = selected.reduce((date, period) => period.start < date ? period.start : date, selected[0].start);
-		const last = selected.reduce((date, period) => period.end > date ? period.end : date, selected[0].end);
-		const reasons = [];
-		if (first.slice(0, 4) !== last.slice(0, 4)) reasons.push('calendar-year');
-		if (type === 'CFRA') {
-			const events = [...new Set(selected.map(period => period.eventDate).filter(date => {
-				try { entitlementDay(date); return true; } catch { return false; }
-			}))];
-			if (events.length > 1) reasons.push('multiple-events');
-			for (const event of events) {
-				const eventYear = Number(event.slice(0, 4));
-				const month = event.slice(5, 7);
-				const day = event.slice(8, 10);
-				for (let year = Math.max(eventYear, Number(first.slice(0, 4))); year <= Number(last.slice(0, 4)); year++) {
-					const leapYear = year % 400 === 0 || (year % 4 === 0 && year % 100 !== 0);
-					const anniversaryDay = month === '02' && day === '29' && !leapYear ? '28' : day;
-					const boundary = `${String(year).padStart(4, '0')}-${month}-${anniversaryDay}`;
-					if (first < boundary && boundary <= last) reasons.push(year === eventYear ? 'event-date' : 'anniversary');
-				}
-			}
-		}
-		return reasons.length ? [{ type, message: ENTITLEMENT_RESET_MESSAGES[type], reasons: [...new Set(reasons)] }] : [];
-	});
-}
-
 function entitlementDay(value) {
 	if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || Number(value.slice(0, 4)) < 1) {
 		throw new Error('Enter a valid date.');
@@ -58,6 +20,17 @@ function entitlementDayCounts(start, end) {
 	return countEntitlementInterval(first, last);
 }
 
+function resolveCfraEvent(events, selectedId) {
+	return events.length === 1 ? events[0] : events.find(event => event.id === selectedId) || null;
+}
+
+function isCompleteEntitlementEvent(event) {
+	try {
+		entitlementDay(event.date);
+		return Boolean(event.id) && ['Birth', 'Placement', 'Adoption'].includes(event.type);
+	} catch { return false; }
+}
+
 function countEntitlementInterval(first, last) {
 	const calendarDays = last - first + 1;
 	let weekdays = Math.floor(calendarDays / 7) * 5;
@@ -69,8 +42,19 @@ function countEntitlementInterval(first, last) {
 	return { calendarDays, weekdays };
 }
 
-function summarizeEntitlements(periods) {
+function mergeEntitlementIntervals(periods) {
+	const merged = [];
+	[...periods].sort((a, b) => a.first - b.first || a.last - b.last).forEach(period => {
+		const previous = merged[merged.length - 1];
+		if (previous && period.first <= previous.last + 1) previous.last = Math.max(previous.last, period.last);
+		else merged.push({ first: period.first, last: period.last });
+	});
+	return merged;
+}
+
+function summarizeEntitlements(periods, events = []) {
 	if (!periods.length) throw new Error('Add at least one leave period before calculating.');
+	const completeEvents = events.filter(isCompleteEntitlementEvent);
 	const validated = periods.map((period, index) => {
 		try {
 			const first = entitlementDay(period.start);
@@ -80,41 +64,74 @@ function summarizeEntitlements(periods) {
 			if (period.entitlements.some(type => !ENTITLEMENT_TYPES.includes(type))) {
 				throw new Error('Choose one of the listed entitlements.');
 			}
-			if (period.entitlements.includes('CFRA') && period.eventDate) entitlementDay(period.eventDate);
-			return { ...period, first, last };
+			if (period.entitlements.includes('PDLL') && period.entitlements.some(type => type === 'CFRA' || type === 'PFCB')) {
+				throw new Error('PDLL cannot be combined with CFRA or PFCB in the same leave period.');
+			}
+			if (period.entitlements.includes('PDLL') && !completeEvents.some(event => event.type === 'Birth')) {
+				throw new Error('Enter a complete Birth event to use PDLL.');
+			}
+			const event = period.entitlements.includes('CFRA') ? completeEvents.find(event => event.id === period.eventId) : null;
+			if (period.entitlements.includes('CFRA') && !event) {
+				throw new Error('Enter a complete Birth, Placement, or Adoption event and associate it with this CFRA leave.');
+			}
+			return { ...period, first, last, eventDate: event?.date || '', eventType: event?.type || '' };
 		} catch (error) {
 			error.periodIndex = index;
 			error.message = `Date range ${index + 1}: ${error.message}`;
 			throw error;
 		}
 	});
-	const warnings = getEntitlementWarnings(validated);
 	return ENTITLEMENT_TYPES.flatMap(type => {
 		const selected = validated.filter(period => period.entitlements.includes(type))
 			.sort((a, b) => a.first - b.first || a.last - b.last);
 		if (!selected.length) return [];
-		const merged = [];
-		selected.forEach(period => {
-			const previous = merged[merged.length - 1];
-			if (previous && period.first <= previous.last + 1) {
-				previous.last = Math.max(previous.last, period.last);
-			} else {
-				merged.push({ first: period.first, last: period.last });
-			}
-		});
+		const merged = mergeEntitlementIntervals(selected);
 		const counts = merged.reduce((total, interval) => {
 			const next = countEntitlementInterval(interval.first, interval.last);
 			return { calendarDays: total.calendarDays + next.calendarDays, weekdays: total.weekdays + next.weekdays };
 		}, { calendarDays: 0, weekdays: 0 });
 		const unmergedDays = selected.reduce((total, period) => total + period.last - period.first + 1, 0);
-		return [{ type, periods: selected.map(({ start, end, eventDate }) => ({ start, end, ...(type === 'CFRA' && eventDate ? { eventDate } : {}) })),
+		const annual = type === 'FMLA' || type === 'PFCB';
+		const eventBalances = type === 'CFRA' ? [...completeEvents]
+			.sort((a, b) => b.date.localeCompare(a.date))
+			.map(event => {
+				const periods = selected.filter(period => period.eventId === event.id);
+				const used = mergeEntitlementIntervals(periods).reduce((total, interval) => total + interval.last - interval.first + 1, 0);
+				return { event, used, remaining: 84 - used, periods: periods.map(({ start, end }) => ({ start, end })),
+					hasOverlap: periods.reduce((total, period) => total + period.last - period.first + 1, 0) > used };
+			}) : [];
+		const yearly = [];
+		if (annual) {
+			const years = new Set();
+			selected.forEach(period => {
+				for (let year = Number(period.start.slice(0, 4)); year <= Number(period.end.slice(0, 4)); year++) years.add(year);
+			});
+			[...years].sort((a, b) => a - b).forEach(year => {
+				const yearStart = `${String(year).padStart(4, '0')}-01-01`;
+				const yearEnd = `${String(year).padStart(4, '0')}-12-31`;
+				const first = entitlementDay(yearStart);
+				const last = entitlementDay(yearEnd);
+				const used = merged.reduce((total, interval) => {
+					const start = Math.max(first, interval.first);
+					const end = Math.min(last, interval.last);
+					if (start > end) return total;
+					const days = countEntitlementInterval(start, end);
+					return total + (type === 'PFCB' ? days.weekdays : days.calendarDays);
+				}, 0);
+				yearly.push({ year, used, remaining: (type === 'PFCB' ? 40 : 84) - used,
+					periods: selected.filter(period => period.start <= yearEnd && period.end >= yearStart)
+						.map(period => ({ start: period.start < yearStart ? yearStart : period.start, end: period.end > yearEnd ? yearEnd : period.end })) });
+			});
+		}
+		return [{ type, periods: selected.map(({ start, end, eventDate, eventType }) => ({ start, end, ...(type === 'CFRA' && eventDate ? { eventDate, ...(eventType ? { eventType } : {}) } : {}) })),
+			yearly,
+			eventBalances,
 			calendarDays: type === 'PFCB' ? null : counts.calendarDays,
 			weekdays: type === 'PDLL' ? null : counts.weekdays,
 			weeks: type === 'PDLL' ? counts.calendarDays / 7 : null,
-			remaining: type === 'PDLL' ? null : type === 'PFCB' ? 56 - counts.weekdays : 84 - counts.calendarDays,
+			remaining: type === 'CFRA' ? (eventBalances.length === 1 ? eventBalances[0].remaining : null) : annual ? (yearly.length === 1 ? yearly[0].remaining : null) : null,
 			remainingUnit: type === 'PFCB' ? 'workdays' : type === 'PDLL' ? null : 'calendar days',
-			hasOverlap: unmergedDays > counts.calendarDays,
-			warning: warnings.find(warning => warning.type === type)?.message || null }];
+			hasOverlap: unmergedDays > counts.calendarDays }];
 	});
 }
 
@@ -137,7 +154,6 @@ function createEntitlementSummaryCard(result) {
 	const card = element('article', null, 'entitlement-card');
 	card.dataset.entitlement = result.type;
 	card.dataset.flipped = 'false';
-	card.dataset.warning = String(Boolean(result.warning));
 	card.setAttribute('aria-label', `${result.type} entitlement`);
 	const front = element('div', null, 'entitlement-face entitlement-front');
 	const back = element('div', null, 'entitlement-face entitlement-back');
@@ -146,19 +162,10 @@ function createEntitlementSummaryCard(result) {
 	back.hidden = true;
 	function heading(text) {
 		const title = element('h3', text, 'entitlement-card-heading');
-		if (result.warning) {
-			const caution = element('span', '⚠', 'caution-symbol');
-			caution.setAttribute('role', 'img');
-			caution.setAttribute('aria-label', result.warning);
-			caution.title = result.warning;
-			title.append(caution);
-		}
 		return title;
 	}
 	front.append(heading(result.type));
-	if (result.warning) front.append(element('p', 'Review dates before using this balance.', 'card-reset-note'));
-	const metrics = element('dl', null, 'entitlement-totals');
-	function metric(label, value, measure, key) {
+	function metric(metrics, label, value, measure, key) {
 		const group = element('div', null);
 		const amount = element('dd', null);
 		const number = element('span', formatNumber(value), 'metric-number');
@@ -167,36 +174,66 @@ function createEntitlementSummaryCard(result) {
 		group.append(element('dt', label), amount);
 		metrics.append(group);
 	}
-	metric('Used', used, unit, 'used');
-	if (result.remaining !== null) metric('Remaining', result.remaining, unit, 'remaining');
-	else metric('Weeks', result.weeks, 'weeks', 'weeks');
-	front.append(metrics);
+	const balances = result.type === 'CFRA' ? result.eventBalances : result.yearly;
+	const balanceLabel = balance => balance.event ? `${balance.event.type} — ${formatEntitlementDate(balance.event.date)}` : String(balance.year);
+	if (balances.length) {
+		balances.forEach(balance => {
+			const section = element('section', null, 'annual-balance');
+			if (balance.event) section.dataset.eventId = balance.event.id;
+			else section.dataset.year = balance.year;
+			section.append(element('h4', balanceLabel(balance)));
+			const metrics = element('dl', null, 'entitlement-totals');
+			metric(metrics, 'Used', balance.used, unit, 'used');
+			metric(metrics, 'Remaining', balance.remaining, unit, 'remaining');
+			section.append(metrics);
+			front.append(section);
+		});
+	} else {
+		const metrics = element('dl', null, 'entitlement-totals');
+		metric(metrics, 'Used', used, unit, 'used');
+		if (result.remaining !== null) metric(metrics, 'Remaining', result.remaining, unit, 'remaining');
+		else metric(metrics, 'Weeks', result.weeks, 'weeks', 'weeks');
+		front.append(metrics);
+	}
 	const viewButton = element('button', 'View periods & calculation', 'flip-card-button');
 	viewButton.type = 'button';
 	viewButton.setAttribute('aria-label', `Show ${result.type} leave periods and calculation`);
 	viewButton.setAttribute('aria-controls', back.id);
 	front.append(viewButton);
 	back.append(heading(`${result.type} · Details`));
-	if (result.warning) back.append(element('p', result.warning, 'card-warning'));
-	const list = element('ul', null, 'period-list');
-	result.periods.forEach(period => {
-		const counts = entitlementDayCounts(period.start, period.end);
-		const amount = result.type === 'PFCB' ? counts.weekdays : counts.calendarDays;
-		const item = element('li', `${formatEntitlementDate(period.start)} – ${formatEntitlementDate(period.end)} (${amount} ${unit})`);
-		if (period.eventDate) item.append(element('span', `Event: ${formatEntitlementDate(period.eventDate)}`, 'event-date-note'));
-		list.append(item);
-	});
-	back.append(list);
-	if (result.hasOverlap) back.append(element('p', 'These periods overlap. The used total counts each date once, so the individual period amounts may add up to more than the total.', 'overlap-note'));
+	function periodList(periods) {
+		const list = element('ul', null, 'period-list');
+		periods.forEach(period => {
+			const counts = entitlementDayCounts(period.start, period.end);
+			const amount = result.type === 'PFCB' ? counts.weekdays : counts.calendarDays;
+			const item = element('li', `${formatEntitlementDate(period.start)} – ${formatEntitlementDate(period.end)} (${amount} ${unit})`);
+			if (period.eventDate) item.append(element('span', `${period.eventType || 'Event'}: ${formatEntitlementDate(period.eventDate)}`, 'event-date-note'));
+			list.append(item);
+		});
+		return list;
+	}
+	if (balances.length) {
+		balances.forEach(balance => {
+			back.append(element('h4', balanceLabel(balance)));
+			if (balance.periods.length) back.append(periodList(balance.periods));
+			else back.append(element('p', 'No CFRA leave associated with this event.'));
+			back.append(element('p', `Used: ${balance.used} ${unit}. Remaining = ${result.type === 'PFCB' ? 40 : 84} − ${balance.used} = ${balance.remaining} ${unit}.`));
+			if (balance.hasOverlap) back.append(element('p', 'Overlapping dates for this event count once.', 'overlap-note'));
+		});
+	} else back.append(periodList(result.periods));
+	if (result.type !== 'CFRA' && result.hasOverlap) back.append(element('p', 'These periods overlap. The used total counts each date once, so the individual period amounts may add up to more than the total.', 'overlap-note'));
 	back.append(element('h4', 'How this is calculated'));
 	back.append(element('p', result.type === 'PFCB'
 		? 'Count Monday–Friday workdays in the selected periods, including weekday holidays.'
 		: 'Count calendar days in the selected periods, including both the start and end date.'));
-	back.append(element('p', `Total used: ${used} ${unit}.`));
-	if (result.type === 'PDLL') {
+	if (result.type === 'CFRA') {
+		back.append(element('p', 'Each event has its own 84-calendar-day allowance. Add the unique calendar days from CFRA leave associated with that event, then subtract them from 84. The balance stays with the event when leave crosses calendar years.'));
+	} else if (result.yearly.length) {
+		back.append(element('p', `Each calendar year starts with ${result.type === 'PFCB' ? '40 workdays' : '84 calendar days'}. Split leave at January 1 and subtract only the days used in that year. Overlapping dates count once per year.`));
+	} else if (result.type === 'PDLL') {
 		back.append(element('p', `Weeks = ${used} ÷ 7 = ${formatNumber(result.weeks)} weeks.`));
 	} else {
-		const allowance = result.type === 'PFCB' ? 56 : 84;
+		const allowance = 84;
 		back.append(element('p', `Remaining = ${allowance} − ${used} = ${result.remaining} ${unit}.`));
 	}
 	const returnButton = element('button', 'Back to summary', 'flip-card-button');
@@ -233,44 +270,106 @@ document.addEventListener('DOMContentLoaded', () => {
 	const errorMessage = document.getElementById('form-error');
 	const summary = document.getElementById('entitlement-summary');
 	const announcements = document.getElementById('announcements');
-	const warningBox = document.getElementById('entitlement-warnings');
-	const warningDialog = document.getElementById('entitlement-warning-dialog');
+	const eventsContainer = document.getElementById('event-entries');
+	const addEventButton = document.getElementById('add-event');
 	let nextId = 1;
+	let nextEventId = 1;
 	const cards = () => [...periodsContainer.querySelectorAll('.leave-period')];
 	const field = (card, name) => card.querySelector(`[data-field="${name}"]`);
+	function collectEvents() {
+		return [...eventsContainer.querySelectorAll('.event-entry')].flatMap(row => {
+			const date = row.querySelector('[data-event-field="date"]').value;
+			const type = row.querySelector('input[type="radio"]:checked')?.value;
+			try { entitlementDay(date); } catch { return []; }
+			return type ? [{ id: row.dataset.eventId, date, type }] : [];
+		});
+	}
+	const eventLabel = event => `${event.type} — ${formatEntitlementDate(event.date)}`;
 	function collectPeriods() {
+		const events = collectEvents();
 		return cards().map(card => {
 			const entitlements = [...card.querySelectorAll('input[type="checkbox"]:checked')].map(input => input.value);
+			const event = entitlements.includes('CFRA') ? resolveCfraEvent(events, card.dataset.eventId) : null;
 			return {
 				start: field(card, 'start').value,
 				end: field(card, 'end').value,
 				entitlements,
-				eventDate: entitlements.includes('CFRA') ? field(card, 'event-date').value : ''
+				eventId: event?.id || '',
+				eventDate: event?.date || '',
+				eventType: event?.type || ''
 			};
 		});
 	}
-	function warningMessages(container, warnings) {
-		container.replaceChildren();
-		warnings.forEach(warning => {
-			const message = document.createElement('p');
-			message.textContent = warning.message;
-			container.append(message);
-		});
-	}
-	function updateWarnings() {
-		const warnings = getEntitlementWarnings(collectPeriods());
-		const signature = JSON.stringify(warnings);
-		if (warningBox.dataset.signature !== signature) {
-			warningMessages(warningBox, warnings);
-			warningBox.dataset.signature = signature;
-		}
-		warningBox.hidden = warnings.length === 0;
-		return warnings;
-	}
 	function updateCfraEvent(card) {
 		const selected = card.querySelector('input[value="CFRA"]').checked;
+		const events = collectEvents();
+		const event = resolveCfraEvent(events, card.dataset.eventId);
+		card.dataset.eventId = event?.id || '';
+		const choice = field(card, 'event-choice');
+		const options = [new Option('Select an event', ''), ...events.map(item => new Option(eventLabel(item), item.id))];
+		choice.replaceChildren(...options);
+		choice.value = event?.id || '';
+		choice.hidden = events.length === 1;
+		choice.disabled = !selected || events.length === 1;
+		choice.required = selected && events.length !== 1;
+		field(card, 'event-choice-label').hidden = choice.hidden;
+		field(card, 'assigned-event').hidden = events.length !== 1;
+		field(card, 'assigned-event').textContent = events.length === 1 ? `CFRA event: ${eventLabel(events[0])}` : '';
+		field(card, 'event-help').textContent = !events.length
+			? 'Required for CFRA: enter an event date and type above, then associate the event with this leave.'
+			: 'CFRA leave counts toward the 84-calendar-day allowance for its associated event.';
 		field(card, 'event-section').hidden = !selected;
-		field(card, 'event-date').disabled = !selected;
+		card.querySelector('input[value="CFRA"]').setAttribute('aria-expanded', String(selected));
+	}
+	function syncEvents() {
+		cards().forEach(card => {
+			updateEntitlementChoices(card, true);
+			updateCfraEvent(card);
+		});	}
+	function addEvent(focus = true) {
+		invalidate();
+		const row = document.getElementById('event-template').content.firstElementChild.cloneNode(true);
+		const id = `event-${nextEventId++}`;
+		row.dataset.eventId = id;
+		const date = row.querySelector('[data-event-field="date"]');
+		date.id = `${id}-date`;
+		row.querySelector('[data-event-for="date"]').htmlFor = date.id;
+		const radios = [...row.querySelectorAll('input[type="radio"]')];
+		radios.forEach(radio => { radio.name = `${id}-type`; });
+		row.addEventListener('input', () => {
+			invalidate();
+			const started = Boolean(date.value || date.validity.badInput || radios.some(radio => radio.checked));
+			date.required = started;
+			radios.forEach(radio => { radio.required = started; });
+			// Keep existing associations while an event is only partly entered.
+			if (!started || (date.value && radios.some(radio => radio.checked))) syncEvents();
+			else cards().forEach(card => updateEntitlementChoices(card));
+		});
+		row.addEventListener('change', () => {
+			// A committed edit/removal must not leave PDLL selected without a Birth event.
+			cards().forEach(card => updateEntitlementChoices(card, true));
+		});
+		row.querySelector('[data-event-field="remove"]').addEventListener('click', () => {
+			invalidate();
+			row.remove();
+			syncEvents();
+			addEventButton.focus();
+			announcements.textContent = 'Event removed. CFRA event associations updated.';
+		});
+		eventsContainer.append(row);
+		if (focus) date.focus();
+	}
+	function updateEntitlementChoices(card, clearUnavailable = false) {
+		const checkbox = type => card.querySelector(`input[value="${type}"]`);
+		const hasBirth = collectEvents().some(event => event.type === 'Birth');
+		if (!hasBirth && clearUnavailable && checkbox('PDLL').checked) {
+			checkbox('PDLL').checked = false;
+			announcements.textContent = 'PDLL deselected because no complete Birth event is entered.';
+		}
+		checkbox('PDLL').disabled = !hasBirth || checkbox('CFRA').checked || checkbox('PFCB').checked;
+		checkbox('PDLL').closest('label').title = hasBirth ? '' : 'Enter a complete Birth event above to use PDLL.';
+		checkbox('CFRA').disabled = checkbox('PDLL').checked;
+		checkbox('PFCB').disabled = checkbox('PDLL').checked;
 	}
 	function invalidate() {
 		if (!summary.hidden) announcements.textContent = 'Leave periods changed. Calculate again to update the summary.';
@@ -295,37 +394,34 @@ document.addEventListener('DOMContentLoaded', () => {
 		const cfraCheckbox = card.querySelector('input[value="CFRA"]');
 		cfraCheckbox.setAttribute('aria-controls', field(card, 'event-section').id);
 		cfraCheckbox.setAttribute('aria-expanded', 'false');
-		field(card, 'event-date').setAttribute('aria-describedby', field(card, 'event-help').id);
+		field(card, 'event-choice').setAttribute('aria-describedby', field(card, 'event-help').id);
 		card.addEventListener('input', event => {
 			invalidate();
+			if (event.target.matches('input[name="entitlements"]')) updateEntitlementChoices(card);
 			const start = field(card, 'start');
 			const end = field(card, 'end');
 			// Changing a native date input's constraints can clear a partly typed date.
 			if (event.target === start && end.min !== start.value) end.min = start.value;
 			if (event.target === cfraCheckbox) {
 				updateCfraEvent(card);
-				cfraCheckbox.setAttribute('aria-expanded', String(cfraCheckbox.checked));
 			}
-			if (event.target === field(card, 'event-date')) {
-				field(card, 'event-help').textContent = field(card, 'event-date').value.endsWith('-02-29')
-					? 'For Feb 29 events, anniversaries are checked on Feb 28 in non-leap years.'
-					: 'Add an event date to check whether CFRA dates cross the event or a yearly anniversary.';
-			}
-			updateWarnings();
-		});
+			if (event.target === field(card, 'event-choice')) {
+				card.dataset.eventId = event.target.value;
+				updateCfraEvent(card);
+			}		});
 		field(card, 'remove').addEventListener('click', () => {
 			const index = cards().indexOf(card);
 			invalidate();
 			card.remove();
-			renumber();
-			updateWarnings();
-			const remaining = cards();
+			renumber();			const remaining = cards();
 			const next = remaining[Math.min(index, remaining.length - 1)];
 			if (next) field(next, 'start').focus();
 			else addButton.focus();
 			announcements.textContent = `Leave period removed. ${remaining.length} remaining.`;
 		});
 		periodsContainer.append(card);
+		updateEntitlementChoices(card);
+		updateCfraEvent(card);
 		renumber();
 		if (focus) {
 			field(card, 'start').focus();
@@ -340,18 +436,14 @@ document.addEventListener('DOMContentLoaded', () => {
 		announcements.textContent = 'Entitlement summary calculated for ' + cards().length + ' leave periods and ' + results.length + ' entitlements.';
 	}
 	addButton.addEventListener('click', () => addPeriod());
+	addEventButton.addEventListener('click', () => addEvent());
 	form.addEventListener('submit', event => {
 		event.preventDefault();
 		invalidate();
 		if (!form.reportValidity()) return;
 		try {
 			const periods = collectPeriods();
-			renderSummary(summarizeEntitlements(periods));
-			const warnings = updateWarnings();
-			if (warnings.length) {
-				warningMessages(document.getElementById('warning-dialog-messages'), warnings);
-				warningDialog.showModal();
-			}
+			renderSummary(summarizeEntitlements(periods, collectEvents()));
 		} catch (error) {
 			errorMessage.textContent = error.message;
 			errorMessage.hidden = false;
@@ -360,5 +452,6 @@ document.addEventListener('DOMContentLoaded', () => {
 			else addButton.focus();
 		}
 	});
+	addEvent(false);
 	addPeriod(false);
 });

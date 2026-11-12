@@ -8,8 +8,63 @@ const context = vm.createContext({ document: { addEventListener() {} } });
 vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'entitlementcalculator.js'), 'utf8'), context);
 const period = (start, end, entitlements) => ({ start, end, entitlements });
 
+// Calculation fixtures include complete events and explicit CFRA associations.
+function summarize(periods) {
+	const events = [{ id: 'birth', date: '2025-01-01', type: 'Birth' }];
+	const associated = periods.map((entry, index) => {
+		if (!entry.entitlements.includes('CFRA')) return entry;
+		const date = entry.eventDate || '2025-01-01';
+		const type = entry.eventType || 'Birth';
+		let event = events.find(event => event.date === date && event.type === type);
+		if (!event) {
+			event = { id: `cfra-${index}`, date, type };
+			events.push(event);
+		}
+		return { ...entry, eventId: event.id };
+	});
+	return context.summarizeEntitlements(associated, events);
+}
+
+test('CFRA requires a complete entered event and a matching association', () => {
+	const leave = period('2026-02-02', '2026-02-06', ['CFRA']);
+	const event = { id: 'adoption', date: '2026-01-01', type: 'Adoption' };
+	assert.throws(() => context.summarizeEntitlements([leave]), /complete.*event/);
+	assert.throws(() => context.summarizeEntitlements([leave], [event]), /associate/);
+	assert.throws(() => context.summarizeEntitlements([{ ...leave, eventId: 'deleted' }], [event]), /associate/);
+	for (const incomplete of [{ ...event, date: '' }, { ...event, date: '2026-02-30' }, { ...event, type: '' }]) {
+		assert.throws(() => context.summarizeEntitlements([{ ...leave, eventId: event.id }], [incomplete]), /complete/);
+	}
+	const result = context.summarizeEntitlements([{ ...leave, eventId: event.id }], [event])[0];
+	assert.equal(result.periods[0].eventDate, '2026-01-01');
+	assert.equal(result.periods[0].eventType, 'Adoption');
+});
+
+test('PDLL requires a complete Birth event; other entitlements do not', () => {
+	const leave = period('2026-02-02', '2026-02-06', ['PDLL']);
+	for (const events of [[], [{ id: 'e', date: '2026-01-01', type: 'Placement' }], [{ id: 'e', date: '', type: 'Birth' }]]) {
+		assert.throws(() => context.summarizeEntitlements([leave], events), /complete Birth/);
+	}
+	assert.equal(context.summarizeEntitlements([leave], [{ id: 'e', date: '2026-01-01', type: 'Birth' }])[0].calendarDays, 5);
+	assert.equal(context.summarizeEntitlements([period('2026-02-02', '2026-02-06', ['FMLA', 'PFCB'])]).length, 2);
+});
+
+test('CFRA auto-associates one event and requires an explicit choice among multiple events', () => {
+	const birth = { id: 'event-1', date: '2026-01-01', type: 'Birth' };
+	const adoption = { id: 'event-2', date: '2026-02-01', type: 'Adoption' };
+	assert.equal(context.resolveCfraEvent([], ''), null);
+	assert.equal(context.resolveCfraEvent([birth], ''), birth);
+	assert.equal(context.resolveCfraEvent([birth, adoption], ''), null);
+	assert.equal(context.resolveCfraEvent([birth, adoption], adoption.id), adoption);
+	assert.equal(context.resolveCfraEvent([birth, adoption], 'removed'), null);
+	const result = summarize([
+		{ ...period('2026-02-02', '2026-02-06', ['CFRA']), eventDate: adoption.date, eventType: adoption.type }
+	])[0];
+	assert.equal(result.periods[0].eventDate, adoption.date);
+	assert.equal(result.periods[0].eventType, 'Adoption');
+});
+
 test('mockup totals calendar days and weekdays separately for concurrent entitlements', () => {
-	const summary = context.summarizeEntitlements([
+	const summary = summarize([
 		period('2026-01-05', '2026-01-16', ['PDLL', 'FMLA']),
 		period('2026-02-02', '2026-02-13', ['PDLL', 'FMLA']),
 		period('2026-03-02', '2026-03-13', ['CFRA', 'PFCB'])
@@ -38,12 +93,12 @@ test('mockup totals calendar days and weekdays separately for concurrent entitle
 	assert.equal(pfcb.calendarDays, null);
 	assert.equal(pfcb.weekdays, 10);
 	assert.equal(pfcb.weeks, null);
-	assert.equal(pfcb.remaining, 46);
+	assert.equal(pfcb.remaining, 30);
 	assert.equal(pfcb.remainingUnit, 'workdays');
 });
 
 test('overlapping and duplicate periods count dates once per entitlement', () => {
-	const summary = context.summarizeEntitlements([
+	const summary = summarize([
 		period('2026-01-05', '2026-01-16', ['PDLL', 'FMLA']),
 		period('2026-01-12', '2026-01-23', ['PDLL']),
 		period('2026-01-05', '2026-01-16', ['PDLL'])
@@ -57,22 +112,22 @@ test('overlapping and duplicate periods count dates once per entitlement', () =>
 });
 
 test('remaining entitlement uses exact subtraction even when the result is negative', () => {
-	const summary = context.summarizeEntitlements([
+	const summary = summarize([
 		period('2026-01-01', '2026-04-30', ['FMLA', 'CFRA', 'PFCB'])
 	]);
 	assert.equal(summary.find(row => row.type === 'FMLA').remaining, -36);
 	assert.equal(summary.find(row => row.type === 'CFRA').remaining, -36);
-	assert.equal(summary.find(row => row.type === 'PFCB').remaining, -30);
+	assert.equal(summary.find(row => row.type === 'PFCB').remaining, -46);
 });
 
 test('overlapping dates reduce remaining entitlement only once', () => {
-	const summary = context.summarizeEntitlements([
+	const summary = summarize([
 		period('2026-01-05', '2026-01-16', ['FMLA', 'CFRA', 'PFCB']),
 		period('2026-01-12', '2026-01-23', ['FMLA', 'CFRA', 'PFCB'])
 	]);
 	assert.equal(summary.find(row => row.type === 'FMLA').remaining, 65);
 	assert.equal(summary.find(row => row.type === 'CFRA').remaining, 65);
-	assert.equal(summary.find(row => row.type === 'PFCB').remaining, 41);
+	assert.equal(summary.find(row => row.type === 'PFCB').remaining, 25);
 });
 
 test('inclusive dates handle leap years, weekends, and weekday holidays', () => {
@@ -86,7 +141,7 @@ test('inclusive dates handle leap years, weekends, and weekday holidays', () => 
 });
 
 test('entry order and nested intervals do not change the unique day total', () => {
-	const summary = context.summarizeEntitlements([
+	const summary = summarize([
 		period('2026-02-03', '2026-02-03', ['CFRA']),
 		period('2026-02-02', '2026-02-06', ['CFRA']),
 		period('2026-02-06', '2026-02-09', ['CFRA'])
@@ -97,74 +152,97 @@ test('entry order and nested intervals do not change the unique day total', () =
 });
 
 test('missing selections, invalid dates, reversed dates and empty periods are rejected', () => {
-	assert.throws(() => context.summarizeEntitlements([]), /Add at least one/);
-	assert.throws(() => context.summarizeEntitlements([period('2026-01-01', '2026-01-02', [])]), /Select at least one/);
+	assert.throws(() => summarize([]), /Add at least one/);
+	assert.throws(() => summarize([period('2026-01-01', '2026-01-02', [])]), /Select at least one/);
 	assert.throws(() => context.entitlementDayCounts('2026-02-30', '2026-03-01'), /valid date/);
 	assert.throws(() => context.entitlementDayCounts('', '2026-03-01'), /valid date/);
 	assert.throws(() => context.entitlementDayCounts('2026-03-02', '2026-03-01'), /on or after/);
 });
 
-test('FMLA warns across calendar years without preventing a calculation', () => {
-	const result = context.summarizeEntitlements([period('2026-12-15', '2027-01-15', ['FMLA'])])[0];
-	assert.equal(result.calendarDays, 32);
-	assert.equal(result.warning, 'Entitlement resets every calendar year. Please keep FMLA leave dates within the same calendar year.');
-	assert.equal(context.summarizeEntitlements([period('2026-01-01', '2026-12-31', ['FMLA'])])[0].warning, null);
+test('FMLA splits cross-year leave into independent annual balances without warnings', () => {
+	const result = summarize([period('2026-12-15', '2027-01-15', ['FMLA'])])[0];
+	assert.equal(result.calendarDays, 32);	assert.equal(result.remaining, null);
+	assert.deepEqual(JSON.parse(JSON.stringify(result.yearly.map(({ year, used, remaining }) => ({ year, used, remaining })))), [
+		{ year: 2026, used: 17, remaining: 67 }, { year: 2027, used: 15, remaining: 69 }
+	]);});
+
+test('PFCB resets to 40 workdays each year and splits at January 1', () => {
+	const result = summarize([period('2026-12-28', '2027-01-05', ['PFCB'])])[0];
+	assert.deepEqual(JSON.parse(JSON.stringify(result.yearly)), [
+		{ year: 2026, used: 4, remaining: 36, periods: [{ start: '2026-12-28', end: '2026-12-31' }] },
+		{ year: 2027, used: 3, remaining: 37, periods: [{ start: '2027-01-01', end: '2027-01-05' }] }
+	]);});
+
+test('annual balances deduplicate overlap, handle leap years, and omit untouched gap years', () => {
+	for (const type of ['FMLA', 'PFCB']) {
+		const result = summarize([
+			period('2028-02-28', '2028-03-01', [type]),
+			period('2028-02-29', '2028-03-01', [type]),
+			period('2030-01-05', '2030-01-06', [type])
+		])[0];
+		assert.equal(result.yearly.length, 2);
+		assert.equal(result.yearly[0].year, 2028);
+		assert.equal(result.yearly[0].used, 3);
+		assert.equal(result.yearly[1].year, 2030);
+		assert.equal(result.yearly[1].used, type === 'PFCB' ? 0 : 2);
+		assert.equal(result.hasOverlap, true);
+	}
 });
 
-test('separate FMLA entries in different years also warn about a combined balance', () => {
-	const warnings = context.getEntitlementWarnings([
-		period('2026-01-05', '2026-01-16', ['FMLA']),
-		period('2027-01-04', '2027-01-15', ['FMLA'])
+test('CFRA balances are independent per event and include unused entered events', () => {
+	const events = [
+		{ id: 'birth', date: '2025-04-10', type: 'Birth' },
+		{ id: 'placement', date: '2026-11-10', type: 'Placement' }
+	];
+	const result = context.summarizeEntitlements([
+		{ ...period('2025-04-10', '2025-07-02', ['CFRA']), eventId: 'birth' }
+	], events)[0];
+	assert.deepEqual(JSON.parse(JSON.stringify(result.eventBalances.map(({ event, used, remaining }) => ({ id: event.id, used, remaining })))), [
+		{ id: 'placement', used: 0, remaining: 84 },
+		{ id: 'birth', used: 84, remaining: 0 }
 	]);
-	assert.equal(warnings.length, 1);
-	assert.equal(warnings[0].type, 'FMLA');
-	assert.equal(warnings[0].reasons[0], 'calendar-year');
+	assert.equal(result.remaining, null);
 });
 
-test('CFRA event dates are optional and calendar-year boundaries still warn', () => {
-	assert.equal(context.summarizeEntitlements([period('2026-02-01', '2026-02-28', ['CFRA'])])[0].warning, null);
-	const result = context.summarizeEntitlements([period('2026-12-15', '2027-01-15', ['CFRA'])])[0];
-	assert.equal(result.warning, 'Entitlement resets every calendar year or per birth/placement/adoption event. Please keep CFRA leave dates within the same entitlement period.');
+test('CFRA counts unique days within each event across years, anniversaries and leap days', () => {
+	const events = [
+		{ id: 'a', date: '2024-02-29', type: 'Birth' },
+		{ id: 'b', date: '2024-02-29', type: 'Adoption' }
+	];
+	const result = context.summarizeEntitlements([
+		{ ...period('2024-02-28', '2024-03-01', ['CFRA']), eventId: 'a' },
+		{ ...period('2024-02-29', '2024-03-01', ['CFRA']), eventId: 'a' },
+		{ ...period('2024-12-31', '2025-01-02', ['CFRA']), eventId: 'a' },
+		{ ...period('2025-02-28', '2025-03-01', ['CFRA']), eventId: 'a' },
+		{ ...period('2024-02-28', '2024-03-01', ['CFRA']), eventId: 'b' }
+	], events)[0];
+	assert.equal(result.eventBalances[0].used, 8);
+	assert.equal(result.eventBalances[0].remaining, 76);
+	assert.equal(result.eventBalances[0].hasOverlap, true);
+	assert.equal(result.eventBalances[1].used, 3);
+	assert.equal(result.eventBalances[1].remaining, 81);
+	assert.equal(result.eventBalances[1].hasOverlap, false);
 });
 
-test('CFRA warns when leave crosses an actual event date or yearly anniversary', () => {
-	for (const [eventDate, reason] of [['2026-02-15', 'event-date'], ['2024-02-15', 'anniversary']]) {
-		const warnings = context.getEntitlementWarnings([
-			{ ...period('2026-02-01', '2026-02-28', ['CFRA']), eventDate }
-		]);
-		assert.equal(warnings[0].type, 'CFRA');
-		assert.ok(warnings[0].reasons.includes(reason));
+test('CFRA association changes move usage to the new event', () => {
+	const events = [{ id: 'a', date: '2026-01-01', type: 'Birth' }, { id: 'b', date: '2026-02-01', type: 'Placement' }];
+	const leave = period('2026-03-01', '2026-03-10', ['CFRA']);
+	for (const id of ['a', 'b']) {
+		const balances = context.summarizeEntitlements([{ ...leave, eventId: id }], events)[0].eventBalances;
+		assert.equal(balances.find(balance => balance.event.id === id).used, 10);
+		assert.equal(balances.find(balance => balance.event.id !== id).used, 0);
 	}
-	// The event date starts the next period; a leave wholly on that side is valid.
-	assert.equal(context.getEntitlementWarnings([
-		{ ...period('2026-02-15', '2026-02-28', ['CFRA']), eventDate: '2024-02-15' }
-	]).length, 0);
-	assert.equal(context.getEntitlementWarnings([
-		{ ...period('2026-02-01', '2026-02-14', ['CFRA']), eventDate: '2024-02-15' }
-	]).length, 0);
 });
 
-test('CFRA anniversary checks include boundary end dates and handle Feb 29 events', () => {
-	assert.ok(context.getEntitlementWarnings([
-		{ ...period('2026-02-01', '2026-02-15', ['CFRA']), eventDate: '2024-02-15' }
-	])[0].reasons.includes('anniversary'));
-	assert.ok(context.getEntitlementWarnings([
-		{ ...period('2026-02-20', '2026-03-01', ['CFRA']), eventDate: '2024-02-29' }
-	])[0].reasons.includes('anniversary'));
-	assert.equal(context.getEntitlementWarnings([
-		{ ...period('2026-02-01', '2026-02-28', ['CFRA']), eventDate: '2027-02-15' }
-	]).length, 0);
-});
-
-test('CFRA warns for separate events, validates optional dates, and leaves other entitlements alone', () => {
-	assert.ok(context.getEntitlementWarnings([
-		{ ...period('2026-09-01', '2026-09-10', ['CFRA']), eventDate: '2026-01-01' },
-		{ ...period('2026-10-01', '2026-10-10', ['CFRA']), eventDate: '2026-06-01' }
-	])[0].reasons.includes('multiple-events'));
-	assert.throws(() => context.summarizeEntitlements([
-		{ ...period('2026-02-01', '2026-02-28', ['CFRA']), eventDate: '2026-02-30' }
-	]), /valid date/);
-	for (const row of context.summarizeEntitlements([period('2026-12-15', '2027-01-15', ['PDLL', 'PFCB'])])) {
-		assert.equal(row.warning, null);
+test('PDLL conflicts with CFRA and PFCB only within the same leave period', () => {
+	for (const selections of [['PDLL', 'CFRA'], ['PDLL', 'PFCB'], ['PDLL', 'FMLA', 'CFRA', 'PFCB']]) {
+		assert.throws(() => summarize([period('2026-01-05', '2026-01-09', selections)]), /PDLL cannot be combined/);
 	}
+	for (const selections of [['PDLL', 'FMLA'], ['CFRA', 'PFCB', 'FMLA']]) {
+		assert.equal(summarize([period('2026-01-05', '2026-01-09', selections)]).length, selections.length);
+	}
+	assert.equal(summarize([
+		period('2026-01-05', '2026-01-09', ['PDLL']),
+		period('2026-02-02', '2026-02-06', ['CFRA', 'PFCB'])
+	]).length, 3);
 });
