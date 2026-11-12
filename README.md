@@ -8,12 +8,6 @@ and its interactive behavior in a matching JavaScript file:
 - `index.html` and `index.css`. The index does not need JavaScript.
 - `leavedates.html`, `leavedates.css`, and `leavedates.js`.
 - `unpaidpartialpay.html`, `unpaidpartialpay.css`, and `unpaidpartialpay.js`.
-- `combinedleavetool.html`, `combinedleavetool.css`, and `combinedleavetool.js`.
-
-The combined tool converts dates by default. Selecting “Calculate unpaid or
-partial pay amounts” adds salary and percentage inputs. Its calculation and work
-explanation helpers are in `leave-tool-shared.js`. It reuses the existing base
-styles through `combinedleavetool.css`; the original calculators remain separate.
 
 `site.css` contains the shared Academic Affairs branding, header, and footer.
 Serve the pages over HTTP so the calculators can load their JSON date data.
