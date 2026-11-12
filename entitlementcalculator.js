@@ -646,6 +646,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			validationAttempted = false;
 			document.getElementById('recalculate-notice').hidden = true;
 			document.getElementById('summary-empty').hidden = true;
+			document.getElementById('card-instructions').hidden = results.length === 0;
 			document.getElementById('summary-heading').focus();
 			announcements.textContent = 'Entitlement balances updated.';
 		} catch (error) {
