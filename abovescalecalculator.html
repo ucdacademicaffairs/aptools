@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="UC Davis Above Scale salary calculator workspace.">
+	<title>Above Scale Calculator | Academic Affairs</title>
+	<link rel="stylesheet" href="site.css">
+	<link rel="stylesheet" href="abovescalecalculator.css">
+	<script src="abovescalecalculator.js" defer></script>
+</head>
+<body>
+	<a class="skip-link" href="#main-content">Skip to main content</a>
+	<header class="page-header">
+		<div class="site-container header-content header-with-nav">
+			<div>
+				<p class="university-name">University of California, Davis</p>
+				<p class="site-name"><a class="site-home" href="index.html">Academic Affairs</a></p>
+			</div>
+			<a class="all-tools-link" href="index.html">All Tools <span aria-hidden="true">&rarr;</span></a>
+		</div>
+	</header>
+	<main id="main-content" class="above-scale-container">
+		<p class="eyebrow">Academic personnel tools</p>
+		<h1>Above Scale Calculator</h1>
+		<p>Explore first and further Above Scale salary scenarios for General Campus and the Health Sciences Compensation Plan (HSCP).</p>
+		<div class="salary-tabs" role="tablist" aria-label="Salary plan">
+			<button type="button" id="general-tab" role="tab" aria-selected="true" aria-controls="general-panel" tabindex="0">General Campus</button>
+			<button type="button" id="hscp-tab" role="tab" aria-selected="false" aria-controls="hscp-panel" tabindex="-1">HSCP</button>
+		</div>
+		<div id="general-panel" role="tabpanel" aria-labelledby="general-tab">
+			<p class="scope-warning">For non-exempt titles and the Academic Administrator, Academic Coordinator, and Continuing Educator series, contact VPAA for calculations.</p>
+		</div>
+		<div id="hscp-panel" role="tabpanel" aria-labelledby="hscp-tab" hidden></div>
+		<template id="calculator-template">
+		<div class="calculator-layout">
+			<form id="above-scale-form" class="above-scale-workspace" novalidate autocomplete="off">
+				<h2>Salary scenario</h2>
+				<div class="field"><label for="advancement">Advancement</label><select id="advancement" name="advancement"><option value="first">First Above Scale</option><option value="further">Further Above Scale</option></select></div>
+				<p id="workflow-help" class="help"></p>
+				<div id="scenario-fields"></div>
+				<p id="scope-note" class="help"></p>
+				<p id="form-error" class="form-error" role="alert" hidden></p>
+				<div class="form-actions"><button type="submit" class="primary-button">Calculate</button><button type="reset" class="secondary-button">Clear</button></div>
+			</form>
+			<section class="above-scale-workspace results-panel" aria-labelledby="results-heading">
+				<p class="eyebrow">Calculation</p><h2 id="results-heading" tabindex="-1">Your result</h2>
+				<p id="result-status" role="status">Enter a scenario, then select Calculate.</p>
+				<div id="result-content" hidden>
+					<p id="result-workflow" class="help"></p><p id="total-label" class="total-label"></p><p id="total-amount" class="total-amount"></p>
+					<dl id="component-results" class="component-results"></dl>
+					<details class="calculation-explanation" id="calculation-explanation">
+						<summary>How was this calculated?</summary>
+						<ol id="calculation-steps" class="calculation-steps"></ol>
+						<p class="help">Intermediate values may be shortened for display. Calculations use unrounded values until each indicated rounding step.</p>
+					</details>
+				</div>
+			</section>
+		</div>
+		</template>
+		<noscript><p class="page-notice">Enable JavaScript to use the calculator. All calculations run in your browser.</p></noscript>
+	</main>
+	<footer class="page-footer">
+		<div class="site-container footer-content">
+			<p>UC Davis <span aria-hidden="true">&middot;</span> Academic Affairs</p>
+			<p class="copyright">&copy; 2026 Regents of the University of California, Davis campus. All rights reserved.</p>
+		</div>
+	</footer>
+</body>
+</html>
