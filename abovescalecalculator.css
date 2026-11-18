@@ -56,6 +56,14 @@ input, select { width: 100%; min-height: 2.9rem; padding: .65rem .75rem; border:
 input[aria-invalid="true"], select[aria-invalid="true"] { border: 2px solid #a32323; }
 .help { color: #52616e; font-size: .88rem; }
 .field .help { margin: .3rem 0 0; }
+.field-label { display: flex; gap: .4rem; position: relative; padding-bottom: .4rem; }
+.field-label label { margin-bottom: 0; }
+.salary-tooltip { display: inline-flex; align-items: center; }
+.salary-tooltip-button { display: inline-flex; align-items: center; justify-content: center; min-height: 0; padding: .1rem .15rem; border: 0; background: transparent; color: #52616e; line-height: 1; }
+.salary-tooltip-button svg { display: block; flex: none; }
+.salary-tooltip-button:hover { color: var(--ucd-blue); }
+.salary-tooltip-content { position: absolute; left: 0; bottom: 100%; z-index: 2; width: min(100%, 24rem); padding: .8rem 1rem; background: #fff; color: #243247; border: 1px solid #cbd3dd; border-radius: .35rem; box-shadow: 0 .25rem .8rem #02285120; font-size: .88rem; font-weight: 400; }
+.salary-tooltip-content a { color: inherit; text-decoration: underline; text-underline-offset: .15em; }
 .form-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.5rem; }
 button { cursor: pointer; min-height: 2.8rem; padding: .65rem 1.25rem; border: 1px solid var(--ucd-blue); border-radius: .3rem; font-weight: 650; }
 .primary-button { background: var(--ucd-blue); color: white; }
