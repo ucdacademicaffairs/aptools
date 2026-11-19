@@ -203,11 +203,17 @@ function createEntitlementSummaryCard(result) {
 	back.hidden = true;
 	function heading(text) {
 		const title = element('h3', text, 'entitlement-card-heading');
+		const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+		icon.classList.add('card-flip-icon');
+		icon.setAttribute('viewBox', '0 0 24 24');
+		icon.setAttribute('aria-hidden', 'true');
+		const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+		path.setAttribute('d', 'M12 2.5a.75.75 0 0 1 1.1-.66l7 3.75a.75.75 0 0 1 0 1.32l-7 3.75a.75.75 0 0 1-1.1-.66V8C6.4 8 3.3 10.4 3.5 15.5 0 10.1 3.6 5.1 12 4.75V2.5ZM12 21.5a.75.75 0 0 1-1.1.66l-7-3.75a.75.75 0 0 1 0-1.32l7-3.75a.75.75 0 0 1 1.1.66V16c5.6 0 8.7-2.4 8.5-7.5C24 13.9 20.4 18.9 12 19.25v2.25Z');
+		icon.append(path);
+		title.append(icon);
 		return title;
 	}
 	front.append(heading(result.type));
-	const grouping = result.type === 'CFRA' && result.eventBalances.length ? 'Annual and event limits' : result.yearly.length ? 'By calendar year' : '';
-	if (grouping) front.append(element('p', grouping, 'balance-group-label'));
 	function metric(metrics, label, value, measure, key) {
 		const group = element('div', null);
 		if (key === 'remaining' && value < 0) {
@@ -248,15 +254,56 @@ function createEntitlementSummaryCard(result) {
 			section.append(metrics);
 			return section;
 	}
+	function yearGrid(years) {
+		if (years.length >= 3) {
+			const table = element('table', null, 'year-balance-table');
+			table.append(element('caption', unit[0].toUpperCase() + unit.slice(1)));
+			const head = element('thead', null);
+			const labels = element('tr', null);
+			['Year', 'Used', 'Remaining'].forEach(label => {
+				const cell = element('th', label); cell.scope = 'col'; labels.append(cell);
+			});
+			head.append(labels); table.append(head);
+			const body = element('tbody', null);
+			years.forEach(balance => {
+				const row = element('tr', null); row.dataset.year = balance.year;
+				const year = element('th', String(balance.year)); year.scope = 'row';
+				const usedCell = element('td', null);
+				const usedNumber = element('span', formatNumber(balance.used), 'metric-number'); usedNumber.dataset.metric = 'used';
+				usedCell.append(usedNumber);
+				const remaining = element('td', null, balance.remaining < 0 ? 'overage-metric' : '');
+				const number = element('span', formatNumber(Math.abs(balance.remaining)), 'metric-number');
+				number.dataset.metric = balance.remaining < 0 ? 'exceeded' : 'remaining';
+				remaining.append(number);
+				if (balance.remaining < 0) remaining.append(element('span', ' exceeded', 'table-overage-label'));
+				row.append(year, usedCell, remaining); body.append(row);
+			});
+			table.append(body); return table;
+		}
+		const grid = element('div', null, `year-balances${years.length === 1 ? ' single-year' : ''}`);
+		years.forEach(balance => grid.append(balanceSection(balance)));
+		return grid;
+	}
 	if (result.type === 'CFRA') {
-		front.append(element('h4', 'Annual limit', 'limit-heading'));
-		result.yearly.forEach(balance => front.append(balanceSection(balance)));
+		front.append(element('h4', 'Annual entitlement', 'limit-heading'));
+		front.append(element('p', '84 calendar days per year, shared across all qualifying reasons.', 'limit-description'));
+		front.append(yearGrid(result.yearly));
 		if (balances.length) {
-			front.append(element('h4', 'Event limits · across all years', 'limit-heading'));
-			appendBalances(front, balanceSection);
+			front.append(element('h4', 'Event-specific limits', 'limit-heading event-limit-title'));
+			front.append(element('p', '84 calendar days per qualifying event, even across calendar years.', 'limit-description'));
+			appendBalances(front, balance => {
+				const section = element('section', null, 'cfra-event-balance');
+				section.dataset.eventId = balance.event.id;
+				section.append(element('h4', balanceLabel(balance)));
+				const metrics = element('dl', null, 'entitlement-totals');
+				metric(metrics, 'Used', balance.used, unit, 'used');
+				metric(metrics, 'Remaining', balance.remaining, unit, 'remaining');
+				section.append(metrics);
+				return section;
+			});
 		}
 	} else if (balances.length) {
-		appendBalances(front, balanceSection);
+		front.append(yearGrid(result.yearly));
 	} else {
 		const metrics = element('dl', null, 'entitlement-totals');
 		metric(metrics, 'Used', used, unit, 'used');
@@ -347,15 +394,12 @@ function createEntitlementSummaryCard(result) {
 	const footer = element('div', null, 'card-detail-footer');
 	if (result.type === 'PFCB') {
 		const note = element('p', null, 'pfcb-holiday-note');
-		const emphasis = element('em', null);
-		emphasis.append(element('strong', 'Note: '), document.createTextNode('PFCB calculations do not account for University holidays. If a leave period includes University holidays, please add the corresponding number of holiday days to the remaining workday entitlement.'));
-		note.append(emphasis);
+		note.append(element('strong', 'Note: '), document.createTextNode('PFCB calculations do not account for University holidays. If a leave period includes University holidays, please add the corresponding number of holiday days to the remaining workday entitlement.'));
 		footer.append(note);
 	}
 	if (hasOverlap) footer.append(element('p', result.type === 'PDLL'
 		? 'Overlapping dates count once. The equation includes only new days from each leave.'
 		: 'Overlapping dates count once. The equation subtracts only new days from each leave.', 'overlap-note'));
-	footer.append(element('p', 'Click the card to return to balances.', 'card-return-hint'));
 	back.append(footer);
 	function flip(showBack) {
 		front.hidden = showBack;
@@ -721,7 +765,7 @@ document.addEventListener('DOMContentLoaded', () => {
 				eventId: card.dataset.eventId === '__other__' ? '' : card.dataset.eventId || '',
 				cfraReason: checkbox(card, 'CFRA').checked && card.dataset.eventId === '__other__' ? 'other' : 'event'
 			}));
-			const results = summarizeEntitlements(periods, events);
+			const results = summarizeEntitlements(periods, events).filter(result => result.periods.length > 0);
 			document.getElementById('overlap-warning').hidden = !leavePeriodsOverlap(periods);
 			document.getElementById('summary-cards').replaceChildren(...results.map(createEntitlementSummaryCard));
 			summary.dataset.calculated = 'true'; summary.dataset.stale = 'false';
