@@ -1,0 +1,137 @@
+/* Shared by the isolated PDF renderer and the browser's print layout. */
+@page {
+	size: letter portrait;
+	margin: 0.5in;
+}
+
+.pdf-document {
+	display: block;
+	min-height: 0;
+	margin: 0;
+	background: white;
+	print-color-adjust: exact;
+	-webkit-print-color-adjust: exact;
+}
+
+.pdf-document .pdf-summary-page,
+.pdf-document .pdf-leaves-page {
+	width: 896px;
+}
+
+.pdf-document .pdf-input-value {
+	display: block;
+	padding: 0.5rem 0.625rem;
+	min-height: 2.5rem;
+	border: 1px solid #c4cfda;
+	border-radius: 0.375rem;
+	background: white;
+	color: var(--ucd-blue);
+}
+
+.pdf-document .pdf-checkbox {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 15px;
+	height: 15px;
+	flex-shrink: 0;
+	border: 1px solid #aab9c7;
+	border-radius: 2px;
+	font-size: 13px;
+	line-height: 1;
+}
+
+.pdf-document .pdf-checkbox.is-checked {
+	border-color: var(--ucd-blue);
+	background: var(--ucd-blue);
+	color: white;
+}
+
+.pdf-document .pdf-event-value {
+	cursor: default;
+}
+
+.pdf-document .summary {
+	margin: 0;
+	padding: 1.5rem;
+}
+
+.pdf-document .entitlement-cards {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	opacity: 1;
+}
+
+.pdf-document .entitlement-card {
+	perspective: none;
+	cursor: default;
+}
+
+.pdf-document .pdf-detail-page {
+	width: 720px;
+}
+
+.pdf-document .pdf-detail-page .entitlement-card {
+	display: block;
+}
+
+.pdf-document .entitlement-face {
+	transform: none;
+	animation: none;
+}
+
+.pdf-document .entitlement-back {
+	min-height: 0;
+}
+
+.pdf-document .card-flip-icon,
+.pdf-document .card-toggle,
+.pdf-document .card-return-hint,
+.pdf-document #download-entitlement-pdf,
+.pdf-document #pdf-status,
+.pdf-document #card-instructions,
+.pdf-document #recalculate-notice,
+.pdf-document #summary-empty {
+	display: none !important;
+}
+
+.pdf-document summary {
+	list-style: none;
+	cursor: default;
+}
+
+.pdf-document summary::-webkit-details-marker {
+	display: none;
+}
+
+.pdf-document li,
+.pdf-document tr,
+.pdf-document .calculation-equation,
+.pdf-document .cfra-event-balance {
+	break-inside: avoid;
+}
+
+.pdf-document [data-pdf-record] {
+	break-inside: avoid;
+}
+
+.pdf-document h3,
+.pdf-document h4,
+.pdf-document summary {
+	break-after: avoid;
+}
+
+@media print {
+	.pdf-document .pdf-summary-page,
+	.pdf-document .pdf-leaves-page {
+		width: 100%;
+	}
+
+	.pdf-document .pdf-summary-page {
+		break-before: page;
+	}
+
+	.pdf-document .pdf-detail-page {
+		width: 100%;
+		break-before: page;
+	}
+}

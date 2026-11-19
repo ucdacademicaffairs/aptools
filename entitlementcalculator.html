@@ -7,7 +7,9 @@
 	<title>Entitlement Leave Calculator | Academic Affairs</title>
 	<link rel="stylesheet" href="site.css">
 	<link rel="stylesheet" href="entitlementcalculator.css">
+	<link rel="stylesheet" href="entitlementcalculator-print.css">
 	<script src="entitlementcalculator.js" defer></script>
+	<script src="entitlementcalculator-pdf.js" defer></script>
 </head>
 <body>
 	<a class="skip-link" href="#main-content">Skip to main content</a>
@@ -44,7 +46,11 @@
 			</div>
 		</form>
 		<section id="entitlement-summary" class="summary" aria-labelledby="summary-heading">
-			<h2 id="summary-heading" tabindex="-1">Entitlement balances</h2>
+			<div class="section-heading">
+				<h2 id="summary-heading" tabindex="-1">Entitlement balances</h2>
+				<button id="download-entitlement-pdf" class="text-button download-pdf" type="button" disabled title="Calculate balances before downloading.">Download PDF</button>
+			</div>
+			<p id="pdf-status" class="help pdf-status" role="status" hidden></p>
 			<div id="overlap-warning" class="overlap-warning" role="alert" hidden>
 				<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 21h20Z M12 9v5 M12 17h.01"/></svg>
 				<span>Warning: Multiple Leaves share the same dates.</span>
