@@ -52,6 +52,21 @@ function mergeEntitlementIntervals(periods) {
 	return merged;
 }
 
+function leavePeriodsOverlap(periods) {
+	const ranges = periods.flatMap(period => {
+		try {
+			const first = entitlementDay(period.start); const last = entitlementDay(period.end);
+			return first <= last ? [{ first, last }] : [];
+		} catch { return []; }
+	}).sort((a, b) => a.first - b.first || a.last - b.last);
+	let lastEnd = -Infinity;
+	for (const range of ranges) {
+		if (range.first <= lastEnd) return true;
+		lastEnd = Math.max(lastEnd, range.last);
+	}
+	return false;
+}
+
 function summarizeEntitlements(periods, events = []) {
 	if (!periods.length) throw new Error('Add at least one leave period before calculating.');
 	const completeEvents = events.filter(isCompleteEntitlementEvent);
@@ -70,11 +85,12 @@ function summarizeEntitlements(periods, events = []) {
 			if (period.entitlements.includes('PDLL') && !completeEvents.some(event => event.type === 'Birth')) {
 				throw new Error('Enter a complete Birth event to use PDLL.');
 			}
-			const event = period.entitlements.includes('CFRA') ? completeEvents.find(event => event.id === period.eventId) : null;
-			if (period.entitlements.includes('CFRA') && !event) {
-				throw new Error('Enter a complete Birth, Placement, or Adoption event and associate it with this CFRA leave.');
+			const otherCfra = period.cfraReason === 'other';
+			const event = period.entitlements.includes('CFRA') && !otherCfra ? completeEvents.find(event => event.id === period.eventId) : null;
+			if (period.entitlements.includes('CFRA') && !otherCfra && !event) {
+				throw new Error('Choose Other CFRA, or enter a complete Birth, Placement, or Adoption event and associate it with this CFRA leave.');
 			}
-			return { ...period, first, last, eventDate: event?.date || '', eventType: event?.type || '' };
+			return { ...period, first, last, eventId: event?.id || '', eventDate: event?.date || '', eventType: event?.type || '' };
 		} catch (error) {
 			error.periodIndex = index;
 			error.message = `Date range ${index + 1}: ${error.message}`;
@@ -85,14 +101,13 @@ function summarizeEntitlements(periods, events = []) {
 		const selected = validated.filter(period => period.entitlements.includes(type))
 			.sort((a, b) => a.first - b.first || a.last - b.last);
 		if (type === 'PDLL' && !completeEvents.some(event => event.type === 'Birth')) return [];
-		if (type === 'CFRA' && !completeEvents.length) return [];
 		const merged = mergeEntitlementIntervals(selected);
 		const counts = merged.reduce((total, interval) => {
 			const next = countEntitlementInterval(interval.first, interval.last);
 			return { calendarDays: total.calendarDays + next.calendarDays, weekdays: total.weekdays + next.weekdays };
 		}, { calendarDays: 0, weekdays: 0 });
 		const unmergedDays = selected.reduce((total, period) => total + period.last - period.first + 1, 0);
-		const annual = type === 'FMLA' || type === 'PFCB';
+		const annual = type === 'FMLA' || type === 'PFCB' || type === 'CFRA';
 		const eventBalances = type === 'CFRA' ? [...completeEvents]
 			.sort((a, b) => b.date.localeCompare(a.date))
 			.map(event => {
@@ -121,16 +136,22 @@ function summarizeEntitlements(periods, events = []) {
 				}, 0);
 				yearly.push({ year, used, remaining: (type === 'PFCB' ? 40 : 84) - used,
 					periods: selected.filter(period => period.start <= yearEnd && period.end >= yearStart)
-						.map(period => ({ start: period.start < yearStart ? yearStart : period.start, end: period.end > yearEnd ? yearEnd : period.end })) });
+						.map(period => ({ start: period.start < yearStart ? yearStart : period.start, end: period.end > yearEnd ? yearEnd : period.end,
+							...(type === 'CFRA' ? { eventDate: period.eventDate, eventType: period.eventType, cfraReason: period.cfraReason } : {}) })) });
 			});
 		}
-		return [{ type, periods: selected.map(({ start, end, eventDate, eventType }) => ({ start, end, ...(type === 'CFRA' && eventDate ? { eventDate, ...(eventType ? { eventType } : {}) } : {}) })),
+		eventBalances.forEach(balance => {
+			balance.availability = yearly.map(annual => ({ year: annual.year, annualRemaining: annual.remaining,
+				eventRemaining: balance.remaining, available: Math.max(0, Math.min(annual.remaining, balance.remaining)) }));
+		});
+		return [{ type, periods: selected.map(({ start, end, eventDate, eventType, cfraReason }) => ({ start, end,
+			...(type === 'CFRA' ? { ...(eventDate ? { eventDate, eventType } : {}), ...(cfraReason === 'other' ? { cfraReason } : {}) } : {}) })),
 			yearly,
 			eventBalances,
 			calendarDays: type === 'PFCB' ? null : counts.calendarDays,
 			weekdays: type === 'PDLL' ? null : counts.weekdays,
 			weeks: type === 'PDLL' ? counts.calendarDays / 7 : null,
-			remaining: type === 'CFRA' ? (eventBalances.length === 1 ? eventBalances[0].remaining : null) : annual ? (yearly.length === 1 ? yearly[0].remaining : null) : null,
+			remaining: annual ? (yearly.length === 1 ? yearly[0].remaining : null) : null,
 			remainingUnit: type === 'PFCB' ? 'workdays' : type === 'PDLL' ? null : 'calendar days',
 			hasOverlap: unmergedDays > counts.calendarDays }];
 	});
@@ -185,7 +206,7 @@ function createEntitlementSummaryCard(result) {
 		return title;
 	}
 	front.append(heading(result.type));
-	const grouping = result.type === 'CFRA' ? 'By event' : result.yearly.length ? 'By calendar year' : '';
+	const grouping = result.type === 'CFRA' && result.eventBalances.length ? 'Annual and event limits' : result.yearly.length ? 'By calendar year' : '';
 	if (grouping) front.append(element('p', grouping, 'balance-group-label'));
 	function metric(metrics, label, value, measure, key) {
 		const group = element('div', null);
@@ -216,8 +237,7 @@ function createEntitlementSummaryCard(result) {
 			parent.append(details);
 		}
 	}
-	if (balances.length) {
-		appendBalances(front, balance => {
+	function balanceSection(balance) {
 			const section = element('section', null, 'annual-balance');
 			if (balance.event) section.dataset.eventId = balance.event.id;
 			else section.dataset.year = balance.year;
@@ -227,7 +247,16 @@ function createEntitlementSummaryCard(result) {
 			metric(metrics, 'Remaining', balance.remaining, unit, 'remaining');
 			section.append(metrics);
 			return section;
-		});
+	}
+	if (result.type === 'CFRA') {
+		front.append(element('h4', 'Annual limit', 'limit-heading'));
+		result.yearly.forEach(balance => front.append(balanceSection(balance)));
+		if (balances.length) {
+			front.append(element('h4', 'Event limits · across all years', 'limit-heading'));
+			appendBalances(front, balanceSection);
+		}
+	} else if (balances.length) {
+		appendBalances(front, balanceSection);
 	} else {
 		const metrics = element('dl', null, 'entitlement-totals');
 		metric(metrics, 'Used', used, unit, 'used');
@@ -247,11 +276,12 @@ function createEntitlementSummaryCard(result) {
 			const counts = entitlementDayCounts(period.start, period.end);
 			const amount = result.type === 'PFCB' ? counts.weekdays : counts.calendarDays;
 			const item = element('li', `${formatEntitlementDate(period.start)} – ${formatEntitlementDate(period.end)} (${amount} ${unit})`);
+			if (result.type === 'CFRA') item.append(element('span', period.eventDate ? `${period.eventType} — ${formatEntitlementDate(period.eventDate)}` : 'Other CFRA', 'event-date-note'));
 			list.append(item);
 		});
 		return list;
 	}
-	const detailBalances = result.type === 'CFRA' ? balances.filter(balance => balance.periods.length) : [...balances].sort((a, b) => b.year - a.year);
+	const detailBalances = [...result.yearly].sort((a, b) => b.year - a.year);
 	const grouped = detailBalances.length > 1;
 	function detailGroup(parent, balance) {
 		let groups = parent.lastElementChild;
@@ -282,7 +312,7 @@ function createEntitlementSummaryCard(result) {
 	} else {
 		const allowance = result.type === 'PFCB' ? 40 : 84;
 		back.append(element('p', result.type === 'CFRA'
-			? 'CFRA entitlement is 84 calendar days per associated event.'
+			? 'CFRA entitlement is 84 calendar days per year and resets annually. Birth, Placement, and Adoption leave also has an 84-calendar-day limit per event across all years.'
 			: `${result.type} entitlement is ${allowance} ${unit} per year and resets annually.`, 'calculation-explanation'));
 		if (result.type === 'PFCB') back.append(element('p', 'Workdays are Monday–Friday, including weekday holidays.'));
 		function calculation(parent, balance) {
@@ -298,6 +328,12 @@ function createEntitlementSummaryCard(result) {
 		});
 		if (!detailBalances.length) calculation(back, { used: 0, remaining: allowance, periods: [] });
 		if (result.type === 'CFRA') {
+			back.append(element('h4', 'Event limits · across all years', 'detail-section-heading'));
+			back.append(element('p', 'Available days for an event are the smaller of the annual balance and the event balance. A new year does not reset the event limit.'));
+			balances.filter(balance => balance.periods.length).forEach(balance => {
+				const group = detailGroup(back, balance);
+				calculation(group, balance);
+			});
 			const unused = balances.filter(balance => !balance.periods.length);
 			if (unused.length) {
 				const details = element('details', null, 'unused-events');
@@ -305,9 +341,17 @@ function createEntitlementSummaryCard(result) {
 				unused.forEach(balance => calculation(detailGroup(details, balance), balance));
 				back.append(details);
 			}
+			if (!balances.length) back.append(element('p', 'Other CFRA uses the annual limit only; no event limit applies.'));
 		}
 	}
 	const footer = element('div', null, 'card-detail-footer');
+	if (result.type === 'PFCB') {
+		const note = element('p', null, 'pfcb-holiday-note');
+		const emphasis = element('em', null);
+		emphasis.append(element('strong', 'Note: '), document.createTextNode('PFCB calculations do not account for University holidays. If a leave period includes University holidays, please add the corresponding number of holiday days to the remaining workday entitlement.'));
+		note.append(emphasis);
+		footer.append(note);
+	}
 	if (hasOverlap) footer.append(element('p', result.type === 'PDLL'
 		? 'Overlapping dates count once. The equation includes only new days from each leave.'
 		: 'Overlapping dates count once. The equation subtracts only new days from each leave.', 'overlap-note'));
@@ -358,7 +402,22 @@ document.addEventListener('DOMContentLoaded', () => {
 	const field = (card, name) => card.querySelector(`[data-field="${name}"]`);
 	const eventLabel = event => `${event.type} — ${formatEntitlementDate(event.date)}`;
 	const checkbox = (card, type) => card.querySelector(`input[value="${type}"]`);
+	function matchingEvents(card) {
+		const order = ['Birth', 'Placement', 'Adoption'];
+		return events.filter(event => !checkbox(card, 'PDLL').checked || event.type === 'Birth')
+			.sort((a, b) => order.indexOf(a.type) - order.indexOf(b.type));
+	}
+	function updateEditorType(editor, card) {
+		const type = editor.querySelector('[data-editor-field="type"]');
+		const date = editor.querySelector('[data-editor-field="date"]');
+		const other = checkbox(card, 'CFRA').checked && type.value === 'Other CFRA';
+		type.querySelector('option[value="Other CFRA"]').hidden = !checkbox(card, 'CFRA').checked;
+		date.disabled = other; date.required = !other;
+		date.closest('.field').hidden = other;
+		editor.classList.toggle('other-cfra', other);
+	}
 	function invalidate() {
+		document.getElementById('overlap-warning').hidden = true;
 		if (summary.dataset.calculated === 'true') {
 			summary.dataset.stale = 'true';
 			document.getElementById('recalculate-notice').hidden = false;
@@ -400,8 +459,9 @@ document.addEventListener('DOMContentLoaded', () => {
 				if (!incomplete) mark(draft.querySelector('[data-editor-field="save"]'), 'Save or cancel this event before calculating.');
 			} else if (checkbox(card, 'PDLL').checked || checkbox(card, 'CFRA').checked) {
 				const event = events.find(event => event.id === card.dataset.eventId);
-				if (!event || (checkbox(card, 'PDLL').checked && event.type !== 'Birth')) {
-					mark(field(card, 'event-choice'), 'Select or add an associated event.');
+				const otherCfra = checkbox(card, 'CFRA').checked && card.dataset.eventId === '__other__';
+				if (!otherCfra && (!event || (checkbox(card, 'PDLL').checked && event.type !== 'Birth'))) {
+					mark(field(card, 'event-choice'), checkbox(card, 'CFRA').checked ? 'Select Other CFRA or an associated event.' : 'Select or add an associated event.');
 				}
 			}
 			const text = [...new Set(errors)].join(' ');
@@ -425,35 +485,38 @@ document.addEventListener('DOMContentLoaded', () => {
 		const explanation = pdll ? 'PDLL cannot be combined with CFRA or PFCB.' : '';
 		field(card, 'entitlement-help').textContent = explanation;
 		field(card, 'entitlement-help').hidden = !explanation;
-		const available = pdll ? events.filter(event => event.type === 'Birth') : events;
+		const available = matchingEvents(card);
 		const selected = pdll || cfra;
 		if (!selected) field(card, 'event-editor').replaceChildren();
-		const event = selected ? resolveCfraEvent(available, card.dataset.eventId) : null;
-		card.dataset.eventId = event?.id || '';
+		const otherCfra = cfra && card.dataset.eventId === '__other__';
+		const event = selected && !otherCfra ? resolveCfraEvent(available, card.dataset.eventId) : null;
+		card.dataset.eventId = otherCfra ? '__other__' : event?.id || '';
 		const choice = field(card, 'event-choice');
-		field(card, 'event-text').textContent = event ? eventLabel(event) : 'Select an event';
+		const choiceText = otherCfra ? 'Other CFRA' : event ? eventLabel(event) : 'Select an event';
+		field(card, 'event-text').textContent = choiceText;
 		const hasDraft = Boolean(field(card, 'event-editor').firstElementChild);
-		field(card, 'event-choice-label').textContent = event && !hasDraft ? 'Associated Event' : 'Associate Event Type';
-		choice.setAttribute('aria-label', `${field(card, 'event-choice-label').textContent}: ${event ? eventLabel(event) : 'Select an event'}`);
+		field(card, 'event-choice-label').textContent = 'Associated Event';
+		choice.setAttribute('aria-label', `${field(card, 'event-choice-label').textContent}: ${choiceText}`);
 		choice.removeAttribute('aria-invalid');
 		field(card, 'event-choice-label').htmlFor = hasDraft
 			? field(card, 'event-editor').querySelector(`[data-editor-field="${pdll ? 'date' : 'type'}"]`).id : choice.id;
 		choice.hidden = false;
 		choice.disabled = !selected || hasDraft;
 		field(card, 'event-selector').hidden = hasDraft;
-		field(card, 'event-help').textContent = selected && !available.length ? (pdll ? 'PDLL requires a Birth event.' : 'CFRA requires an event.') : '';
-		field(card, 'event-help').hidden = hasDraft || Boolean(available.length) || !selected;
+		field(card, 'event-help').textContent = otherCfra ? 'Annual CFRA limit only.' : selected && !available.length ? (pdll ? 'PDLL requires a Birth event.' : 'Choose Other CFRA, or add a Birth, Placement, or Adoption event.') : '';
+		field(card, 'event-help').hidden = hasDraft || (!otherCfra && (Boolean(available.length) || !selected));
 		const draftType = field(card, 'event-editor').querySelector('[data-editor-field="type"]');
 		if (draftType) {
 			if (pdll) draftType.value = 'Birth';
 			draftType.disabled = pdll;
 			field(card, 'event-editor').querySelector('[data-editor-for="date"]').textContent = pdll ? 'Birth event date' : 'Event date';
 			const editor = field(card, 'event-editor').firstElementChild;
+			updateEditorType(editor, card);
 			editor.querySelector('[data-editor-field="save"]').textContent = editor.dataset.editing === 'true' ? 'Edit Event' : 'Add Event';
 		}
 		field(card, 'event-section').hidden = !selected;
 		for (const type of ['PDLL', 'CFRA']) checkbox(card, type).setAttribute('aria-expanded', String(!field(card, 'event-section').hidden));
-		if (autoCreate && selected && !available.length && !hasDraft) openEditor(field(card, 'event-editor'), choice, card);
+		if (autoCreate && selected && !otherCfra && !available.length && !hasDraft) openEditor(field(card, 'event-editor'), choice, card);
 	}
 	function closeEventMenu(card, restoreFocus = false) {
 		field(card, 'event-menu').hidden = true;
@@ -466,7 +529,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		menu.replaceChildren();
 		const heading = document.createElement('p');
 		heading.className = 'event-menu-heading'; heading.textContent = 'Select an event'; menu.append(heading);
-		const available = checkbox(card, 'PDLL').checked ? events.filter(event => event.type === 'Birth') : events;
+		const available = matchingEvents(card);
 		function action(text, className, label, onClick) {
 			const button = document.createElement('button');
 			button.type = 'button'; button.className = className; button.textContent = text;
@@ -502,7 +565,15 @@ document.addEventListener('DOMContentLoaded', () => {
 			icon(remove, 'm4 4 16 16M20 4 4 20');
 			row.append(choose, edit, remove); menu.append(row);
 		});
-		menu.append(action('+ New event…', 'event-option new-event-option', 'Add a new event', () => {
+		if (checkbox(card, 'CFRA').checked) {
+			const other = action('Other CFRA', 'event-option', 'Select Other CFRA', () => {
+				invalidate(); card.dataset.eventId = '__other__'; updateChoices(card);
+				field(card, 'event-choice').focus({ preventScroll: true });
+			});
+			other.setAttribute('aria-pressed', String(card.dataset.eventId === '__other__'));
+			menu.append(other);
+		}
+		menu.append(action('+ New Event', 'event-option new-event-option', 'Add a new event', () => {
 			closeEventMenu(card); openEditor(field(card, 'event-editor'), field(card, 'event-choice'), card);
 		}));
 		menu.hidden = false; field(card, 'event-choice').setAttribute('aria-expanded', 'true');
@@ -543,6 +614,13 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 		input('cancel').addEventListener('click', close);
 		input('save').addEventListener('click', () => {
+			if (card && checkbox(card, 'CFRA').checked && input('type').value === 'Other CFRA') {
+				card.dataset.eventId = '__other__';
+				invalidate(); editor.remove(); syncEvents();
+				field(card, 'event-choice').focus({ preventScroll: true });
+				announcements.textContent = 'Other CFRA selected. No event date is needed.';
+				return;
+			}
 			if (!input('date').reportValidity() || !input('type').reportValidity()) return;
 			if (existing && !events.includes(existing)) {
 				input('error').textContent = 'This event was removed. Cancel and add a new event.';
@@ -560,6 +638,9 @@ document.addEventListener('DOMContentLoaded', () => {
 		editor.addEventListener('keydown', event => {
 			if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); close(); }
 			if (event.key === 'Enter' && event.target.matches('input')) { event.preventDefault(); input('save').click(); }
+		});
+		editor.addEventListener('input', event => {
+			if (card && event.target === input('type')) updateEditorType(editor, card);
 		});
 		host.append(editor);
 		if (trigger.matches('button')) trigger.setAttribute('aria-expanded', 'true');
@@ -637,9 +718,11 @@ document.addEventListener('DOMContentLoaded', () => {
 			const periods = cards().map(card => ({
 				start: field(card, 'start').value, end: field(card, 'end').value,
 				entitlements: [...card.querySelectorAll('input[name="entitlements"]:checked')].map(input => input.value),
-				eventId: card.dataset.eventId || ''
+				eventId: card.dataset.eventId === '__other__' ? '' : card.dataset.eventId || '',
+				cfraReason: checkbox(card, 'CFRA').checked && card.dataset.eventId === '__other__' ? 'other' : 'event'
 			}));
 			const results = summarizeEntitlements(periods, events);
+			document.getElementById('overlap-warning').hidden = !leavePeriodsOverlap(periods);
 			document.getElementById('summary-cards').replaceChildren(...results.map(createEntitlementSummaryCard));
 			summary.dataset.calculated = 'true'; summary.dataset.stale = 'false';
 			form.querySelector('.calculate-button').textContent = 'Recalculate';

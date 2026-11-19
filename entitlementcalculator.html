@@ -45,6 +45,10 @@
 		</form>
 		<section id="entitlement-summary" class="summary" aria-labelledby="summary-heading">
 			<h2 id="summary-heading" tabindex="-1">Entitlement balances</h2>
+			<div id="overlap-warning" class="overlap-warning" role="alert" hidden>
+				<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 21h20Z M12 9v5 M12 17h.01"/></svg>
+				<span>Warning: Multiple Leaves share the same dates.</span>
+			</div>
 			<p id="card-instructions" class="help" hidden>Click on any of the cards below to view details about how the balances were calculated.</p>
 			<p id="summary-empty" class="help">Your balances will appear here after calculation.</p>
 			<div id="recalculate-notice" class="recalculate-notice" hidden>
@@ -80,7 +84,7 @@
 					<p class="selector-help sr-only" data-field="entitlement-help"></p>
 				</fieldset>
 				<div class="leave-event field" data-field="event-section" hidden>
-					<label data-for="event-choice" data-field="event-choice-label">Associate Event Type</label>
+					<label data-for="event-choice" data-field="event-choice-label">Associated Event</label>
 					<div class="event-selector" data-field="event-selector">
 						<button type="button" class="event-trigger" data-field="event-choice" aria-haspopup="dialog" aria-expanded="false" disabled>
 							<span data-field="event-text">Select an event</span>
@@ -101,7 +105,7 @@
 		<fieldset class="event-editor">
 			<legend class="sr-only" data-editor-field="heading">New event</legend>
 			<div class="event-entry">
-				<div class="field"><label class="sr-only" data-editor-for="type">Event type</label><select data-editor-field="type" required><option value="">Select type</option><option>Birth</option><option>Placement</option><option>Adoption</option></select></div>
+				<div class="field"><label class="sr-only" data-editor-for="type">Event type</label><select data-editor-field="type" required><option value="">Select type</option><option>Birth</option><option>Placement</option><option>Adoption</option><option value="Other CFRA">Other CFRA</option></select></div>
 				<div class="field"><label class="sr-only" data-editor-for="date">Event date</label><input data-editor-field="date" type="date" required></div>
 				<div class="event-actions">
 					<button type="button" class="save-event" data-editor-field="save">Add Event</button>

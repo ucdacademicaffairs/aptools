@@ -8,6 +8,17 @@ const context = vm.createContext({ document: { addEventListener() {} } });
 vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'entitlementcalculator.js'), 'utf8'), context);
 const period = (start, end, entitlements) => ({ start, end, entitlements });
 
+test('overlap warning detects shared inclusive dates regardless of entitlement or order', () => {
+	for (const leaves of [
+		[period('2026-01-01', '2026-01-10', ['FMLA']), period('2026-01-10', '2026-01-15', ['CFRA'])],
+		[period('2026-02-01', '2026-02-05', []), period('2026-02-01', '2026-02-05', [])],
+		[period('2026-03-05', '2026-03-06', []), period('2026-03-01', '2026-03-10', [])]
+	]) assert.equal(context.leavePeriodsOverlap(leaves), true);
+	assert.equal(context.leavePeriodsOverlap([period('2026-01-01', '2026-01-10', []), period('2026-01-11', '2026-01-12', [])]), false);
+	assert.equal(context.leavePeriodsOverlap([period('', '', []), period('2026-02-05', '2026-02-01', []), period('2026-01-01', '2026-01-10', [])]), false);
+	assert.equal(context.leavePeriodsOverlap([]), false);
+});
+
 test('calculation equations subtract each leave once, excluding previously counted overlap', () => {
 	const leaves = [{ start: '2026-01-05', end: '2026-01-11' }, { start: '2026-01-09', end: '2026-01-13' }];
 	const calendar = context.entitlementLeaveContributions(leaves, 'FMLA');
@@ -58,7 +69,7 @@ test('PDLL requires a complete Birth event; other entitlements do not', () => {
 		assert.throws(() => context.summarizeEntitlements([leave], events), /complete Birth/);
 	}
 	assert.equal(context.summarizeEntitlements([leave], [{ id: 'e', date: '2026-01-01', type: 'Birth' }])[0].calendarDays, 5);
-	assert.equal(context.summarizeEntitlements([period('2026-02-02', '2026-02-06', ['FMLA', 'PFCB'])]).length, 2);
+	assert.equal(context.summarizeEntitlements([period('2026-02-02', '2026-02-06', ['FMLA', 'PFCB'])]).length, 3);
 });
 
 test('CFRA auto-associates one event and requires an explicit choice among multiple events', () => {
@@ -215,7 +226,7 @@ test('CFRA balances are independent per event and include unused entered events'
 		{ id: 'placement', used: 0, remaining: 84 },
 		{ id: 'birth', used: 84, remaining: 0 }
 	]);
-	assert.equal(result.remaining, null);
+	assert.equal(result.remaining, 0);
 });
 
 test('CFRA counts unique days within each event across years, anniversaries and leap days', () => {
@@ -246,6 +257,83 @@ test('CFRA association changes move usage to the new event', () => {
 		assert.equal(balances.find(balance => balance.event.id === id).used, 10);
 		assert.equal(balances.find(balance => balance.event.id !== id).used, 0);
 	}
+});
+
+test('CFRA resets annually while one event limit spans calendar years', () => {
+	const events = [{ id: 'birth', type: 'Birth', date: '2025-11-01' }];
+	const result = context.summarizeEntitlements([
+		{ ...period('2025-11-20', '2025-12-31', ['CFRA']), eventId: 'birth' },
+		{ ...period('2026-01-01', '2026-02-11', ['CFRA']), eventId: 'birth' }
+	], events).find(row => row.type === 'CFRA');
+	assert.deepEqual(Array.from(result.yearly, row => row.used), [42, 42]);
+	assert.deepEqual(Array.from(result.yearly, row => row.remaining), [42, 42]);
+	assert.equal(result.eventBalances[0].used, 84);
+	assert.equal(result.eventBalances[0].remaining, 0);
+	assert.deepEqual(Array.from(result.eventBalances[0].availability, row => row.available), [0, 0]);
+});
+
+test('CFRA cannot gain a second annual allowance by changing events', () => {
+	const events = [{ id: 'a', type: 'Birth', date: '2026-01-01' }, { id: 'b', type: 'Adoption', date: '2026-04-01' }];
+	const result = context.summarizeEntitlements([
+		{ ...period('2026-01-01', '2026-03-01', ['CFRA']), eventId: 'a' },
+		{ ...period('2026-04-01', '2026-05-30', ['CFRA']), eventId: 'b' }
+	], events).find(row => row.type === 'CFRA');
+	assert.equal(result.yearly[0].used, 120);
+	assert.equal(result.yearly[0].remaining, -36);
+	for (const balance of result.eventBalances) {
+		assert.equal(balance.used, 60); assert.equal(balance.remaining, 24);
+		assert.equal(balance.availability[0].available, 0);
+	}
+});
+
+test('Other CFRA needs no event and shares the annual allowance with event leave', () => {
+	const events = [{ id: 'birth', type: 'Birth', date: '2026-01-01' }];
+	const other = { ...period('2026-01-01', '2026-01-20', ['CFRA']), cfraReason: 'other' };
+	const alone = context.summarizeEntitlements([other]).find(row => row.type === 'CFRA');
+	assert.equal(alone.yearly[0].used, 20);
+	assert.equal(alone.yearly[0].remaining, 64);
+	assert.equal(alone.eventBalances.length, 0);
+	const combined = context.summarizeEntitlements([other,
+		{ ...period('2026-02-01', '2026-04-11', ['CFRA']), eventId: 'birth' }
+	], events).find(row => row.type === 'CFRA');
+	assert.equal(combined.yearly[0].used, 90);
+	assert.equal(combined.eventBalances[0].used, 70);
+	assert.equal(combined.eventBalances[0].remaining, 14);
+	assert.equal(combined.eventBalances[0].availability[0].available, 0);
+});
+
+test('CFRA availability is the smaller balance and annual overlap counts once across reasons', () => {
+	const events = [{ id: 'a', type: 'Birth', date: '2025-01-01' }, { id: 'b', type: 'Placement', date: '2026-01-01' }];
+	const result = context.summarizeEntitlements([
+		{ ...period('2025-01-01', '2025-02-19', ['CFRA']), eventId: 'a' },
+		{ ...period('2026-01-01', '2026-01-10', ['CFRA']), eventId: 'a' },
+		{ ...period('2026-01-05', '2026-01-15', ['CFRA']), eventId: 'b' },
+		{ ...period('2026-01-05', '2026-01-10', ['CFRA']), cfraReason: 'other' }
+	], events).find(row => row.type === 'CFRA');
+	assert.equal(result.yearly.find(row => row.year === 2026).used, 15);
+	const a = result.eventBalances.find(row => row.event.id === 'a');
+	assert.equal(a.remaining, 24);
+	assert.equal(a.availability.find(row => row.year === 2026).annualRemaining, 69);
+	assert.equal(a.availability.find(row => row.year === 2026).available, 24);
+});
+
+test('CFRA event overages remain visible even when each year is under its limit', () => {
+	const result = context.summarizeEntitlements([
+		{ ...period('2025-11-20', '2026-02-17', ['CFRA']), eventId: 'birth' }
+	], [{ id: 'birth', type: 'Birth', date: '2025-11-01' }]).find(row => row.type === 'CFRA');
+	assert.deepEqual(Array.from(result.yearly, row => row.used), [42, 48]);
+	assert.equal(result.eventBalances[0].remaining, -6);
+	assert.deepEqual(Array.from(result.eventBalances[0].availability, row => row.available), [0, 0]);
+});
+
+test('an unused event cannot add to an annual balance consumed by Other CFRA', () => {
+	const result = context.summarizeEntitlements([
+		{ ...period('2026-01-01', '2026-03-11', ['CFRA']), cfraReason: 'other', eventId: 'birth' }
+	], [{ id: 'birth', type: 'Birth', date: '2026-01-01' }]).find(row => row.type === 'CFRA');
+	assert.equal(result.yearly[0].used, 70);
+	assert.equal(result.eventBalances[0].used, 0);
+	assert.equal(result.eventBalances[0].remaining, 84);
+	assert.equal(result.eventBalances[0].availability[0].available, 14);
 });
 
 test('PDLL conflicts with CFRA and PFCB only within the same leave period', () => {
@@ -279,7 +367,7 @@ test('all available entitlements appear with unused balances', () => {
 test('event requirements control unused cards and annual cards include unused years', () => {
 	const leaves = [period('2025-12-31', '2026-01-02', ['PFCB']), period('2027-02-01', '2027-02-05', ['FMLA'])];
 	const noEvents = context.summarizeEntitlements(leaves);
-	assert.deepEqual(Array.from(noEvents, row => row.type), ['FMLA', 'PFCB']);
+	assert.deepEqual(Array.from(noEvents, row => row.type), ['FMLA', 'CFRA', 'PFCB']);
 	assert.deepEqual(Array.from(noEvents.find(row => row.type === 'FMLA').yearly, row => row.used), [0, 0, 5]);
 	assert.deepEqual(Array.from(noEvents.find(row => row.type === 'PFCB').yearly, row => row.remaining), [39, 38, 40]);
 	const placement = context.summarizeEntitlements(leaves, [{ id: 'e', date: '2026-01-01', type: 'Placement' }]);

@@ -131,7 +131,8 @@ h2 {
 	color: white;
 }
 
-.validation-warning {
+.validation-warning,
+.overlap-warning {
 	display: flex;
 	align-items: center;
 	gap: 0.5rem;
@@ -144,6 +145,15 @@ h2 {
 }
 
 .validation-warning svg {
+	flex-shrink: 0;
+}
+
+.overlap-warning {
+	background: #fff8df;
+	color: #6b4600;
+}
+
+.overlap-warning svg {
 	flex-shrink: 0;
 }
 
@@ -219,6 +229,12 @@ button {
 	margin: 0.25rem 0 0;
 	font-size: 0.75rem;
 	color: #4b5563;
+}
+
+.entitlement-front .limit-heading {
+	margin: 1.25rem 0 0;
+	font-size: 0.875rem;
+	color: var(--ucd-blue);
 }
 
 .overage-metric .metric-number,
@@ -538,6 +554,10 @@ button {
 	gap: 0.5rem;
 }
 
+.event-editor.other-cfra .event-entry {
+	grid-template-columns: minmax(0, 1fr) auto;
+}
+
 .event-entry .event-actions {
 	flex-wrap: nowrap;
 	gap: 0.5rem;
@@ -631,7 +651,7 @@ summary:focus-visible,
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
 	align-items: stretch;
-	grid-auto-rows: 1fr;
+	grid-auto-rows: auto;
 	gap: 1.25rem;
 	margin-top: 1.5rem;
 }
@@ -874,6 +894,10 @@ summary:focus-visible,
 	}
 
 	.event-entry {
+		grid-template-columns: 1fr;
+	}
+
+	.event-editor.other-cfra .event-entry {
 		grid-template-columns: 1fr;
 	}
 
